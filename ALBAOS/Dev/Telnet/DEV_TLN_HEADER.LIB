@@ -1,0 +1,91 @@
+/*** BeginHeader */
+#ifndef __DEV_TLN_HEADER_LIB
+#define __DEV_TLN_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Tln_Logo
+*/
+const char Tln_Ver[]="1.02.10";
+
+#ifdef TLN_DEBUG
+#define _TLN_NODEBUG
+#else
+#define _TLN_NODEBUG nodebug
+#endif
+
+//****************************<SETTINGS>****************************************
+#ifndef TCPCONFIG
+			#define TCPCONFIG 7
+	      #define _PRIMARY_STATIC_IP  "10.10.6.100"
+	      #define _PRIMARY_NETMASK    "255.255.255.0"
+	      #define MY_GATEWAY          "10.10.6.1"
+	      #define MY_NAMESERVER       "10.10.6.1"
+#endif
+//****************************</SETTINGS>***************************************
+char Tln_Txt_Con_Established[]={
+"Connection Established."
+};
+
+char Tln_Txt_Ready[]={
+"Ready:"
+};
+
+char Tln_Txt_SyntaxError[]={
+"Syntax error."
+};
+
+char Tln_Txt_SessionClosed[]={
+"WARNing:SYSTem:COMMunicate:TELNet:CLOSe"
+};
+
+char * Tln_Txt_RdBufOverflow[]={
+"!Read buffer overflow!",
+"!Read buffer error!"
+};
+
+char * Tln_Txt_WrBufOverflow[]={
+"!Write buffer overflow!",
+"!Erite buffer error!"
+};
+
+
+char * Tln_Alba_Logo[] =
+{
+"          .\r\n",
+"         ...\r\n",
+"        .....\r\n",
+"       ......\r\n",
+"      .....\r\n",
+"     ....   ....\r\n",
+"    ..        ...\r\n",
+"   .            ..\r\n",
+" A     L     B     A\r\n",
+//"<RF  FAST  INTERLOCK>\r\n",
+};
+
+void Tln_Logo(void);
+/*** EndHeader */
+
+
+_TLN_NODEBUG
+void Tln_Logo(void)
+{
+char i;
+
+Tln_Write(Tln_Txt_Con_Established);
+Tln_Write(SYSCRNL);
+
+for(i=0;i<(sizeof(Tln_Alba_Logo)/sizeof(Tln_Alba_Logo[0]));i++) Tln_Write(&Tln_Alba_Logo[i][0]);
+
+#ifdef SYS_Tln_Dev_Name
+	Tln_Write(SYS_Tln_Dev_Name);
+#endif
+
+Tln_Write(SYSCRNL);
+Tln_Write(Tln_Txt_Ready);
+Tln_Write(SYSCRNL);
+}
+/*** BeginHeader */
+#endif
+/*** EndHeader */

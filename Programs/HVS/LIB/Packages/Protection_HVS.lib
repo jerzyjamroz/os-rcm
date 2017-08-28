@@ -1,0 +1,248 @@
+/*** BeginHeader */
+#ifndef __PROTECTION_HVS_LIB
+#define __PROTECTION_HVS_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader
+Protection_Expander1_Handler,Protection_Expander2_Handler,Protection_LCD_Handler,
+Prt_Sys_DamagedQLambda_Handler,Prt_OverInterval_Handler,Prt_Slope_Handler
+*/
+
+#define Prt_LCD_ResDelay 10000
+
+#define Prt_Trsh_Dft 1750
+#define Prt_Delta_Dft 500
+#define Prt_T_Dft 5
+
+struct{
+int Trsh;
+int T;
+int Delta;
+}Prt;
+
+struct{
+//Slew_Rate[8]; //to high slew rate = 1, nothing =0
+int OverInterval[8];
+int Slope[8];
+
+}Protection;
+
+_SYSTEM_HVS_NODEBUG int Protection_Expander1_Handler(void);
+_SYSTEM_HVS_NODEBUG int Protection_Expander2_Handler(void);
+_SYSTEM_HVS_NODEBUG cofunc int Protection_LCD_Handler(void);
+
+_SYSTEM_HVS_NODEBUG int Prt_Sys_DamagedQLambda_Handler(void);
+_SYSTEM_HVS_NODEBUG int Prt_OverInterval_Handler(void);
+int Prt_Slope_Handler(void);
+/*** EndHeader */
+
+//***< LOCALS>***
+
+//***</LOCALS>***
+
+_SYSTEM_HVS_NODEBUG
+int Protection_LCD_FastReinit(void)
+{
+LCD_FastInit_4bit();
+if (Message_Box.On==1) Virtual_HLCD_Make_Real();
+else
+	{
+	Virtual_LCD_Make_Real();
+	LCD_Locate(LCD.Cursor_Position[0],LCD.Cursor_Position[1]);
+	}
+
+return 1;
+}
+
+_SYSTEM_HVS_NODEBUG
+int Protection_Expander1_Handler(void)
+{
+	int reset_counter;
+   unsigned char data1, data2;
+
+   I2CRead(PORT_EXP1_ADDRESS,0x06,&data1,1);
+   I2CRead(PORT_EXP1_ADDRESS,0x07,&data2,1);
+
+   if( (data1!=0x00) || (data2!=0x00) )
+      {
+      Expander_FastInit_First();
+      Protection_LCD_FastReinit();
+
+      reset_counter=SFlash_Var_Load(SFl_Var1_Shift);
+      if(reset_counter<32000)
+      	{
+      	reset_counter++;
+      	SFlash_Var_Save(reset_counter,SFl_Var1_Shift);
+         }
+      }
+}
+
+_SYSTEM_HVS_NODEBUG
+int Protection_Expander2_Handler(void)
+{
+	int reset_counter;
+   char data;
+
+   I2CRead(PORT_EXP2_ADDRESS,0x06,&data,1);
+
+   if(data!=0x20)
+   	{
+      Expander_FastInit_Second();
+      Protection_LCD_FastReinit();
+
+      reset_counter=SFlash_Var_Load(SFl_Var2_Shift);
+      if(reset_counter<32000)
+      	{
+	      reset_counter++;
+	      SFlash_Var_Save(reset_counter,SFl_Var2_Shift);
+      	}
+      }
+}
+
+_SYSTEM_HVS_NODEBUG
+cofunc int Protection_LCD_Handler(void)
+{
+LCD_FastInit_4bit();
+if ( (Ret_Alert_Ocurence==1) && (System_Flag.MsgBox_BlockFlag>0)) Virtual_HLCD_Make_Real();
+else
+	{
+	Virtual_LCD_Make_Real();
+	LCD_Locate(LCD.Cursor_Position[0],LCD.Cursor_Position[1]);
+	}
+waitfor(DelayMs(Prt_LCD_ResDelay));
+
+return 1;
+}
+
+
+/*
+cofunc int Protection_Slew(void)
+{
+int i;
+static const int jump=1;
+
+static int raw_data_mean_N[8];
+//static int damaged_slew_rate[8];
+
+for(i=0;i<8;i++)
+   {
+   if( (ADC.ActualRawDataMean-raw_data_mean_N[i])>500) Protection.Slew_Rate[i]=1 //System_Flag.DamagedChannels[i]=1 ;
+   }
+
+for(i=0;i<8;i++) raw_data_mean_N[i]=ADC.ActualRawDataMean;
+
+return 1;
+}
+*/
+
+_SYSTEM_HVS_NODEBUG
+int Prt_OverInterval_Handler(void)
+{
+int i,j;
+
+#GLOBAL_INIT{
+Protection.OverInterval[0]=0;
+Protection.OverInterval[1]=0;
+Protection.OverInterval[2]=0;
+Protection.OverInterval[3]=0;
+Protection.OverInterval[4]=0;
+Protection.OverInterval[5]=0;
+Protection.OverInterval[6]=0;
+Protection.OverInterval[7]=0;
+Prt.Trsh=Prt_Trsh_Dft;
+}
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+   {
+	if ( (ADC.ActualRawDataMean[i]>Prt.Trsh) || (ADC.ActualRawDataMean[i]<0) ) Protection.OverInterval[i]=1;
+   else Protection.OverInterval[i]=0;
+   }
+
+for(j=i;j<8;j++) Protection.OverInterval[j]=0;
+
+return 1;
+}
+
+_SYSTEM_HVS_NODEBUG
+int Prt_Slope_Handler(void)
+{
+int i,j;
+
+#GLOBAL_INIT{
+Protection.Slope[0]=0;
+Protection.Slope[1]=0;
+Protection.Slope[2]=0;
+Protection.Slope[3]=0;
+Protection.Slope[4]=0;
+Protection.Slope[5]=0;
+Protection.Slope[6]=0;
+Protection.Slope[7]=0;
+Prt.T=Prt_T_Dft;
+Prt.Delta=Prt_Delta_Dft;
+}
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+   {
+	if ( abs(ADC_Slope.Raw64[i][0]-ADC_Slope.Raw64[i][Prt.T])>Prt.Delta ) Protection.Slope[i]=1;
+   else Protection.Slope[i]=0;
+   }
+
+for(j=i;j<8;j++) Protection.Slope[j]=0;
+
+return 1;
+}
+
+
+_SYSTEM_HVS_NODEBUG
+int Prt_Sys_DamagedQLambda_Handler(void)
+{
+int i,j;
+
+#GLOBAL_INIT{
+Broken_Channel.GotBrokenFl[0]=0;
+Broken_Channel.GotBrokenFl[1]=0;
+Broken_Channel.GotBrokenFl[2]=0;
+Broken_Channel.GotBrokenFl[3]=0;
+Broken_Channel.GotBrokenFl[4]=0;
+Broken_Channel.GotBrokenFl[5]=0;
+Broken_Channel.GotBrokenFl[6]=0;
+Broken_Channel.GotBrokenFl[7]=0;
+//System_Flag.DamagedChannels_Bool=0;
+Broken_Channel.GotBrokenFl_Char=0;
+}
+
+for (i=0;i<HVS.No_Of_Outputs;i++) Broken_Channel.GotBrokenFl[i]=(Protection.OverInterval[i] && Protection.Slope[i]);
+
+//for (j=i;j<8;j++) System_Flag.DamagedChannels[j]=0;      //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Broken_Channel.Flags
+Broken_Channel.GotBrokenFl_Char=0;
+for (i=0;i<HVS.No_Of_Outputs;i++)
+   {
+   if(Broken_Channel.GotBrokenFl[i]>0)
+   	{
+   	SET(&Broken_Channel.GotBrokenFl_Char,i);
+   	}
+   else RES(&Broken_Channel.GotBrokenFl_Char,i);
+   }
+
+//if (System_Flag.DamagedChannels_Char>0) System_Flag.DamagedChannels_Bool=1;
+//else System_Flag.DamagedChannels_Bool=0;
+
+Broken_Channel.FlashFlag_Char=0;
+for (i=0;i<HVS.No_Of_Outputs;i++)
+   {
+   if(Broken_Channel.FlashFlag[i]>0)
+   	{
+   	SET(&Broken_Channel.FlashFlag_Char,i);
+   	}
+   else RES(&Broken_Channel.FlashFlag_Char,i);
+   }
+
+return 1;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

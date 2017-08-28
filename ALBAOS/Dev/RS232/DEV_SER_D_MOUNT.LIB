@@ -1,0 +1,21 @@
+/*** BeginHeader */
+#ifndef __DEV_SER_D_MOUNT_LIB
+#define __DEV_SER_D_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_SER_D_BODY.LIB"
+
+#define Dev_SerD_Driver
+
+#define DEV_SERD_DRIVER_INIT__ 	SerD_Init();
+#define Dev_SerD_Read(x) 			SerD_Read(x)
+#define Dev_SerD_Write(x) 			SerD_Write(x)
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

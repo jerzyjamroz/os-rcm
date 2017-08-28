@@ -1,0 +1,50 @@
+/*** BeginHeader */
+#ifndef __EM_EVT_API_LIB
+#define __EM_EVT_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_EVT_Tick,
+*/
+int EM_EVT_Tick(char *buf,int mode,unsigned long *client);
+/*** EndHeader */
+int EM_EVT_Handler(char *buf,int mode,unsigned long *client);
+
+_EM_NODEBUG
+int EM_EVT_Tick(char *buf,int mode,unsigned long *client)
+{
+if (mode==0) return 0;
+if (client[0]==0) return -1;
+if (client[1]==0) return -2;
+
+return EM_EVT_Handler(buf,mode,client);
+}
+
+_EM_NODEBUG
+int EM_EVT_Handler(char *buf,int mode,unsigned long *client)
+{
+static int avr_idx=-1;
+int i;
+int idx;
+
+if(avr_idx==Elem_ADC_SYS.Avr_Idx) return 0;
+
+avr_idx=Elem_ADC_SYS.Avr_Idx;
+
+idx=0;
+idx+=sprintf(&buf[idx],"!EVT%02d %d ",mode,Elem_SYS.Trig_Counter);
+
+for(i=0;i<EM_SENSOR_MAX;i++)
+	{
+   _f_memcpy(&buf[100],&EM_ADC_VectTab_Avr[Elem_ADC_SYS.Avr_Idx][i],sizeof(float));
+   idx+=sprintf(&buf[idx],"%ld ",*(float *)&buf[100]);
+   }
+idx+=sprintf(&buf[idx],"%04X ",EM_ADC_I_Sample_Status_Get(Elem_ADC_SYS.Avr_Idx));
+
+idx+=sprintf(&buf[idx],"%d",Elem_ADC_SYS.Avs_Counter_Idx);
+
+return udp_sendto(&UDP_Sock, buf, idx+1, client[0], (int)client[1]);
+}
+/*** BeginHeader */
+#endif
+/*** EndHeader */

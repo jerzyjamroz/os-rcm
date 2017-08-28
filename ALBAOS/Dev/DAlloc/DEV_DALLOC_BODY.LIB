@@ -1,0 +1,64 @@
+/*** BeginHeader */
+#ifndef __DEV_DALLOC_BODY_LIB
+#define __DEV_DALLOC_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_DALLOC_HEADER.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+DAlloc_Release,DAlloc_Xalloc,DAlloc_Xmem2Root,DAlloc_Root2Xmem
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+long DAlloc_Release(long addr, long len);
+long DAlloc_Xalloc(long len);
+unsigned DAlloc_Xmem2Root(char *dest, unsigned long src, unsigned len);
+unsigned DAlloc_Root2Xmem(unsigned long dest, char *src, unsigned len);
+//_____________________________</FUNCTIONS>_____________________________________
+/*** EndHeader */
+
+
+_DALLOC_NODEBUG
+long DAlloc_Release(long addr, long len)
+{
+if( (len%2)!=0) len++;
+xrelease(addr,len);
+return len;
+}
+
+_DALLOC_NODEBUG
+long DAlloc_Xalloc(long len)
+{
+if( (len%2)!=0) len++;
+return xalloc(len);
+}
+
+_DALLOC_NODEBUG
+unsigned DAlloc_Xmem2Root(char *dest, unsigned long src, unsigned len)
+{
+if( (len%2)!=0) len++;
+xmem2root(dest,src,len);
+dest[len]=0;
+return len;
+}
+
+_DALLOC_NODEBUG
+unsigned DAlloc_Root2Xmem(unsigned long dest, char *src, unsigned len)
+{
+if( (len%2)!=0 ) len++;
+root2xmem(dest,src,len);
+src[len]=0;
+return len;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

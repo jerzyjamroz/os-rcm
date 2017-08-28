@@ -1,0 +1,88 @@
+/*** BeginHeader */
+#ifndef __DEV_IC25LC020_LIB
+#define __DEV_IC25LC020_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+IC25LC020_Byte_Wr,
+IC25LC020_Byte_Rd,
+IC25LC020_Wr_En,
+IC25LC020_Wr_Dis,
+IC25LC020_RDSR,
+*/
+#include "/Dev1/IC25LC020/DEV_IC25LC020.H"
+
+//_____________________________<FUNCTIONS>______________________________________
+int IC25LC020_Byte_Wr(char addr_byte, char byte);
+char IC25LC020_Byte_Rd(char addr_byte);
+int IC25LC020_Wr_En(void);
+int IC25LC020_Wr_Dis(void);
+char IC25LC020_RDSR(void);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//</LOC_DEFINES>
+
+//Must be mofified, IOCONA must affect only one bit not the whole register
+
+_IC25LC020_NODEBUG
+int IC25LC020_Byte_Wr(char addr_byte, char byte)
+{
+char buf[4];
+
+buf[0]=0x02;
+buf[1]=addr_byte;
+buf[2]=byte;
+buf[3]=0;
+
+return Dev_SPI_Write(buf,3);
+}
+
+_IC25LC020_NODEBUG
+char IC25LC020_Byte_Rd(char addr_byte)
+{
+char buf[3];
+char readout;
+
+buf[0]=0x03;
+buf[1]=addr_byte;
+buf[2]=0;
+
+Dev_SPI_Write(buf,2);
+Dev_SPI_Read(&readout,1);
+
+return readout;
+}
+
+_IC25LC020_NODEBUG
+int IC25LC020_Wr_En(void)
+{
+char code=0x06;
+
+return Dev_SPI_Write(&code,1);
+}
+
+_IC25LC020_NODEBUG
+int IC25LC020_Wr_Dis(void)
+{
+char code=0x04;
+
+return Dev_SPI_Write(&code,1);
+}
+
+
+_IC25LC020_NODEBUG
+char IC25LC020_RDSR(void)
+{
+char code = 0x05;
+char readout;
+
+Dev_SPI_Write(&code,1);
+Dev_SPI_Read(&readout,1);
+
+return readout;
+}
+/*** BeginHeader */
+#endif
+/*** EndHeader */

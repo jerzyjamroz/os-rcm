@@ -1,0 +1,133 @@
+This is a machine generated file.
+Modifications by hand must be made carefully at one's own risk.
+Deleting an entry will result in factory default for that entry.
+----------------------------------------------------------------
+
+[COMM]
+port=6
+coldload baud=2400
+pilot baud=57600
+bios baud=115200
+Max Negotiated Baud=460800
+stop bits=2
+use TCP=0
+TCP Port=0
+TCP Name=
+Net Address=
+Serial Response Timeout=400
+Ethernet Response Timeout=8000
+Serial Retry Count=5
+Ethernet Retry Count=0
+Serial Poll Interval=3000
+Ethernet Poll Interval=30000
+Verify DSR=1
+Use USB to Serial Converter=1
+Disable Baud Negotiation=0
+USB to Serial Delay=500
+Begin Probe Delay=100
+End Probe Delay=300
+Begin Pilot Delay=0
+End Pilot Delay=0
+Pilot Bios Physical Address=0x4000
+Flash erase timeout=10000
+Use RabbitLink=0
+RabbitLink Port=0
+RabbitLink Address=
+RabbitLink Name=
+[Compiler Options]
+Max Errors Shown=10
+Max Warnings Shown=32
+All Serious None=A
+RTC Indices=1
+RTC Pointers=0
+Optimize For Size=0
+Prototypes=1
+Demotion=1
+Pointers=1
+BIOS Memory Mode=1
+Restrict Watch Expressions=0
+Separate Instruction and Data=1
+Generate List Files=0
+Inline Internal IO Functions=1
+Detect Internal Memory=1
+Detect Memory=1
+Flash type=32
+Memory type=8
+Default Compile Mode=2
+[Debug Options]
+Enable Breakpoints=1
+Enable Instruction Level Single Step=1
+Enable Watch Expressions=1
+Max Breakpoints=32
+Max Watch Expressions=10
+Watch Memory for Structs=512
+Enable Stack Tracing=1
+Stack Tracing Memory=4096
+Enable debug kernel=1
+[Include RST 28]
+Include RST=2
+[Include BIOS]
+Include BIOS=1
+[Poll Target]
+Poll target while running=1
+[Targetless Compile]
+Board ID=0x2900
+CPU ID=4000
+CPU Revision=0
+Crystal Speed MHz=0.0000
+RAM Size KBytes=512
+Flash Size KBytes=512
+Description=58MHz, RCM4200, 512K+512K SRAM, 512K Flash, analog, 8M serial flash
+Macros=CLK_DBL=1;BRD_OPT0=0x24;DFLASH0=0x11701;MD0=0x1;MD0_ID=0xBFD7;MD0_TYPE=0x1;MD0_SIZE=0x80;MD0_SECSIZE=0x1000;MD0_SECNUM=0x80;MD0_SPEED=0x46;MD0_MBC=0x0;MD2=0x1;MD2_ID=0x0;MD2_TYPE=0x0;MD2_SIZE=0x80;MD2_SECSIZE=0x0;MD2_SECNUM=0x0;MD2_SPEED=0xF;MD2_MBC=0xC6;MD3=0x1;MD3_ID=0x0;MD3_TYPE=0x0;MD3_SIZE=0x80;MD3_SECSIZE=0x0;MD3_SECNUM=0x0;MD3_SPEED=0x37;MD3_MBC=0x45
+[Output File]
+Auto open STDIO=1
+Append=0
+Log STDIO=0
+Output File Name=DC.OUT
+[Dynamic C Files]
+Use Rabbit 4000 Libs=1
+Use Lib File=0
+Use BIOS File=0
+Use Default Source File=0
+LIB File=
+BIOS File=
+CS0 RAM Detect File=bios\checkRamCS0.bin
+Pre-Cold Loader File=bios\precoldload.bin
+Cold Loader File=bios\coldload.bin
+16-bit Cold Loader File=bios\coldload16bit.bin
+Serial Flash Cold Loader File=bios\coldloadserflash.bin
+Pilot BIOS File=bios\pilot.bin
+16-bit Pilot BIOS File=bios\pilot16bit.bin
+Serial Flash Pilot BIOS File=bios\pilotserflash.bin
+Default Source File=
+Start Dir=C:\DynamicC\Programs\SimpleEM\
+[DEFINES]
+Defines=
+[Compression Utility]
+Zimport External Utility=ZCOMPRESS.EXE
+[MRU Files]
+FileCount=1
+[Open Files]
+Number Open=0
+[INCLUDES]
+Includes=C:\DCRABBIT_10.66\Include;
+[MRU 1]
+MRU 1 Path=C:\DynamicC\Programs\SimpleEM\SimpleEM.C
+MRU 1 Read Only=0
+MRU 1 X=41
+MRU 1 Y=91
+MRU 1 W=800
+MRU 1 H=500
+MRU 1 Top Row=0
+MRU 1 WindowState=0
+MRU 1 Cursor Row=2
+MRU 1 Cursor Col=21
+[Project Explorer]
+ProjEx Window Open=0
+ProjEx Window Y=50
+ProjEx Window X=50
+ProjEx Window W=600
+ProjEx Window H=400
+ProjEx Window State=0
+[C FILES]
+C Files=

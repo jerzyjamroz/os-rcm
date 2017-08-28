@@ -1,0 +1,4 @@
+Watch0=g->data2;:GLOBAL::C:\DCRABBIT_10.72\bios\Rabbitbios.c::echo_handler
+Watch1=s;:GLOBAL::C:\DCRABBIT_10.72\bios\Rabbitbios.c::echo_handler
+cbWatch0=s
+cbWatch1=g->data2

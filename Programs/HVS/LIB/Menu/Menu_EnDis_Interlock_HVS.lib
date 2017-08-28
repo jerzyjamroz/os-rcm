@@ -1,0 +1,253 @@
+/*** BeginHeader */
+#ifndef __MENU_ENDIS_MANAGE_HVS_LIB
+#define __MENU_ENDIS_MANAGE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_EnDis_Interlock_Handler,
+*/
+
+_MENU_HVS_NODEBUG cofunc void Submenu_EnDis_Interlock_Handler(void);
+
+#define SubMenu_1_LastElement 15
+#define SubMenu_1_Disabled 12
+#define SubMenu_1_Enabled 13
+
+char * const Menu2_SubMenu_Strings_1[] = {
+	"Interl.",
+	"Config:",
+
+	"Disable all?",
+
+	"Channel 1",
+
+	"Channel 2",
+
+	"Channel 3",
+
+	"Channel 4",
+
+	"Channel 5",
+
+	"Channel 6",
+
+	"Channel 7",
+
+	"Channel 8",
+
+   "Enabled(OK~Dis)",
+	"Disabled(OK~En)",
+
+   "Previous conf.?",
+   "Int?"
+};
+
+/*** EndHeader */
+
+//******************************************************************************
+_MENU_HVS_NODEBUG
+void Menu2_1_1(char line)
+{
+char i;
+	LCD_Locate(line,1);
+	LCD_Write_Text(Menu2_SubMenu_Strings_1[0]);
+   for(i=0;i<HVS.No_Of_Outputs;i++) LCD_Write_Char(i+49);
+
+	LCD_Locate(line+1,1);
+	LCD_Write_Text(Menu2_SubMenu_Strings_1[1]);
+
+	for(i=0;i<HVS.No_Of_Outputs;i++)
+   {
+   if(((Interlock_Disabled_Channels>>i)&0x01)==1) LCD_Write_Char('X');
+   else LCD_Write_Char('O');
+   }
+}
+_MENU_HVS_NODEBUG
+void Menu2_1_2(char line)
+{
+	LCD_Locate(line,FirstColumn);
+//   if(dis_flag==0) LCD_Write_Text(Menu2_SubMenu_Strings_1[13]);
+   if ( Ret_Int!=0xFF ) LCD_Write_Text("Disable All?");
+	else LCD_Write_Text("Enable All?");
+//   else LCD_Write_Text(Menu2_SubMenu_Strings_1[2]);
+
+	LCD_Locate(line+1,OK_Confirm_Shift);
+	LCD_Write_Text(Menu2_Ok_Confirm);
+}
+
+
+_MENU_HVS_NODEBUG
+void Menu2_1_X(int x,char line)
+{
+int div;
+div=x-3;
+
+	LCD_Locate(line,FirstColumn);
+	LCD_Write_Text(Menu2_SubMenu_Strings_1[x]);
+	LCD_Locate(line+1,SecondColumn-1);
+   if(((Interlock_Disabled_Channels>>div)&0x01)==0x01) LCD_Write_Text(Menu2_SubMenu_Strings_1[12]);
+   else LCD_Write_Text(Menu2_SubMenu_Strings_1[11]);
+}
+
+
+_MENU_HVS_NODEBUG
+void Menu2_2CleanRows(char row)
+{
+LCD_Locate(row,1);
+LCD_Write_Text("                ");
+LCD_Locate(row+1,1);
+LCD_Write_Text("                ");
+}
+
+//cofunc void Menu2_SubList1(void)
+_MENU_HVS_NODEBUG
+cofunc void Submenu_EnDis_Interlock_Handler(void)
+{
+char i;
+char dis_flag;
+char order;
+static int Activity;
+order=0;
+Activity=Int_SUM;
+
+while(order!=Designator_Exit)
+ {
+
+	if(Menu2.Element_ID<2)
+		{
+		Menu2.Element_ID=2;
+	   }
+   else if (Menu2.Element_ID>(HVS.No_Of_Outputs+2)) Menu2.Element_ID=HVS.No_Of_Outputs+2;
+	else if (Menu2.Element_ID>10)
+		{
+		Menu2.Element_ID=10;
+	   }
+
+	LCD_Display_Clear();
+
+	switch (Menu2.Element_ID)
+		{
+//		case 1:
+//		Menu2_1_1(1);
+//		Menu2_1_2(3);
+//		break;
+
+		case 2:
+      if((order==Designator_Ok) && (Ret_Int!=0xFF))
+         {
+      	Interlock.Status_Relays=0xFF;
+         }
+      else if (order==Designator_Ok)
+      	{
+         Interlock.Status_Relays=0x00;
+         }
+
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+		Menu2_1_1(1);
+	   Menu2_1_2(3);
+		break;
+
+		case 3:
+		if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,0);
+         }
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(3,1);
+	   Menu2_1_X(4,3);
+		break;
+
+		case 4:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,1);
+         }
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(3,1);
+	   Menu2_1_X(4,3);
+		break;
+
+	   case 5:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,2);
+         }
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(5,1);
+	   if (HVS.No_Of_Outputs < 4) Menu2_2CleanRows(3);
+      else Menu2_1_X(6,3);
+		break;
+
+		case 6:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,3);
+         }
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(5,1);
+	   Menu2_1_X(6,3);
+		break;
+
+		case 7:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,4);
+         }
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(7,1);
+      if (HVS.No_Of_Outputs < 6) Menu2_2CleanRows(3);
+      else Menu2_1_X(8,3);
+		break;
+
+		case 8:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,5);
+         }
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(7,1);
+	   Menu2_1_X(8,3);
+		break;
+
+	   case 9:
+      if(order==Designator_Ok)
+      	{
+      	Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,6);
+         }
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(9,1);
+      if (HVS.No_Of_Outputs < 8) Menu2_2CleanRows(3);
+      else Menu2_1_X(10,3);
+		break;
+
+		case 10:
+      if(order==Designator_Ok)
+         {
+         Interlock.Status_Relays=General_Toggle_BitOfChar(Interlock.Status_Relays,7);
+         }
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      Menu2_1_X(9,1);
+	   Menu2_1_X(10,3);
+		break;
+		}
+
+//	wfd order = Menu_Button_Wait4Get();
+	wfd order = Menu_Button_Wait4Get_WithAbort(&Activity);
+   Activity=Int_SUM;
+ }
+
+}
+//******************************************************************************
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

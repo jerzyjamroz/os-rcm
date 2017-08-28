@@ -1,0 +1,482 @@
+/*** BeginHeader */
+#ifndef __MENU_HVS_LIB
+#define __MENU_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Keypad_Button_Get,
+Menu_Display_2Channels, Menu_Display_4Channels, Menu_Handler, Menu_Init, Keypad_Detect_KeyPress,
+Menu_Button_Wait4Get, Menu_Button_Wait4Get_PlusTimer,Menu_Button_Wait4Get_WithIntAbort,
+Menu_Button_Wait4Press,Menu_Clean2Lines,Menu_Button_Wait4Get_WithChrAbort,Keypad_Order_Handler,
+Keypad_Handler,Menu_Mod_Toggle
+*/
+#ifdef MENU_HVS_DEBUG
+#define _MENU_HVS_NODEBUG
+#else
+#define _MENU_HVS_NODEBUG nodebug
+#endif
+
+//#use "Operations_HVS.lib"
+#use "ADC_HVS.lib"
+#use "Interrupt_HVS.lib"
+#use "Menu1_HVS.lib"
+#use "Menu2_HVS.lib"
+
+#define Designator_Up 3
+#define Designator_Down 4
+#define Designator_Ok 1
+#define Designator_Exit 2
+#define Designator_Null 0
+#define Designator_TimeLapsed 5
+#define Designator_Abort 0xFF
+
+#define CursorStartPoint 1
+#define FirstColumn 2
+#define SecondColumn 3
+#define MenuPointer 126
+#define SubMenuPointer 126
+#define CharArrow 126
+#define OK_Canc_Shift 8
+#define OK_Confirm_Shift 5
+#define OK_Change_Shift 6
+#define Menu_LeftArrow_Char 127
+
+_MENU_HVS_NODEBUG char Keypad_Button_Get();
+
+_MENU_HVS_NODEBUG void Menu_Init();
+
+_MENU_HVS_NODEBUG cofunc void Menu_Handler(void);
+_MENU_HVS_NODEBUG char Keypad_Detect_KeyPress(void);
+_MENU_HVS_NODEBUG cofunc char Menu_Button_Wait4Get(void);
+_MENU_HVS_NODEBUG cofunc char Menu_Button_Wait4Get_WithAbort(int * abort_activity);
+//cofunc char Menu_Button_Wait4Get_WithAbortOnce(unsigned int *abort_activity);
+_MENU_HVS_NODEBUG cofunc char Menu_Button_Wait4Get_WithIntAbort(int * abort_activity);
+_MENU_HVS_NODEBUG cofunc char Menu_Button_Wait4Get_PlusTimer(long ms);
+_MENU_HVS_NODEBUG cofunc void Menu_Button_Wait4Press(void);
+_MENU_HVS_NODEBUG void Menu_Clean2Lines(char row1, char row2);
+_MENU_HVS_NODEBUG cofunc char Menu_Button_Wait4Get_WithChrAbort(char * abort_activity);
+
+_MENU_HVS_NODEBUG cofunc void Keypad_Order_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Keypad_Handler(void);
+_MENU_HVS_NODEBUG void Menu_Mod_Toggle(void);
+
+//cofunc char Menu_Button_Wait4Get_BoolAbort(char abort_flag);
+
+struct{
+char Order;
+char Change_Detector;
+}Keypad;
+
+struct{
+char Ok_Exit;
+
+char Up;
+char Down;
+char Ok;
+char Exit;
+
+//char Up_Detector;
+//char Down_Detector;
+//char Ok_Detector;
+//char Exit_Detector;
+
+}Button;
+
+
+struct{
+char Mode;
+}Menu;
+
+//new arrow '~'
+//old character "Ç"
+
+char * const Menu_Stars =
+{
+	"****************"
+};
+
+char * const Menu_Text_Channel =
+{
+	"Channel"
+};
+
+char * const Menu_EmptyLine=
+{
+"                "
+};
+
+char * const Menu_Text_ExitConfirm=
+{
+"(Exit~Confirm)"
+};
+
+char * const Menu_Text_UpDownChange=
+{
+"(Up/Down~Change)"
+};
+
+/*** EndHeader */
+
+
+//***START private arguments
+_MENU_HVS_NODEBUG
+void Menu1_AlbaLogo();
+
+//***END private arguments
+_MENU_HVS_NODEBUG
+void Menu_Clean2Lines(char row1, char row2)
+{
+LCD_Locate(row1,1);
+LCD_Write_Text(Menu_EmptyLine);
+LCD_Locate(row2,1);
+LCD_Write_Text(Menu_EmptyLine);
+}
+
+_MENU_HVS_NODEBUG
+void Menu_Init()
+{
+   #GLOBAL_INIT
+   {
+	Menu1.Element_ID=2;
+   Menu1.Toggle=0;
+   Menu2.Element_ID=0;
+   Menu2.Toggle=0;
+//   Menu1_AlbaLogo();
+   Menu.Mode=0;
+   }
+
+}
+
+_MENU_HVS_NODEBUG
+char Keypad_Button_Get()
+{
+   char data;
+
+   I2CRead(PORT_EXP3_ADDRESS,0x01,&data,1);
+
+	return ((data>>4)&0x0F);
+}
+
+_MENU_HVS_NODEBUG
+void Menu_Mod_Toggle(void)
+{
+Button.Exit++;
+
+Menu.Mode=General_Invert_Bool(Menu.Mode);
+
+if(Menu.Mode==0)
+	{
+   Menu1.Element_ID=2;  //added#################################################
+
+	if ((Menu1.Element_ID<9) && (Menu1.Element_ID>1))
+		{
+		if (!Menu1.Toggle) Menu1_Background_Pressure();
+		else Menu1_Background_Current();
+		}
+   else Menu1_AlbaLogo();
+
+   Menu1.Activity=1;
+   }
+else Menu2_List(Menu2.Element_ID);
+
+}
+
+
+_MENU_HVS_NODEBUG
+void Keypad_Up()
+{
+Button.Up++;
+Sys_Arg.ButtonPressTimer=0;
+
+if(Menu.Mode==0) Menu1_Keypad_Up();
+else Menu2_Keypad_Up();
+}
+
+_MENU_HVS_NODEBUG
+void Keypad_Down()
+{
+Button.Down++;
+Sys_Arg.ButtonPressTimer=0;
+
+if(Menu.Mode==0) Menu1_Keypad_Down();
+else Menu2_Keypad_Down();
+}
+
+_MENU_HVS_NODEBUG
+void Keypad_Exit()
+{
+Button.Exit++;
+Sys_Arg.ButtonPressTimer=0;
+
+//Menu_Mod_Toggle();
+if(Menu.Mode==0) Menu1_Keypad_Exit();
+}
+
+_MENU_HVS_NODEBUG
+void Keypad_Ok()
+{
+Button.Ok++;
+Sys_Arg.ButtonPressTimer=0;
+
+if(Menu.Mode==0) Menu1_Keypad_Ok();
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc void Keypad_Execute_Order(unsigned char order)
+{
+//printf("order=%02X\n",order);
+switch (order)
+	{
+
+	case 0x0E:
+	Keypad_Up();
+	break;
+
+	case 0x0D:
+	Keypad_Down();
+	break;
+
+	case 0x0B:
+	Keypad_Exit();
+	break;
+
+	case 0x07:
+ 	Keypad_Ok();
+	break;
+
+   case 0x00:
+   Sys_Reset();
+   break;
+
+   case 0x04:
+   if ((Menu.Mode==1) && (System_Flag.Refresher!=1)) wfd Sys_Change_Password();
+   break;
+
+	}
+
+}
+
+/*
+nodebug
+cofunc void Menu_Handler(void)
+{
+char null_char;
+unsigned long int interrupt_inc;
+
+interrupt_inc=Sys_Arg.InterruptInc;
+
+while(1)
+	{
+	waitfor(interrupt_inc!=Sys_Arg.InterruptInc);
+   interrupt_inc=Sys_Arg.InterruptInc;
+//	waitfor(BitRdPortI(PEDR,5)==0); //if we want to detect the change on the pinE5
+	Keypad.Order=Keypad_Button_Get();   //where it should be?
+
+
+   if (Keypad.Change_Detector!=Keypad.Order)
+      {
+      wfd Keypad_Execute_Order(Keypad.Order);
+   	Keypad.Change_Detector=Keypad.Order;
+		}
+
+   I2CRead(PORT_EXP3_ADDRESS,0x00,&null_char,1); // it protects the expander interrupt pin against hanging if there is a change on port 0
+   I2CRead(PORT_EXP3_ADDRESS,0x01,&null_char,1);
+   }
+
+}
+*/
+
+_MENU_HVS_NODEBUG
+cofunc void Keypad_Handler(void)
+{
+char null_char;
+unsigned long int interrupt_inc;
+
+interrupt_inc=Sys_Arg.InterruptInc;
+
+while(1)
+	{
+	waitfor( (interrupt_inc!=Sys_Arg.InterruptInc) || (BitRdPortI(PEDR,5)==0) );
+
+   interrupt_inc=Sys_Arg.InterruptInc;
+
+   I2CRead(PORT_EXP3_ADDRESS,0x00,&null_char,1); // it protects the expander interrupt pin against hanging if there is a change on port 0
+//   I2CRead(PORT_EXP3_ADDRESS,0x01,&null_char,1);
+
+//	waitfor(BitRdPortI(PEDR,5)==0); //if we want to detect the change on the pinE5
+	Keypad.Order=Keypad_Button_Get();   //where it should be?
+   }
+
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Keypad_Order_Handler(void)
+{
+char null_char;
+
+   waitfor(Keypad.Change_Detector!=Keypad.Order);
+
+   wfd Keypad_Execute_Order(Keypad.Order);
+   Keypad.Change_Detector=Keypad.Order;
+}
+
+
+_MENU_HVS_NODEBUG
+char Keypad_Detect_KeyPress()
+{
+static char up_detector,down_detector,ok_detector,exit_detector;
+
+	if(up_detector!=Button.Up)
+   	{
+      up_detector=Button.Up;
+      return Designator_Up;
+      }
+   else if(down_detector!=Button.Down)
+   	{
+      down_detector=Button.Down;
+      return Designator_Down;
+      }
+   else if(ok_detector!=Button.Ok)
+   	{
+      ok_detector=Button.Ok;
+      return Designator_Ok;
+      }
+   else if(exit_detector!=Button.Exit)
+   	{
+      exit_detector=Button.Exit;
+      return Designator_Exit;
+      }
+   else return 0;
+}
+
+_MENU_HVS_NODEBUG
+cofunc char Menu_Button_Wait4Get(void)
+{
+char ok;
+char exit;
+char up,down;
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down) );
+
+if (ok!=Button.Ok) return Designator_Ok;
+else if (up!=Button.Up) return Designator_Up;
+else if (down!=Button.Down) return Designator_Down;
+else return Designator_Exit;
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu_Button_Wait4Press(void)
+{
+char ok;
+char exit;
+char up,down;
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down) );
+}
+
+_MENU_HVS_NODEBUG
+cofunc char Menu_Button_Wait4Get_PlusTimer(long ms)
+{
+char ok;
+char exit;
+char up,down;
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down) || (DelayMs(ms)) );
+
+if (ok!=Button.Ok) return Designator_Ok;
+else if (up!=Button.Up) return Designator_Up;
+else if (down!=Button.Down) return Designator_Down;
+else if (exit!=Button.Exit) return Designator_Exit;
+else return Designator_TimeLapsed;
+}
+
+_MENU_HVS_NODEBUG
+cofunc char Menu_Button_Wait4Get_WithAbort(int * abort_activity)
+{
+char ok;
+char exit;
+char up,down;
+int abort_signal;
+
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+abort_signal=*abort_activity;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down)|| (abort_signal!=*abort_activity) );
+
+if (ok!=Button.Ok) return Designator_Ok;
+else if (up!=Button.Up) return Designator_Up;
+else if (down!=Button.Down) return Designator_Down;
+else if (exit!=Button.Exit) return Designator_Exit;
+else return Designator_Abort;
+}
+
+_MENU_HVS_NODEBUG
+cofunc char Menu_Button_Wait4Get_WithIntAbort(int * abort_activity)
+{
+char ok;
+char exit;
+char up,down;
+unsigned int abort_signal;
+
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+abort_signal=*abort_activity;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down)|| (abort_signal!=*abort_activity) );
+
+if (ok!=Button.Ok) return Designator_Ok;
+else if (up!=Button.Up) return Designator_Up;
+else if (down!=Button.Down) return Designator_Down;
+else if (exit!=Button.Exit) return Designator_Exit;
+else return Designator_Abort;
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc char Menu_Button_Wait4Get_WithChrAbort(char * abort_activity)
+{
+char ok;
+char exit;
+char up,down;
+unsigned int abort_signal;
+
+ok=Button.Ok;
+exit=Button.Exit;
+up=Button.Up;
+down=Button.Down;
+
+abort_signal=*abort_activity;
+
+waitfor( (ok!=Button.Ok) || (exit!=Button.Exit) || (up!=Button.Up) || (down!=Button.Down)|| (abort_signal!=*abort_activity) );
+
+if (ok!=Button.Ok) return Designator_Ok;
+else if (up!=Button.Up) return Designator_Up;
+else if (down!=Button.Down) return Designator_Down;
+else if (exit!=Button.Exit) return Designator_Exit;
+else return Designator_Abort;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

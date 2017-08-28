@@ -1,0 +1,145 @@
+/*** BeginHeader */
+#ifndef __TELNET_MESSAGE_LIB
+#define __TELNET_MESSAGE_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Telnet_Alarm_Interlock_Handler,Telnet_Alarm_EPS_EXE_Handler
+*/
+//#define Telnet_Message_Delay 5000
+
+_TELNET_HVS_NODEBUG cofunc int Telnet_Alarm_Interlock_Handler(void);
+_TELNET_HVS_NODEBUG cofunc int Telnet_Alarm_EPS_Handler(void);
+_TELNET_HVS_NODEBUG cofunc int Telnet_Alarm_Warning_Handler(void);
+cofunc int Telnet_Alarm_EPS_EXE_Handler(void);
+
+/*** EndHeader */
+
+
+//******************************************************************************
+//****************************WARNINGS/EPS*HANDLERS*****************************
+_TELNET_HVS_NODEBUG
+cofunc int Telnet_Alarm_EPS_EXE_Handler(void)
+{
+if(System_Flag.Telnet==0) return 0;   //costate protector
+
+while(System_Flag.EPS_Status>0)
+	{
+   sock_fastwrite(state->s,"<!EPS_EXECUTED!>",16);
+   Telnet_NewLine;
+   waitfor(DelaySec(10));
+   }
+
+return 1;
+}
+
+
+_TELNET_HVS_NODEBUG
+cofunc int Telnet_Alarm_EPS_Handler(void)
+{
+char eps_channel;
+char i;
+if(System_Flag.Telnet==0) return 0;   //costate protector
+
+while(System_Flag.EPS>0)
+	{
+   sock_fastwrite(state->s,"<EPS:Conf/",10);
+   for(i=0;i<HVS.No_Of_Outputs;i++)
+      {
+      eps_channel=System_Flag.EPS_Config_Occurence[i]+48;
+      sock_fastwrite(state->s,&eps_channel,1);
+      if(i<HVS.No_Of_Outputs-1) sock_fastwrite(state->s,":",1);
+      }
+   sock_fastwrite(state->s,">",1);
+   Telnet_NewLine;
+   tcp_tick(state->s);
+
+   waitfor( DelayMs(Setting.Telnet_Message_Delay) || (System_Flag.EPS==0) );
+   waitfor( (Setting.Telnet_Alert_Disable==0) || (System_Flag.EPS==0) );
+
+	if(System_Flag.Telnet==0) return 0;   //costate protector
+
+   if(System_Flag.EPS==0)
+   	{
+      sock_fastwrite(state->s,"<EPS:OFF>",9);
+      Telnet_NewLine;
+      tcp_tick(state->s);
+      }
+   }
+
+return 1;
+}
+
+_TELNET_HVS_NODEBUG
+cofunc int Telnet_Alarm_Warning_Handler(void)
+{
+char warning_channel;
+char i;
+if(System_Flag.Telnet==0) return 0;   //costate protector
+
+while(System_Flag.Pth_Warning>0)
+	{
+   sock_fastwrite(state->s,"<WARNING:CH/",12);
+   for(i=0;i<HVS.No_Of_Outputs;i++)
+      {
+      warning_channel=System_Flag.Threshold_Warning[i]+48;
+      sock_fastwrite(state->s,&warning_channel,1);
+      if(i<HVS.No_Of_Outputs-1) sock_fastwrite(state->s,":",1);
+      }
+   sock_fastwrite(state->s,">",1);
+   Telnet_NewLine;
+   tcp_tick(state->s);
+
+   waitfor( DelayMs(Setting.Telnet_Message_Delay) || (System_Flag.Pth_Warning==0) );
+   waitfor( (Setting.Telnet_Alert_Disable==0) || (System_Flag.Pth_Warning==0) );
+
+	if(System_Flag.Telnet==0) return 0;   //costate protector
+
+   if(System_Flag.Pth_Warning==0)
+   	{
+      sock_fastwrite(state->s,"<WARNING:OFF>",13);
+      Telnet_NewLine;
+      tcp_tick(state->s);
+      }
+   }
+}
+
+_TELNET_HVS_NODEBUG
+cofunc int Telnet_Alarm_Interlock_Handler(void)
+{
+char interlocked_channel;
+if(System_Flag.Telnet==0) return 0;   //costate protector
+
+while(System_Flag.Interlock>0)
+	{
+   interlocked_channel=System_Flag.Interlock+48;
+   sock_fastwrite(state->s,"<INTERLOCK:CH/",14);
+   sock_fastwrite(state->s,&interlocked_channel,1);
+   sock_fastwrite(state->s,">",1);
+   Telnet_NewLine;
+   tcp_tick(state->s);
+
+   waitfor( DelayMs(Setting.Telnet_Message_Delay) || (System_Flag.Interlock==0) );
+   waitfor( (Setting.Telnet_Alert_Disable==0) || (System_Flag.Interlock==0) );
+
+   if(System_Flag.Telnet==0) return 0;   //costate protector
+
+   if(System_Flag.Interlock==0)
+   	{
+      sock_fastwrite(state->s,"<INTERLOCK:OFF>",15);
+      Telnet_NewLine;
+      tcp_tick(state->s);
+      }
+   }
+
+}
+//****************************WARNINGS/EPS*HANDLERS*****************************
+//******************************************************************************
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

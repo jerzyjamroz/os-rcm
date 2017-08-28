@@ -1,0 +1,34 @@
+/*** BeginHeader */
+#ifndef __DEV_IO_HEADER_LIB
+#define __DEV_IO_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef IO_DEBUG
+#define _IO_NODEBUG
+#else
+#define _IO_NODEBUG nodebug
+#endif
+
+enum{
+IOPORTA,
+IOPORTB,
+IOPORTC,
+IOPORTD,
+IOPORTE,
+IOPORTX_END,
+}IOPORT;
+
+//_________________________________<CONFIG>_____________________________________
+//****************************<SETTINGS>****************************************
+
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

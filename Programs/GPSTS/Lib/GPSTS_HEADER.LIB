@@ -1,0 +1,32 @@
+/*** BeginHeader */
+#ifndef __GPSTS_HEADER_LIB
+#define __GPSTS_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef GPSTS_DEBUG
+#define _GPSTS_NODEBUG
+#else
+#define _GPSTS_NODEBUG nodebug
+#endif
+
+
+enum{
+GPS_StatVectBit_PPS=0,
+GPS_StatVectBit_ACTIVITY,
+GPS_StatVectBit_SYNCH,
+GPS_StatVectBit_END
+}GPS_StatVectBits;
+
+#define STAT_SYNCH 		BIT(&STAT_VECT,GPS_StatVectBit_SYNCH)
+#define STAT_PPS 			BIT(&STAT_VECT,GPS_StatVectBit_PPS)
+#define STAT_ACTIVITY   BIT(&STAT_VECT,GPS_StatVectBit_ACTIVITY)
+
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

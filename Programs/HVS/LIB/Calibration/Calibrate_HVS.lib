@@ -1,0 +1,126 @@
+/*** BeginHeader */
+#ifndef __CALIBRATE_HVS_LIB
+#define __CALIBRATE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Calibrate_RawData_Set,Calibrate_RawDataMean_Set,Calibration_Check,Calibration_Sys_Flags_Reinit,
+
+*/
+#use "Serial_Flash_HVS.lib"
+
+#define Calibrate_Number_Sambles 256
+#define Calibrate_Divider 8
+
+void Calibrate_RawData_Set(void);
+int Calibrate_RawDataMean_Set(unsigned char channel);
+int Calibration_Check(char channel);
+void Calibration_Sys_Flags_Reinit(char channel);
+
+
+struct{
+//int Matrix_Volt_RawData[11][8];
+int RawData[9][256];
+}Calibrate;
+
+const int Calibration_Pattern[20]={
+219,
+286,
+374,
+440,
+507,
+595,
+662,
+729,
+817,
+884,
+951,
+1040,
+1107,
+1173,
+1262,
+1330,
+1397,
+1488,
+1560,
+1639,
+//1702,
+//1767
+};
+
+/*** EndHeader */
+
+int Calibration_Check(char channel)
+{
+char i;
+
+for(i=0;i<Keithley_Current_Loop_Arg;i++)
+	{
+   if (abs(System.Int_Tab_Cal_Ird[i][channel]-Calibration_Pattern[i])<100)
+   	{
+      }
+   else
+   	{
+      break;
+      }
+   }
+
+if ((i==Keithley_Current_Loop_Arg)&&(BIT(&System_Flag.Calibration,channel)==1)) return 1;
+else return -1;
+}
+
+void Calibration_Sys_Flags_Reinit(char channel)
+{
+char i;
+
+   for(i=0;i<Keithley_Current_Loop_Arg;i++)
+	{
+   if (abs(System.Int_Tab_Cal_Ird[i][channel]-Calibration_Pattern[i])<100)
+   	{
+      }
+   else
+   	{
+      break;
+      }
+   }
+
+ if (i==Keithley_Current_Loop_Arg) set(&System_Flag.Calibration,channel);
+ else res(&System_Flag.Calibration,channel);
+
+}
+
+void Calibrate_RawData_Set(void)
+{
+unsigned char j;
+int i;
+
+   for (i=0; i<Calibrate_Number_Sambles; i++)
+	{
+	for(j=0; j<8; j++)
+		{
+		Calibrate.RawData[j][i] = anaIn(ADC_Ch2Order[j],SINGLE,GAINSET);        //set raw data to the proper channel cells
+		}
+	}
+}
+
+
+int Calibrate_RawDataMean_Set(unsigned char channel07)
+{
+int i;
+unsigned long int sum;
+
+sum=0;
+
+	for (i=0;i<Calibrate_Number_Sambles;i++)
+		{
+		sum += Calibrate.RawData[channel07][i];
+		}
+
+return ((int)(sum>>Calibrate_Divider));
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+

@@ -1,0 +1,76 @@
+/*** BeginHeader */
+//#ifndef __ALBAOS_MOUNT_SYS_DEV_SNTP_LIB
+//#define __ALBAOS_MOUNT_SYS_DEV_SNTP_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+
+//<Mount_Dev_SNTP_Driver>
+#ifdef Mount_Dev_SNTP_Driver
+
+	#warnt "Dev_SNTP: ACTIVE"
+
+	#use "DEV_SNTP_MOUNT.LIB"
+	//------------------------------------------------------------------------------
+	//<INIT>
+	#define _SYS_MOUNT_DEV_SNTP_DRIVER_INIT_		DEV_SNTP_DRIVER_INIT__
+	//</INIT>
+	//------------------------------------------------------------------------------
+	//<BODY>
+	#define SYS_SNTP_FastGet(sntp_serv)	  			Dev_SNTP_FastGet(sntp_serv)
+	#define SYS_SNTP_Serv 								Dev_SNTP_Serv
+	#define SYS_SNTP_Cells_Serv_dft					SNTP_Cells_Serv_dft
+	//</BODY>
+	//------------------------------------------------------------------------------
+#else
+	#ifdef Sim_Mount_Dev_SNTP_Driver
+   	#warnt "Simulator Dev_SNTP: ACTIVE"
+		//------------------------------------------------------------------------------
+		//<INIT>
+		#define _SYS_MOUNT_DEV_SNTP_DRIVER_INIT_		//SYS_Void();
+		//</INIT>
+		//------------------------------------------------------------------------------
+		//<BODY>
+		unsigned long SYS_SNTP_FastGet(unsigned long sntp_serv){ return 0;}
+		#define SYS_SNTP_Serv ""
+		#define SYS_SNTP_Cells_Serv ""
+		//</BODY>
+		//------------------------------------------------------------------------------
+   #endif
+#endif
+//</Mount_Dev_SNTP_Driver>
+//******************************************************************************
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

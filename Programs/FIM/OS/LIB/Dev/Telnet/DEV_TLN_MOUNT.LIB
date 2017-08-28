@@ -1,0 +1,33 @@
+/*** BeginHeader */
+#ifndef __DEV_TLN_MOUNT_LIB
+#define __DEV_TLN_MOUNT_LIB
+/*** EndHeader */
+
+/*** BeginHeader*/
+#use "DEV_TLN_BODY.LIB"
+
+//***TELNET DRIVER
+//------------------------------------------------------------------------------
+#define Dev_Tln_Driver                 //START
+//------------------------------------------------------------------------------
+#define DEV_Tln_DRIVER_INIT__				Tln_Init();
+#define DEV_Tln_DAEMON__					costate{Tln_Daemon();}
+#define Dev_Tln_Read(buf,max)				Tln_Read(buf,max)
+#define Dev_Tln_Write(x)					Tln_Write(x)
+#define Dev_Tln_isActive()					Tln_isActive()
+#define Dev_Tln_Close()						Tln_Close()
+#define Dev_Tln_getWatchdog() 			Tln_getWatchdog()
+#define Dev_Tln_setWatchdog(newTimer)	Tln_setWatchdog(newTimer)
+#define Dev_Tln_getPassword() 			Tln_getPassword()
+#define Dev_Tln_setPassword(newPass)	Tln_setPassword(newPass)
+#define Dev_Tln_Ver							Tln_Ver
+//------------------------------------------------------------------------------
+//TELNET DRIVER***
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

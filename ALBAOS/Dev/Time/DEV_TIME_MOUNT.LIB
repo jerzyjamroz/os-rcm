@@ -1,0 +1,33 @@
+/*** BeginHeader */
+#ifndef __DEV_TIME_MOUNT_LIB
+#define __DEV_TIME_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_TIME_BODY.LIB"
+
+//<TIME_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_Time_Driver                   //START
+//</HEADER>
+//<INIT>
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_Time_SNTP2RTC1900_Update_hdl(ip_address)			Time_SNTP2RTC1900_Update_hdl(ip_address)
+#define DEV_TIME_UTC1980												TIME_UTC1980
+//</BODY>
+//------------------------------------------------------------------------------
+//</TIME_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

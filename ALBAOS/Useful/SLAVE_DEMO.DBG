@@ -1,0 +1,4 @@
+Watch0=stream;:GLOBAL::C:\DCRABBIT_10.66\bios\Rabbitbios.c::main
+Watch1=bytes_read;:GLOBAL::C:\DCRABBIT_10.66\bios\Rabbitbios.c::main
+cbWatch0=bytes_read
+cbWatch1=stream

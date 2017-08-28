@@ -1,0 +1,687 @@
+/*** BeginHeader */
+#ifndef __MENU_TEST_HVS_LIB
+#define __MENU_TEST_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_Test
+*/
+
+#define TestLED_Blink_Delay 300
+
+_MENU_HVS_NODEBUG cofunc void Submenu_Test(void);
+
+char * const Submenu_Test_Menu[] =
+{
+   "Are all the",
+   "interlock LEDs"
+};
+
+/*** EndHeader */
+_MENU_HVS_NODEBUG
+void Submenu_Test_Text_X(char row,char * text)
+{
+LCD_Locate(row,2);
+LCD_Write_Text(text);
+LCD_Locate(row+1,OK_Canc_Shift);
+LCD_Write_Text(Menu2_Ok_Canc);
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_CompleteMessate(void)
+{
+	LCD_Display_Clear();
+	LCD_Write_Text(Menu_Stars);
+	LCD_Locate(2,1);
+   LCD_Write_Text("Test complete!");
+   LCD_Locate(3,1);
+	LCD_Write_Text(Menu2_Press_Any_Key);
+	LCD_Locate(4,1);
+	LCD_Write_Text(Menu_Stars);
+	wfd Menu_Button_Wait4Get();
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_FailureMessate(void)
+{
+	LCD_Display_Clear();
+	LCD_Write_Text(Menu_Stars);
+	LCD_Locate(2,1);
+   LCD_Write_Text("Test failure!");
+	LCD_Locate(3,1);
+	LCD_Write_Text(Menu2_Press_Any_Key);
+	LCD_Locate(4,1);
+	LCD_Write_Text(Menu_Stars);
+	wfd Menu_Button_Wait4Get();
+}
+
+//***********************************first********************************
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_LED_Test(void)
+{
+char order;
+int i;
+order=0;
+System_Flag.Test_Blocker=1;
+
+LED_Special_All(1);
+
+//LED_Red_All();
+LCD_Display_Clear();
+LCD_Write_Text(Submenu_Test_Menu[0]);
+LCD_Locate(2,1);
+LCD_Write_Text(Submenu_Test_Menu[1]);
+LCD_Locate(3,1);
+LCD_Write_Text("red?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+LED_Black_All();
+for(i=0;i<8;i++)
+	{
+   LED_Red(i);
+   General_Delay_Ms(TestLED_Blink_Delay);
+   }
+
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+{
+wfd order = Menu_Button_Wait4Get();
+}
+
+if(order==Designator_Exit)
+	{
+   System_Flag.Test_Blocker=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+//LED_Green_All();
+LCD_Display_Clear();
+LCD_Write_Text(Submenu_Test_Menu[0]);
+LCD_Locate(2,1);
+LCD_Write_Text(Submenu_Test_Menu[1]);
+LCD_Locate(3,1);
+LCD_Write_Text("green?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+LED_Black_All();
+for(i=0;i<8;i++)
+	{
+   LED_Green(i);
+   General_Delay_Ms(TestLED_Blink_Delay);
+   }
+
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+{
+wfd order = Menu_Button_Wait4Get();
+}
+
+if(order==Designator_Exit)
+	{
+   System_Flag.Test_Blocker=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+//LED_Orange_All();
+LCD_Display_Clear();
+LCD_Write_Text(Submenu_Test_Menu[0]);
+LCD_Locate(2,1);
+LCD_Write_Text(Submenu_Test_Menu[1]);
+LCD_Locate(3,1);
+LCD_Write_Text("orange?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+LED_Black_All();
+for(i=0;i<8;i++)
+	{
+   LED_Orange(i);
+   General_Delay_Ms(TestLED_Blink_Delay);
+   }
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+{
+wfd order = Menu_Button_Wait4Get();
+}
+
+if(order==Designator_Exit)
+	{
+   System_Flag.Test_Blocker=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+LED_Special_All(0);
+General_Delay_Ms(TestLED_Blink_Delay);
+
+LCD_Display_Clear();
+LCD_Write_Text(Submenu_Test_Menu[0]);
+LCD_Locate(2,1);
+LCD_Write_Text("LED diodes");
+LCD_Locate(3,1);
+LCD_Write_Text("switched on?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+
+LED_Calibration(1);
+General_Delay_Ms(TestLED_Blink_Delay);
+LED_Status(1);
+General_Delay_Ms(TestLED_Blink_Delay);
+LED_Alarm(1);
+General_Delay_Ms(TestLED_Blink_Delay);
+LED_HVController(1);
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+{
+wfd order = Menu_Button_Wait4Get();
+}
+
+if(order==Designator_Exit)
+	{
+   System_Flag.Test_Blocker=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+System_Flag.Test_Blocker=0;
+wfd Submenu_Test_CompleteMessate();
+}
+
+//**********************************second************************************
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_Interlock_Channel(char channel)
+{
+LCD_Display_Clear();
+LCD_Write_Text("Connect a HVcon.");
+LCD_Locate(2,1);
+LCD_Write_Text("to channel ");
+LCD_Write_Char(channel+49);
+LCD_Locate(3,1);
+LCD_Write_Text("Waiting...");
+
+Interlock.Status_Relays=0xFF;
+res(&Interlock.Status_Relays,channel);
+
+Interlock_Set_Int_Dis(Interlock.Status_Relays);
+waitfor(DelayMs(100));
+Interlock.Int_Sense=Interlock_Get_Int_Sense();
+}
+
+cofunc char Submenu_Test_Interlock_ConfirmCheck()
+{
+char order;
+order=0;
+
+while( (order!=Designator_Exit)&&(order!=Designator_Abort) )
+ {
+ wfd order = Menu_Button_Wait4Get_WithAbort(&Interlock.Int_Sense);
+ }
+
+if(order==Designator_Exit)
+	{
+   return 1;
+   }
+
+return 0;
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_Interlock(void)
+{
+char interlock_status_relays;
+char check_flag;
+check_flag=0;
+
+interlock_status_relays=Interlock.Status_Relays;
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect the");
+LCD_Locate(2,1);
+LCD_Write_Text("interlock signal");
+LCD_Locate(3,1);
+LCD_Write_Text("to channel 0.");
+LCD_Locate(4,1);
+LCD_Write_Text(Menu2_Press_Any_Key);
+
+wfd Menu_Button_Wait4Get();
+
+wfd Submenu_Test_Interlock_Channel(Ch1);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+	abort;
+   }
+
+wfd Submenu_Test_Interlock_Channel(Ch2);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+   {
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+
+if(HVS.No_Of_Outputs>=3)
+{
+wfd Submenu_Test_Interlock_Channel(Ch3);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+if(HVS.No_Of_Outputs>=4)
+{
+wfd Submenu_Test_Interlock_Channel(Ch4);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+if(HVS.No_Of_Outputs>=5)
+{
+wfd Submenu_Test_Interlock_Channel(Ch5);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+if(HVS.No_Of_Outputs>=6)
+{
+wfd Submenu_Test_Interlock_Channel(Ch6);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+if(HVS.No_Of_Outputs>=7)
+{
+wfd Submenu_Test_Interlock_Channel(Ch7);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+if(HVS.No_Of_Outputs>=8)
+{
+wfd Submenu_Test_Interlock_Channel(Ch8);
+wfd check_flag=Submenu_Test_Interlock_ConfirmCheck();
+if(check_flag==1)
+	{
+   Interlock.Status_Relays=interlock_status_relays;
+   wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+}
+
+LED_Orange_All();
+wfd Submenu_Test_CompleteMessate();
+
+Interlock.Status_Relays=interlock_status_relays;
+}
+
+
+//********************third part******************************************
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_EPS(void)
+{
+char order;
+//char eps_status;
+order=0;
+
+//EPS_Set_Out(0);
+//eps_status=System_Flag.EPS_Status;
+Dev.Manual_EPS=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect a tester");
+LCD_Locate(2,1);
+LCD_Write_Text("to EPS output.  ");
+LCD_Locate(3,1);
+LCD_Write_Text("-EPS closed     ");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+ {
+ wfd order = Menu_Button_Wait4Get();
+ }
+
+if(order==Designator_Exit)
+	{
+//   Dev.Manual_EPS=eps_status;
+   Dev.Manual_EPS=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+//EPS_Set_Out(1);
+Dev.Manual_EPS=1;
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect a tester");
+LCD_Locate(2,1);
+LCD_Write_Text("to EPS output.  ");
+LCD_Locate(3,1);
+LCD_Write_Text("-EPS open,in 5s ");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+ {
+ wfd order = Menu_Button_Wait4Get();
+ }
+
+if(order==Designator_Exit)
+	{
+//   Dev.Manual_EPS=eps_status;
+	Dev.Manual_EPS=0;
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+
+//Dev.Manual_EPS=eps_status;
+Dev.Manual_EPS=0;
+wfd Submenu_Test_CompleteMessate();
+}
+
+//***************************forth test******************************
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test_RS232(void)
+{
+char order;
+int c;
+c=0;
+order=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect a cross");
+LCD_Locate(2,1);
+LCD_Write_Text("serial cable to");
+LCD_Locate(3,1);
+LCD_Write_Text("PC serial port.");
+LCD_Locate(4,1);
+LCD_Write_Text(Menu2_Press_Any_Key);
+wfd order=Menu_Button_Wait4Get();
+if(order==Designator_Exit)
+	{
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Set transmission");
+LCD_Locate(2,1);
+LCD_Write_Text("9600,8bit,parity");
+LCD_Locate(3,1);
+LCD_Write_Text("none,1 stop bit.");
+LCD_Locate(4,1);
+LCD_Write_Text(Menu2_Press_Any_Key);
+wfd order=Menu_Button_Wait4Get();
+if(order==Designator_Exit)
+	{
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Press 'Up/Down'");
+LCD_Locate(2,1);
+LCD_Write_Text("to send data.");
+LCD_Locate(3,1);
+LCD_Write_Text("-Received?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+ {
+ wfd order = Menu_Button_Wait4Get();
+
+ if(order==Designator_Up) serDputs("You have clicked the 'up' button\n");
+ else if (order==Designator_Down) serDputs("You have clicked the 'down' button\n");
+ }
+
+if(order==Designator_Exit)
+	{
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+order=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Send a character");
+LCD_Locate(2,1);
+LCD_Write_Text("to the splitter.");
+LCD_Locate(3,1);
+LCD_Write_Text("Waiting...");
+c=-1;
+order=0;
+while((order!=Designator_Exit)&&(c==-1))
+ {
+ c = serDgetc();
+ I2CRead(PORT_EXP3_ADDRESS,0x01,&order,1);
+ order&=0x0F;
+ if(order==0x07) order=Designator_Exit;
+ else order=0;
+ waitfor(DelayMs(200));
+//	wfd
+//		{
+//		c = cof_serDgetc();
+//	   order = Menu_Button_Wait4Get_WithIntAbort(&c);
+//	 	order = Menu_Button_Wait4Get();
+//		if(order==Designator_Exit) break;
+//    	}
+
+ }
+
+if(order==Designator_Exit)
+	{
+	wfd Submenu_Test_FailureMessate();
+	abort;
+	}
+
+//printf("c1:%c|",c);
+
+wfd Submenu_Test_CompleteMessate();
+}
+
+//***************************fifth test******************************
+/*
+cofunc void Submenu_Test_Ethernet(void)
+{
+char order;
+order=0;
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect an ethe-");
+LCD_Locate(2,1);
+LCD_Write_Text("rnet cable to");
+LCD_Locate(3,1);
+LCD_Write_Text("the network.");
+LCD_Locate(4,1);
+LCD_Write_Text(Menu2_Press_Any_Key);
+wfd Menu_Button_Wait4Get();
+
+LCD_Display_Clear();
+LCD_Write_Text("Connect a telnet");
+LCD_Locate(2,1);
+LCD_Write_Text("terminal to the");
+LCD_Locate(3,1);
+LCD_Write_Text("'rabbit02' host.");
+LCD_Locate(4,1);
+LCD_Write_Text(Menu2_Press_Any_Key);
+wfd Menu_Button_Wait4Get();
+
+LCD_Display_Clear();
+LCD_Write_Text("Press 'Up/Down'");
+LCD_Locate(2,1);
+LCD_Write_Text("to send data.");
+LCD_Locate(3,1);
+LCD_Write_Text("-Received?");
+LCD_Locate(4,OK_Confirm_Shift);
+LCD_Write_Text(Menu2_Ok_Confirm);
+
+while((order!=Designator_Exit) && (order!=Designator_Ok))
+ {
+ wfd order = Menu_Button_Wait4Get();
+
+// if(order==Designator_Up) ("You have clicked the 'up' button\n");
+// else if (order==Designator_Down) ("You have clicked the 'down' button\n");
+ }
+
+if(order==Designator_Exit)
+	{
+	wfd Submenu_Test_FailureMessate();
+   abort;
+   }
+
+wfd Submenu_Test_CompleteMessate();
+
+}
+ */
+
+char * const Submenu_Content[]=
+{
+"Test LED diodes",
+"Test interlock",
+"Test EPS",
+"Test RS232 link",
+};
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Test(void)
+{
+char order;
+order=0;
+
+while(order!=Designator_Exit)
+	{
+		if(Menu2.Element_ID<1)
+		{
+		Menu2.Element_ID=1;
+		}
+		else if (Menu2.Element_ID>4)
+		{
+		Menu2.Element_ID=4;
+		}
+
+	switch (Menu2.Element_ID)
+		{
+		case 1:
+		if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_Test_LED_Test();
+         Menu2.Element_ID=1;
+         }
+
+		LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_Test_Text_X(1,Submenu_Content[0]);
+      Submenu_Test_Text_X(3,Submenu_Content[1]);
+		break;
+
+		case 2:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_Test_Interlock();
+         Menu2.Element_ID=2;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_Test_Text_X(1,Submenu_Content[0]);
+      Submenu_Test_Text_X(3,Submenu_Content[1]);
+		break;
+
+      case 3:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_Test_EPS();
+         Menu2.Element_ID=3;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+
+      Submenu_Test_Text_X(1,Submenu_Content[2]);
+      Submenu_Test_Text_X(3,Submenu_Content[3]);
+
+		break;
+
+      case 4:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_Test_RS232();
+         Menu2.Element_ID=4;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+
+      Submenu_Test_Text_X(1,Submenu_Content[2]);
+      Submenu_Test_Text_X(3,Submenu_Content[3]);
+		break;
+/*
+      case 5:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_Test_Ethernet();
+         Menu2.Element_ID=5;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_Test_Text_5(1);
+		break;
+*/
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+
+}
+
+
+
+
+
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

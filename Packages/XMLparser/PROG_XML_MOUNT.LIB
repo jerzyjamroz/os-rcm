@@ -1,0 +1,26 @@
+/*** BeginHeader */
+#ifndef __PROG_XML_MOUNT_LIB
+#define __PROG_XML_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "PROG_XML_BODY.LIB"
+
+#define PROG_XML_Driver
+
+#define PROG_XML_hexParse(buf,arg,header)				XML_hexParse(buf,arg,header)
+#define PROG_XML_strParse(buf,arg,header) 			XML_strParse(buf,arg,header)
+#define PROG_XML_decParse(buf,arg,header) 			XML_decParse(buf,arg,header)
+#define PROG_XML_funcParse(buf,arg,header) 			XML_funcParse(buf,arg,header)
+
+#define PROG_XML_HeaderCount(buf,header,no) 			XML_HeaderCount(buf,header,no)
+#define PROG_XML_BeginHeader(buf,header) 				XML_BeginHeader(buf,header)
+#define PROG_XML_EndHeader(x,y,z) 						XML_EndHeader(buf,header)
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

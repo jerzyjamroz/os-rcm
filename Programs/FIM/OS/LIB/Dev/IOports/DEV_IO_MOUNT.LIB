@@ -1,0 +1,34 @@
+/*** BeginHeader */
+#ifndef __DEV_IO_MOUNT_LIB
+#define __DEV_IO_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_IO_BODY.LIB"
+
+//<IO_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_IO_Driver                   //START
+//</HEADER>
+//<INIT>
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_IO_PortX_Pin_Set(port,pin_no)	 		IO_PortX_Pin_Set(port,pin_no)
+#define Dev_IO_PortX_Pin_Res(port,pin_no)	 		IO_PortX_Pin_Res(port,pin_no)
+#define Dev_IO_PortX_Pin_Read(port,pin_no)	 	IO_PortX_Pin_Read(port,pin_no)
+//</BODY>
+//------------------------------------------------------------------------------
+//</IO_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,76 @@
+/*************************************************************************
+Address Access to:
+00h IODIR
+01h IPOL
+02h GPINTEN
+03h DEFVAL
+04h INTCON
+05h IOCON   	//if possible to not modify BIT7
+06h GPPU
+07h INTF
+08h INTCAP 		(Read-only)
+09h GPIO
+0Ah OLAT
+************************************************************************/
+
+/*** BeginHeader */
+#ifndef __DEV_MCP23S08_LIB
+#define __DEV_MCP23S08_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+MCP23S08_Byte_Write,
+MCP23S08_Byte_Read,
+MCP23S08_Init,
+*/
+#include "/Dev1/MCP23S08/DEV_MCP23S08.H"
+
+//_____________________________<FUNCTIONS>______________________________________
+int MCP23S08_Init(void);
+int MCP23S08_Byte_Write(char reg, char byte);
+#define MCP23S08_Port_Dir(byte) MCP23S08_Byte_Write(IODIR,byte)
+//#define MCP23S08_Port_Write(byte)			MCP23S08_Byte_Write(GPIO,byte)
+#define MCP23S08_Port_Write(byte) MCP23S08_Byte_Write(OLAT,byte)
+char MCP23S08_Byte_Read(char reg);
+
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//</LOC_DEFINES>
+
+//Must be mofified, IOCONA must affect only one bit not the whole register
+
+_MCP23S08_NODEBUG
+int MCP23S08_Init(void)
+{
+return MCP23S08_Byte_Write(IOCON,0x08);
+}
+
+_MCP23S08_NODEBUG
+int MCP23S08_Byte_Write(char reg, char byte)
+{
+char buf[4];         //GPIO
+
+buf[0]=0x40;buf[1]=reg;buf[2]=byte;buf[3]=0;
+
+return Dev_SPI_Write(buf,3);
+}
+
+_MCP23S08_NODEBUG
+char MCP23S08_Byte_Read(char reg)
+{
+char buf[4];         //GPIO
+char byte;
+
+buf[0]=0x41;buf[1]=reg;buf[2]=0;
+
+Dev_SPI_Write(buf,2);
+Dev_SPI_Read(&byte,1);
+
+return byte;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,64 @@
+/*** BeginHeader */
+#ifndef __DEV_SFlash_BODY_LIB
+#define __DEV_SFlash_BODY_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#use "DEV_SFlash_HEADER.LIB"
+#use "sflash.lib"
+/*** EndHeader */
+
+/*** BeginHeader
+SFlash_Init,SFlash_IntWrite,SFlash_IntRead,
+*/
+int SFlash_IntWrite(int id, int var);
+int SFlash_IntRead(int id);
+int SFlash_Init(void);
+
+/*** EndHeader */
+
+#define LOC_FLash_IntPage 10
+
+_SFlash_NODEBUG
+int SFlash_Init(void)
+{
+int error;
+
+sfspi_init();
+error=sf_init();
+
+return error;
+}
+
+_SFlash_NODEBUG
+int SFlash_IntWrite(int id, int var)
+{
+int err;
+char buf[10];
+err=sf_pageToRAM(LOC_FLash_IntPage);
+
+sprintf(buf,"%06d",var);
+buf[6]=0;
+
+err+=sf_writeRAM(buf, 7*id, 7);
+err+=sf_RAMToPage(LOC_FLash_IntPage);
+
+return err;
+}
+
+_SFlash_NODEBUG
+int SFlash_IntRead(int id)
+{
+char buf[10];
+
+sf_pageToRAM(LOC_FLash_IntPage);
+sf_readRAM(buf, 7*id, 7);
+buf[6]=0;
+
+return atoi(buf);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

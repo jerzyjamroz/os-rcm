@@ -1,0 +1,135 @@
+#class auto
+const char Firmware[]="NONE";
+//******************************************************************************/
+//*** BeginDebugs ***/   ENVIRONMENT SETTINGS
+//#define ALBAOS_UNMOUNT_DEV
+//#define TLN_DEBUG
+//#define ALBAOS_LIB_DEBUG
+
+//	#define SCPIprot_EXE_DEBUG
+//#define SCPIprot_DEBUG
+//	#define COMORD_EXE_DEBUG
+//#define ORD_CONV_DEBUG
+//	#define BRIDGE_EXE_DEBUG
+//#define SFlash_DEBUG
+
+//#define IO_DEBUG
+//#define SNTP_DEBUG
+void Debugger(void);
+//*** EndDebugs ***/	ENVIRONMENT SETTINGS
+
+//********************<RABBIT_SYS>************************************************/
+//***********************<DEVICES>************************************************/
+#define Mount_Dev_SFlash_Driver
+#define Mount_Dev_Eth_Driver
+#define Mount_Dev_Tln_Driver
+/////////////////////////////////////////#define Mount_Dev_SerD_Driver
+#define Mount_Dev_SNTP_Driver
+#define Mount_Dev_RTC_Driver
+#define Mount_Dev_Time_Driver
+#define Mount_Dev_IO_Driver
+#define Mount_Dev_DAlloc_Driver
+//***********************</DEVICES>***********************************************/
+//********************</RABBIT_SYS>************************************************/
+
+
+//***********************<RUNSYSTEM>***********************************************/
+//<MOUNT_ALBAOS>
+#use "ALBAOS_EXE.C" //void main()
+//</MOUNT_ALBAOS>
+
+//<PROGRAMS>
+//#use "DEV_RTC_MOUNT.LIB"
+//#use "DEV_IO_BODY.LIB"
+//#use "GPSTS_HEADER.LIB"
+//#use "PACK_SCPI_PROT_BODY.lib"
+//#use "PACK_SYSORDERS_BODY.LIB"
+#use "DEV_SPIB_MOUNT.LIB"
+//#use "DEV_MCP23S17_BODY.LIB"
+//</PROGRAMS>
+char buf[5000];
+debug
+void main(void)
+{
+int i;
+//struct SYSVarOrd sys_orders[100];
+//unsigned long int ulint_var;
+//unsigned long int server;
+//**********************<DRIVERS>***********************************************/
+//<SYS_INIT>
+ALBAOS_INIT();//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//</SYS_INIT>
+//**********************</DRIVERS>**********************************************/
+
+//**********************<TESTINIT>**********************************************/
+//Dev_SPIB_Init__(1);
+//MCP23S17_Bus_Addressing_En();
+
+	BitWrPortI(PBDDR, &PBDDRShadow, 1, 6); //conv
+	// Set all of the outputs high.   ~low
+	BitWrPortI(PBDR,  	&PBDRShadow,  1, 6); //conv
+
+
+
+SPIB_Init(0);
+
+//========================================
+//BitWrPortI(PBDR,  	&PBDRShadow,  0, 7); //CS1
+
+	BitWrPortI(PBDDR, &PBDDRShadow, 1, 5); //CS1
+   BitWrPortI(PBDR,&PBDRShadow,1,5);
+   SYS_DelayMs(1);
+	BitWrPortI(PBDR,&PBDRShadow,0,5);
+
+//BitWrPortI(PBDR,  	&PBDRShadow,  1, 7); //CS1
+
+   SPIB_Read(buf,2);
+   printf("|%02X%02X|",buf[0],buf[1]);
+//========================================
+
+
+//**********************</TESTINIT>**********************************************/
+
+while(1)
+{
+//<SYS_DAEMONS>
+ALBAOS_DAEMONS();//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//</SYS_DAEMONS>
+
+//<TESTSOFT>
+Debugger();
+//</TESTSOFT>
+}
+
+//<Forbidden state>
+SYS_Reset;
+//</Forbidden state>
+}
+//***********************</RUNSYSTEM>***********************************************/
+
+
+
+//-------------------<DEBUGFUNCTIONS>----------------------------------------------*/
+
+void Debugger(void)
+{
+char buf[100];
+
+SYS_SFlash_Str2FlPage("11:22:33:44",100);
+SFlash_FlPage2Str(buf,100);
+
+while(1);
+
+}
+
+//-------------------</DEBUGFUNCTIONS>----------------------------------------------*/
+
+
+/*
+SYS_Timestamp(1);
+BitWrPortI(PBDR,&PBDRShadow,0,6);
+SYS_DelayMs(50);
+BitWrPortI(PBDR,&PBDRShadow,1,6);
+SYS_DelayMs(50);
+SYS_Timestamp(3);
+*/

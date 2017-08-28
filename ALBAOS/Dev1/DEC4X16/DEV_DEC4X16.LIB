@@ -1,0 +1,58 @@
+/*** BeginHeader */
+#ifndef __DEV_DEC4X16_LIB
+#define __DEV_DEC4X16_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+DEC4X16_Init,
+DEC4X16_Set,
+DEC4X16_Res,
+*/
+#include "/Dev1/DEC4X16/DEV_DEC4X16.H"
+
+int DEC4X16_Init(void);
+int DEC4X16_Set(int dec4);
+int DEC4X16_Res(void);
+/*** EndHeader */
+
+
+/* NOT NECESSARY
+int DEC4X16_Init(void)
+{
+// Set port B pins PB0, PB2-7 lines to be outputs, PB1 as an input.
+WrPortI(PBDDR, 	&PBDDRShadow, 0xFF);
+// Set all of the outputs high. ~low
+WrPortI(PBDR,  	&PBDRShadow,  0xFF);
+
+return 1;
+}
+*/
+
+_DEC4X16_NODEBUG
+int DEC4X16_Init(void)
+{
+WrPortI(SPCR,&SPCRShadow,0xE4);
+WrPortI(PBDDR,&PBDDRShadow,0xFF);
+}
+
+_DEC4X16_NODEBUG
+int DEC4X16_Set(int dec4)
+{
+WrPortI		(PADR,  	&PADRShadow,  			dec4	);
+BitWrPortI	(PBDR,  	&PBDRShadow, 	0,		6		);
+SYS_DelayUs(10);
+BitWrPortI	(PBDR,  	&PBDRShadow, 	1,		6		);
+BitWrPortI	(PBDR,  	&PBDRShadow, 	0,		7		);
+return 1;
+}
+
+_DEC4X16_NODEBUG
+int DEC4X16_Res(void)
+{
+BitWrPortI	(PBDR,  	&PBDRShadow, 	1,		7		);
+return 1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

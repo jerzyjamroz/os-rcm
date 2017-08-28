@@ -1,0 +1,66 @@
+/*** BeginHeader */
+#ifndef __EM_CALC_API_LIB
+#define __EM_CALC_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_Calc_StatAuto_Ich,
+EM_Calc_Vabs,
+*/
+float EM_Calc_Vabs(float raw);
+float EM_Calc_StatAuto_Ich(int ch, far float *raw_data);
+/*** EndHeader */
+
+//#define EM_Calc_Raw_Max 1803  //this is 10V
+
+
+//return (raw*5.55E-03);            //10/1803.28    for 100k-22k
+//result=raw*5.50E-03;  10/1818.1818  for 100k-10k, gain=1
+_EM_NODEBUG
+float EM_Calc_Vabs(float raw)
+{
+return raw*(5.50E-03);
+}
+
+//------------------------
+_EM_NODEBUG
+int EM_Calc_Status2Range(int ch, int status)
+{
+return (int)((status>>(4*ch))&0x0007);    //shift to get proper status for proper sensor
+}
+
+/*
+_EM_NODEBUG
+float EM_Calc_StatAuto_Ich(int ch, far float *raw_data)
+{
+int range;
+int status;
+float raw;
+
+status=(int)raw_data[EM_SENSOR_MAX];
+range=EM_Calc_Status2Range(ch,status);
+raw=raw_data[ch];
+
+return ((EM_Calc_Vabs(raw)+Elem.Offset_Corr[ch][range])/(EM_STATUS_GAIN_TAB[range]*Elem.Gain_Corr[ch][range]));
+}
+*/
+
+//Multiplication is faster
+_EM_NODEBUG
+float EM_Calc_StatAuto_Ich(int ch, far float *raw_data)
+{
+int range;
+int status;
+float raw;
+
+status=(int)raw_data[EM_SENSOR_MAX];
+range=EM_Calc_Status2Range(ch,status);
+raw=raw_data[ch];
+
+return (EM_Calc_Vabs(raw)+Elem.Offset_Corr[ch][range])*EM_STATUS_GAIN_TAB[range]*Elem.Gain_Corr[ch][range];
+}
+//------------------------
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

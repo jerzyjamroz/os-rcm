@@ -1,0 +1,322 @@
+/*** BeginHeader */
+#ifndef __EM_ADC_API_LIB
+#define __EM_ADC_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_ADC_Idx_Rot,
+EM_ADC_isAvrBuf,
+
+EM_ADC_Raw_Idx_Last_Get,
+
+EM_ADC_Avs_Max_Get,
+EM_ADC_Avs_Max_Set,
+EM_ADC_Avr_Buf_Max_Get,
+EM_ADC_Avr_Buf_Max_Set,
+
+EM_ADC_DATA_Get,
+EM_ADC_DATA_Status_Get,
+EM_ADC_LDATA_Get,
+EM_ADC_LDATA_Status_Get,
+EM_ADC_RAWDATA_All_Get,
+EM_ADC_AVDATA_All_UDP_Send,
+
+EM_ADC_API_State_Control,
+*/
+
+#use "EM_ADC.LIB"
+
+//<ADC_API>
+int 	EM_ADC_Idx_Rot					(int idx);
+int 	EM_ADC_isAvrBuf				(void);
+int 	EM_ADC_isArgInAvrBufRange	(int arg);
+
+//int 	EM_ADC_Raw_Last_Get			(int ch);
+int 	EM_ADC_Raw_Idx_Last_Get		(void);
+
+int 	EM_ADC_Avs_Max_Get			(void);
+int 	EM_ADC_Avs_Max_Set			(int);
+int 	EM_ADC_Avr_Buf_Max_Get		(void);
+int 	EM_ADC_Avr_Buf_Max_Set		(int);
+
+float EM_ADC_DATA_Get				(int ch, int num);
+int 	EM_ADC_DATA_Status_Get		(int num);
+float EM_ADC_LDATA_Get				(int ch);
+int 	EM_ADC_LDATA_Status_Get		(void);
+int 	EM_ADC_RAWDATA_All_Get		(struct _SYSOrd *ord,int ch,int bytes_max);
+int 	EM_ADC_AVDATA_All_UDP_Send	(struct _SYSOrd *ord,int ch,int bytes_max);
+
+int 	EM_ADC_API_State_Handler	(void);
+//</ADC_API>
+
+/*** EndHeader */
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_isAvrBuf(void)
+{
+if(Elem_ADC_SYS.Avr_Counter_Idx<0) return -1;
+return 1;
+}
+
+_EM_ADC_NODEBUG
+int EM_ADC_isArgInAvrBufRange(int arg)
+{
+//if(arg>=Elem_ADC_SYS.Avr_Max_Act_Idx) return -1;
+if(arg>=EM_ADC_ACQ_MAX) return 0;
+return 1;
+}
+
+/*
+_EM_ADC_NODEBUG
+float EM_ADC_MEAS_Calc(long int arg)
+{
+float meas;
+
+meas=(float)arg;
+meas=meas/Elem_ADC_SYS.Avs_Max_Act_Idx;
+
+return meas;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Idx_Rot(int idx)
+{
+if(idx<0) return (EM_ADC_ACQ_MAX+idx);         //idx must be inverted so "+" not "-" otherwise it will return higher value than EM_ADC_ACQ_MAX
+else return idx;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+/*
+_EM_ADC_NODEBUG
+float EM_ADC_MEAS_Get(int ch)
+{
+return EM_ADC_MEAS_Calc(EM_ADC_Acc[ch]);
+}
+*/
+//------------------------------------------------------------------------------
+/*
+_EM_ADC_NODEBUG
+int EM_ADC_Raw_Last_Get(int ch)
+{
+return EM_ADC_Raw[ch][Elem_ADC_SYS.Raw_Idx];
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Raw_Idx_Last_Get(void)
+{
+return Elem_ADC_SYS.Raw_Idx;
+}
+//------------------------------------------------------------------------------
+/*
+_EM_ADC_NODEBUG
+int EM_ADC_MEAS_STATUS_Get(void)
+{
+return ((int)EM_ADC_Acc[EM_SENSOR_MAX]);
+}
+*/
+//------------------------------------------------------------------------------
+/*
+_EM_ADC_NODEBUG
+int EM_ADC_STATUS_Get(void)
+{
+return (EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Raw_Idx]);
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Avs_Max_Get(void)
+{
+return Elem_ADC.Avs_Max;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int 	EM_ADC_Avs_Max_Set(int arg)
+{
+
+return Elem_ADC.Avs_Max=arg;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Avr_Buf_Max_Get(void)
+{
+return Elem_ADC.Avr_Max;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Avr_Buf_Max_Set(int arg)
+{
+return Elem_ADC.Avr_Max=arg;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+float EM_ADC_DATA_Get(int ch, int num)
+{
+int idx;
+if(EM_ADC_isAvrBuf()<0) return 0;
+
+if(Elem_ADC_SYS.Avr_Counter_Idx>=EM_ADC_ACQ_MAX)
+	idx=EM_Idx_Wrapper(num,EM_ADC_ACQ_MAX);
+else
+	idx=EM_ADC_Idx_Rot(Elem_ADC_SYS.Avr_Idx-Elem_ADC_SYS.Avr_Counter_Idx+num);
+
+if(EM_ADC_isArgInAvrBufRange(idx)<0) return 0;
+return EM_ADC_I_Sample_Get(idx);
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_DATA_Status_Get(int num)
+{
+int idx;
+if(EM_ADC_isAvrBuf()<0) return 0;
+
+
+if(Elem_ADC_SYS.Avr_Counter_Idx>=EM_ADC_ACQ_MAX)
+	idx=EM_Idx_Wrapper(num,EM_ADC_ACQ_MAX);
+else
+	idx=EM_ADC_Idx_Rot(Elem_ADC_SYS.Avr_Idx-Elem_ADC_SYS.Avr_Counter_Idx+num);
+
+if(EM_ADC_isArgInAvrBufRange(idx)<0) return 0;
+return EM_ADC_I_Sample_Status_Get(idx);
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+float EM_ADC_LDATA_Get(int ch)
+{
+if(EM_ADC_isAvrBuf()<0) return 0;
+
+return EM_ADC_I_Sample_Get(Elem_ADC_SYS.Avr_Idx);
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_LDATA_Status_Get(void)
+{
+if(EM_ADC_isAvrBuf()<0) return 0;
+
+return EM_ADC_I_Sample_Status_Get(Elem_ADC_SYS.Avr_Idx);
+}
+//------------------------------------------------------------------------------
+/*
+_EM_ADC_NODEBUG
+int EM_ADC_RAWDATA_All_Get(char *buf,char *format,int ch)
+{
+int i,j;
+int idx;
+idx=0;
+
+j=Elem_ADC_SYS.Raw_Idx;
+for(i=0;i<EM_ADC_ACQ_MAX;i++)
+	{
+   j++;
+   if(j>=EM_ADC_ACQ_MAX) j=0;
+   idx+=sprintf(&buf[idx],format,EM_ADC_Raw[ch][j]);
+   }
+return idx;
+}
+*/
+_EM_ADC_NODEBUG
+int EM_ADC_RAWDATA_All_Get(struct _SYSOrd *ord,int ch,int bytes_max)
+{
+int i,j;
+
+j=Elem_ADC_SYS.Raw_Idx;
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," <%d>",Elem_ADC_SYS.Raw_Idx);
+for(i=0;i<EM_ADC_ACQ_MAX;i++)
+	{
+      if(bytes_max<=ord->Idx)
+   	{
+   	Dev_UDP_SendTo(&UDP_Sock,ord->Output,ord->Idx,ord->Ip,ord->Port);
+      ord->Idx=0;
+      }
+   j++;
+   if(j>=EM_ADC_ACQ_MAX) j=0;
+   ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,EM_ADC_Raw[ch][j]);
+   }
+
+//ord->Idx--;
+ord->Output[ord->Idx]='\0';
+Dev_UDP_SendTo(&UDP_Sock,ord->Output,ord->Idx+1,ord->Ip,ord->Port);
+ord->Idx=0;
+return ord->Idx;
+}
+//------------------------------------------------------------------------------
+
+_EM_ADC_NODEBUG
+int EM_ADC_AVDATA_All_UDP_Send(struct _SYSOrd *ord,int ch,int bytes_max)
+{
+int i,j;
+
+if(EM_ADC_isAvrBuf()<0) return 0;
+
+j=EM_ADC_Idx_Rot(Elem_ADC_SYS.Avr_Idx-Elem_ADC_SYS.Avr_Counter_Idx);
+for(i=0;i<=Elem_ADC_SYS.Avr_Counter_Idx;i++)
+	{
+   if(bytes_max<=ord->Idx)
+   	{
+   	Dev_UDP_SendTo(&UDP_Sock,ord->Output,ord->Idx,ord->Ip,ord->Port);
+      ord->Idx=0;
+      }
+   if(j>=EM_ADC_ACQ_MAX) j=0;
+   ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,EM_ADC_I_Sample_Get(j) );
+	j++;
+   }
+
+//ord->Idx--;
+ord->Output[ord->Idx]='\0';
+Dev_UDP_SendTo(&UDP_Sock,ord->Output,ord->Idx+1,ord->Ip,ord->Port);
+ord->Idx=0;
+return ord->Idx;
+}
+
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_API_State_Handler(void)
+{
+static int state_new=EM_ST_IDLE;
+static int state_old=EM_ST_IDLE;
+int i;
+
+if(state_new==Elem.State) return Elem.State;
+state_old=state_new;
+state_new=Elem.State;
+
+if(state_old==EM_ST_IDLE)
+	if(state_new==EM_ST_ON)
+   	{
+   	Elem_ADC_SYS.Avs_Counter_Idx=-1;
+		for(i=0;i<EM_SENSOR_MAX;i++) EM_ADC_FloatAcc[i]=EM_ADC_TotalAcc[i]=0;
+		Elem_ADC_SYS.Avr_Counter_Idx=-1;
+      return EM_ST_ON;
+   	}
+
+if(state_old==EM_ST_IDLE)
+	if(state_new==EM_ST_RUNNING)
+   	{
+   	Elem_ADC_SYS.Avs_Counter_Idx=-1;
+		for(i=0;i<EM_SENSOR_MAX;i++) EM_ADC_FloatAcc[i]=EM_ADC_TotalAcc[i]=0;
+
+      Elem_ADC_SYS.Avr_Counter_Idx=-1;
+      Elem_SYS.Trig_Counter=-1;
+		return EM_ST_RUNNING;
+   	}
+
+if(state_old==EM_ST_ON)
+	if(state_new==EM_ST_RUNNING)
+   	{
+      Elem_ADC_SYS.Avr_Counter_Idx=-1;
+      Elem_SYS.Trig_Counter=-1;
+      return EM_ST_RUNNING;
+   	}
+
+if(state_new==EM_ST_IDLE)
+	return EM_ST_IDLE;
+
+return Elem.State;
+}
+//------------------------------------------------------------------------------
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

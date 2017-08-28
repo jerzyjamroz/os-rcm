@@ -1,0 +1,237 @@
+/*** BeginHeader */
+#ifndef __TELNET_BASE_HVS_LIB
+#define __TELNET_BASE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader */
+#class auto
+//****************************<SETTINGS>****************************************
+			#define TCPCONFIG 7
+	      #define _PRIMARY_STATIC_IP  "10.0.0.5"
+	      #define _PRIMARY_NETMASK    "255.255.252.0"
+	      #define MY_GATEWAY          "10.0.0.1"
+	      #define MY_NAMESERVER       "10.0.0.1"
+//****************************</SETTINGS>***************************************
+#define INPUT_COOKED
+#memmap xmem
+#use "dcrtcp.lib"
+#use "General.lib"
+#use "Telnet_Base_HVS.lib"
+#use "TN_Session_HVS.lib"
+
+#define MAX_BUFLEN	256
+/*** EndHeader */
+
+
+/*** BeginHeader
+Telnet_Init, recv_tick, init_recv,cook_input,Tln_CloseProcedures
+*/
+_TELNET_HVS_NODEBUG int cook_input(int len);
+
+_TELNET_HVS_NODEBUG void Telnet_Init();
+int Tln_CloseProcedures(void);
+//void Telnet_Test();
+_TELNET_HVS_NODEBUG int init_recv(int port);
+_TELNET_HVS_NODEBUG cofunc void recv_tick(void);
+
+typedef struct {
+	tcp_Socket sock;
+	tcp_Socket *s;
+
+	int lport;
+	int state;
+
+	char buf[MAX_BUFLEN];
+	char cmdbuf[10];
+} telnet_recv;
+
+telnet_recv tr_state;
+telnet_recv * const state = &tr_state;
+/*** EndHeader */
+
+/*************************************************************
+ * TELNET HANDLER
+ *************************************************************/
+
+/* states */
+#define STATE_INIT	0
+#define STATE_STEADY	1
+
+/* vars for telnet recieve daemon */
+_TELNET_HVS_NODEBUG
+void Telnet_Init()
+{
+//	sock_init_or_exit(1);
+sock_init();
+init_recv(23);
+//printf("sock_init=%d",sock_init());
+//if(init_recv(23)) {
+//	printf("Error in init_recv - couldn't listen on port\n\r");
+//	exit(0);
+//	}
+}
+
+/* init the socket */
+_TELNET_HVS_NODEBUG
+int init_recv(int port)
+{
+	state->s = &state->sock;
+	state->lport = port;
+	state->state = STATE_INIT;
+	tcp_listen(state->s, port, 0, 0, NULL, 0);
+	return 0;
+}
+
+#ifdef INPUT_COOKED
+_TELNET_HVS_NODEBUG
+void cook_cmd(void)
+{
+	auto int len;
+	len = 3;
+
+	while(len > 0) {
+		len -= sock_fastwrite(state->s, state->cmdbuf + 3 - len, len);
+	}
+}
+
+_TELNET_HVS_NODEBUG
+int cook_input(int len)
+{
+	auto int newlen, i;
+
+	newlen = len;
+
+	for(i=0; i<(len-2); i++) {
+		if(state->buf[i] == 255) {
+			/* controll code */
+			switch(state->buf[i + 1]) {
+			case 251:
+			case 252: {
+				sprintf(state->cmdbuf, "%c%c%c",
+					255, 254, state->buf[i + 2]);
+				cook_cmd();
+				memcpy(state->buf + i, state->buf + i + 3, len - (i + 3));
+				newlen -= 3;
+				break;
+			}
+			case 253:
+			case 254:
+				sprintf(state->cmdbuf, "%c%c%c",
+					255, 252, state->buf[i + 2]);
+				cook_cmd();
+				memcpy(state->buf + i, state->buf + i + 3, len - (i + 3));
+				newlen -= 3;
+				break;
+
+			case 255:
+				break;
+
+			default:
+				/* unknown command; kill it */
+				memcpy(state->buf + i, state->buf + i + 2, len - (i + 2));
+				newlen -= 2;
+				break;
+			}
+		}
+	}
+
+	return newlen;
+}
+#endif
+
+_TELNET_HVS_NODEBUG
+int Tln_CloseProcedures(void)
+{
+tcp_tick(state->s);
+sock_fastwrite(state->s, Tln_Txt_SessionClosed, strlen(Tln_Txt_SessionClosed));
+
+if(System_Flag.Test_Blocker<1) System_Flag.EthernetLED=0;
+System_Flag.Telnet=0;
+Sys_Arg.TelnetTimer=0;
+
+sock_flush(state->s);
+sock_close(state->s);
+state->state = STATE_INIT;
+//state->s = NULL;
+LED_Status(0);
+init_recv(state->lport);
+}
+
+_TELNET_HVS_NODEBUG
+cofunc void recv_tick(void)
+{
+auto int retval;
+char *buf;
+/*
+static longword timer;
+
+#GLOBAL_INIT{
+timer=0;
+}
+*/
+	switch(state->state) {
+	case STATE_INIT:
+   if(sock_alive(state->s)==0) init_recv(state->lport);
+   tcp_tick(state->s);
+		if(sock_established(state->s)) {
+      	LED_Status(1);
+//			printf("Connection Established.\n");
+			state->state = STATE_STEADY;
+         wfd System_Flag.Telnet=TN_Passwort_Handler();
+         Telnet_Base_StartLogo();
+		}
+      else
+      	{
+			if(System_Flag.Test_Blocker<1) System_Flag.EthernetLED=0;
+         System_Flag.Telnet=0;
+         Sys_Arg.TelnetTimer=0;
+         }
+ //     else LED_Status(0);
+		break;
+
+	case STATE_STEADY:
+		if(!sock_established(state->s)) {
+			Tln_CloseProcedures();
+//			init_recv(state->lport);
+//         LED_Status(0);
+			break;
+		}
+/*
+		if (chk_timeout(timer))
+         {
+         sock_fastwrite(state->s, "", 1);       //it checks that a client is still on.
+         timer = _SET_TIMEOUT(2000);
+         }
+*/
+		if (sock_resolved(state->s)==0) 	Tln_CloseProcedures();
+      else if (tcp_tick(state->s)==0)	Tln_CloseProcedures();
+
+		retval = sock_fastread(state->s, state->buf, MAX_BUFLEN);
+
+//      Telnet_Base_Message_Handler();
+
+		if(retval) {
+
+			// we got data
+#ifdef INPUT_COOKED
+			retval = cook_input(retval);
+#endif
+//			receive_data(state->buf, retval); // give it to the user
+			Telnet_Order_Execute(state->buf, retval);
+     		sock_fastwrite(state->s, Telnet_Text_Ready, 10);
+		}
+		break;
+
+	default:
+		// shouldn't ever get here
+		// reset the conroller
+		exit(-1);
+	}
+}
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

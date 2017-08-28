@@ -1,0 +1,352 @@
+/*** BeginHeader */
+#ifndef __FIM_COM_ORDER_EXE_LIB
+#define __FIM_COM_ORDER_EXE_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ComOrd_Exe
+*/
+#ifdef COMORD_EXE_DEBUG
+#define _COMORD_EXE_NODEBUG
+#else
+#define _COMORD_EXE_NODEBUG nodebug
+#endif
+
+#use "FIM_COM_ORDER_BODY.LIB"
+
+_COMORD_EXE_NODEBUG int ComOrd_Exe(struct SYSOrd * bufOrd,struct SYSOrd comOrd);
+/*** EndHeader */
+
+_COMORD_EXE_NODEBUG
+int LOC_Params2Tln(struct SYSOrd comOrd)
+{
+int j;
+for(j=0;comOrd.Param[j][0]!=0;j++)
+	{
+	SYS_Tln_Write(&comOrd.Param[j][0]);
+   if(comOrd.Param[j+1][0]!=0) SYS_Tln_Write(",");
+   }
+
+SYS_Tln_Write(SYSCRNL);
+return j;
+}
+
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_RSTUC_Exe(void)
+{
+char buf[64];
+SCPI_DeParse(buf,SYSTem_RESet_EXT,"");
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_RESET_Exe(void)//OK
+{
+char buf[64];
+SCPI_DeParse(buf,WARN_SYSTem_RESet,"");
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+FIMstatus_FIFO_Reset();
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_STAVL_Exe(struct SYSOrd comOrd)//OK
+{
+LOC_Params2Tln(comOrd);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_DISVL_Exe(struct SYSOrd comOrd)//OK
+{
+LOC_Params2Tln(comOrd);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_OVxVL_Exe(struct SYSOrd comOrd)//OK
+{
+LOC_Params2Tln(comOrd);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FIFOE_Exe(void)                              //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[128];
+int idx;
+idx=SCPI_DeParse(buf,WARN_STAT_FIFO_EMPTy,"");
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FIFOF_Exe(void)                                  //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[128];
+int idx;
+idx=SCPI_DeParse(buf,WARN_STAT_FIFO_FULL,"");
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FIFAL_Exe(struct SYSOrd * bufOrd,struct SYSOrd comOrd)     //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+int no;
+struct SYSOrd sys_ord;
+sys_ord=SYSOrd_NULL;
+
+no=(int)SYS_HexStr2Dec(&comOrd.Param[0][0]);
+FIM_FIFO[no].No=no;
+strncpy(FIM_FIFO[no].AlarmSource,&comOrd.Param[1][0],4);
+FIM_FIFO[no].AlarmSource[4]=0;
+
+if(FIM_FIFO[1].No<0)
+	{
+   sys_ord.ID=R2F_FIFGT;
+	bufOrd[0]=sys_ord;
+	bufOrd[1]=SYSOrd_NULL;
+	}
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FIFT1_Exe(struct SYSOrd comOrd)                     //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+int no;
+no=(int)SYS_HexStr2Dec(&comOrd.Param[0][0]);
+FIM_FIFO[no].No=no;
+strncpy(&FIM_FIFO[no].Timestamp[4],&comOrd.Param[1][0],8);
+FIM_FIFO[no].Timestamp[12]=0;
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FIFT2_Exe(struct SYSOrd comOrd)               //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[256];
+int idx;
+int no;
+
+no=(int)SYS_HexStr2Dec(&comOrd.Param[0][0]);
+FIM_FIFO[no].No=no;
+strncpy(&FIM_FIFO[no].Timestamp[0],&comOrd.Param[1][4],4);
+FIM_FIFO[no].Timestamp[12]=0;
+
+idx=SCPI_DeParse(buf,STATus_ALARm_FIFO,"");
+buf[idx]='>';
+idx++;
+sprintf(&buf[idx],"POS:%03X,SOURCE:%04s,TIMESTAMP:%012s",FIM_FIFO[no].No,FIM_FIFO[no].AlarmSource,FIM_FIFO[no].Timestamp);
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_FRMVL_Exe(struct SYSOrd comOrd)//OK
+{
+LOC_Params2Tln(comOrd);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_SERVL_Exe(struct SYSOrd comOrd)//OK
+{
+LOC_Params2Tln(comOrd);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_MACGT_Exe(struct SYSOrd * bufOrd)       //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+struct SYSOrd comOrd;
+char buf[20];
+
+SYS_MAC(buf,0);
+
+comOrd.ID=R2F_MC1ST;
+strncpy(&comOrd.Param[0][0],buf,6);
+comOrd.Param[0][6]=0;
+bufOrd[0]=comOrd;
+
+comOrd.ID=R2F_MC2ST;
+strncpy(&comOrd.Param[0][0],&buf[6],6);
+comOrd.Param[0][6]=0;
+bufOrd[1]=comOrd;
+
+bufOrd[2]=SYSOrd_NULL;
+return 2;
+}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int F2R_NETGT_Exe(struct SYSOrd * bufOrd)//OK
+{
+struct SYSOrd comOrd;
+comOrd=SYSOrd_NULL;
+comOrd.ID=R2F_NETST;
+if(SYS_Tln_isActive()>0) strncpy(&comOrd.Param[0][0],"01",ComOrd_Ref[R2F_NETST].Param1);
+else strncpy(&comOrd.Param[0][0],"00",ComOrd_Ref[R2F_NETST].Param1);
+bufOrd[0]=comOrd;
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+//------------------------------------------------------------------------------
+//int F2R_ACKNW_Exe(void)
+//{
+//return SYSNULL;
+//}
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG                          //OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+int F2R_ERROR_Exe(struct SYSOrd comOrd)
+{
+int err_id;
+int err_no;
+
+err_id=SYS_HexStr2Dec(&comOrd.Param[0][0]);
+err_no=FIM_Err_ID2No(err_id);
+
+FIM_Err_Call(err_no);
+return SYSNULL;
+}
+
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG                          //OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+int F2R_ALSST_Exe(struct SYSOrd comOrd)
+{
+char buf[256];
+int idx;
+idx=0;
+
+idx=SCPI_DeParse(buf,WARN_STAT_OUTP_ACT,"");
+buf[idx]='>';
+idx++;
+sprintf(&buf[idx],"STATE:%02s,ALARM?:%01s",&comOrd.Param[0][0],&comOrd.Param[1][0]);
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//RABBIT TO FPGA
+//------------------------------------------------------------------------------
+_COMORD_EXE_NODEBUG
+int R2F_NETST_Exe(struct SYSOrd * bufOrd)//OK
+{
+struct SYSOrd comOrd;
+comOrd=SYSOrd_NULL;
+comOrd.ID=R2F_NETST;
+if(SYS_Tln_isActive()>0) strncpy(&comOrd.Param[0][0],"01",ComOrd_Ref[R2F_NETST].Param1);
+else strncpy(&comOrd.Param[0][0],"00",ComOrd_Ref[R2F_NETST].Param1);
+bufOrd[0]=comOrd;
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+//------------------------------------------------------------------------------
+//********************EXE METHOD************************************************
+_COMORD_EXE_NODEBUG
+int ComOrd_Exe(struct SYSOrd * bufOrd,struct SYSOrd comOrd)
+{
+bufOrd[0]=SYSOrd_NULL;
+if (comOrd.ID<0) return SYSNULL;
+
+switch (comOrd.ID)
+{
+//------------------------------------------------------------------------------
+case F2R_RSTUC :
+return F2R_RSTUC_Exe();
+break;
+//------------------------------------------------------------------------------
+case F2R_RESET :
+return F2R_RESET_Exe();
+break;
+//------------------------------------------------------------------------------
+case F2R_STAVL :
+return F2R_STAVL_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_DISVL :
+return F2R_DISVL_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_OVxVL :
+return F2R_OVxVL_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_FIFOE :
+return F2R_FIFOE_Exe();
+break;
+//------------------------------------------------------------------------------
+case F2R_FIFOF :
+return F2R_FIFOF_Exe();
+break;
+//------------------------------------------------------------------------------
+case F2R_FIFAL :
+return F2R_FIFAL_Exe(bufOrd,comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_FIFT1 :
+return F2R_FIFT1_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_FIFT2 :
+return F2R_FIFT2_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_FRMVL :
+return F2R_FRMVL_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_SERVL :
+return F2R_SERVL_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_MACGT :
+return F2R_MACGT_Exe(bufOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_NETGT :
+return F2R_NETGT_Exe(bufOrd);
+break;
+//------------------------------------------------------------------------------
+case F2R_ALSST :
+return F2R_ALSST_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+//case F2R_ACKNW :
+//return F2R_ACKNW_Exe();
+//break;
+//------------------------------------------------------------------------------
+case F2R_ERROR :
+return F2R_ERROR_Exe(comOrd);
+break;
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//RABBIT TO FPGA
+//------------------------------------------------------------------------------
+case R2F_NETST :
+return R2F_NETST_Exe(bufOrd);
+break;
+//------------------------------------------------------------------------------
+
+default: return SYSERROR;
+}
+
+return SYSNULL;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

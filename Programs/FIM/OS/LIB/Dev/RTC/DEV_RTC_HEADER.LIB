@@ -1,0 +1,35 @@
+/*** BeginHeader */
+#ifndef __DEV_RTC_HEADER_LIB
+#define __DEV_RTC_HEADER_LIB
+/*** EndHeader */
+
+/*
+NOTE: the structure tm is defined as
+	struct tm
+	{
+	   char tm_sec;             // seconds 0-59
+	   char tm_min;             // 0-59
+	   char tm_hour;            // 0-59
+	   char tm_mday;            // 1-31
+	   char tm_mon;             // 1-12
+	   char tm_year;            // 80-147  (1980-2047)
+	   char tm_wday;            // 0-6 0==sunday
+	};
+*/
+
+/*** BeginHeader
+*/
+
+#ifdef RTC_DEBUG
+#define _RTC_NODEBUG
+#else
+#define _RTC_NODEBUG nodebug
+#endif
+
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

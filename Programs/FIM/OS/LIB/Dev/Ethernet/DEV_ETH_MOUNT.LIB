@@ -1,0 +1,40 @@
+/*** BeginHeader */
+#ifndef __DEV_ETH_MOUNT_LIB
+#define __DEV_ETH_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_ETH_BODY.LIB"
+
+//<ETH_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_ETH_Driver                   //START
+//</HEADER>
+//<INIT>
+#define Dev_Eth_Init__						Eth_Init();
+//</INIT>
+//<DAEMON>
+#define DEV_Eth_DHCP_DAEMON__				Eth_DHCP_Daemon();
+//</DAEMON>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_Eth_isLink()	  				Eth_isLink()
+#define Dev_Eth_Resolve(dns) 				Eth_Resolve(dns)
+#define Dev_Eth_IP2Num(ip_string)		Eth_IP2Num(ip_string)
+#define DEV_ETH_IP4_MAX_LEN		      ETH_IP4_MAX_LEN
+
+//</BODY>
+//------------------------------------------------------------------------------
+//</ETH_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

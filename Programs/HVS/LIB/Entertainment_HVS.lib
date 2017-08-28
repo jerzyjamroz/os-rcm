@@ -1,0 +1,112 @@
+/*** BeginHeader */
+#ifndef __ENTERTAINMENT_HVS_LIB
+#define __ENTERTAINMENT_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ENTRT_Logo_ALBA,ENTRT_Logo_ALBA_Demo,LCD_Logo_ALBA
+*/
+#use "LCD_4LINES_HVS.lib"
+#use "Virtual_LCD.lib"
+
+_GENERAL_HVS_NODEBUG void LCD_Logo_ALBA(int x);
+_GENERAL_HVS_NODEBUG void ENTRT_Logo_ALBA(int x);
+//cofunc void ENTRT_Logo_ALBA_Demo(int timing,char *off_flag);
+
+/*** EndHeader */
+_GENERAL_HVS_NODEBUG
+void LCD_Logo_ALBA(int x)
+{
+//General_Delay_Ms(10);
+LCD_Display_Clear();
+
+LCD_Locate(1,x+3);
+LCD_Write_Char('*');
+
+LCD_Locate(2,x+2);
+LCD_Write_Char('*');
+LCD_Locate(2,x+3);
+LCD_Write_Char('*');
+LCD_Locate(2,x+4);
+LCD_Write_Char('*');
+
+LCD_Locate(3,x+1);
+LCD_Write_Char('*');
+LCD_Locate(3,x+5);
+LCD_Write_Char('*');
+
+LCD_Locate(4,x);
+LCD_Write_Char('A');
+LCD_Locate(4,x+2);
+LCD_Write_Char('L');
+LCD_Locate(4,x+4);
+LCD_Write_Char('B');
+LCD_Locate(4,x+6);
+LCD_Write_Char('A');
+}
+
+_GENERAL_HVS_NODEBUG
+void ENTRT_Logo_ALBA(int x)
+{
+//General_Delay_Ms(10);
+HLCD_Display_Clear();
+
+HLCD_Locate(1,x+3);
+HLCD_Write_Char('*');
+
+HLCD_Locate(2,x+2);
+HLCD_Write_Char('*');
+HLCD_Locate(2,x+3);
+HLCD_Write_Char('*');
+HLCD_Locate(2,x+4);
+HLCD_Write_Char('*');
+
+
+HLCD_Locate(3,x+1);
+HLCD_Write_Char('*');
+HLCD_Locate(3,x+5);
+HLCD_Write_Char('*');
+
+HLCD_Locate(4,x);
+HLCD_Write_Char('A');
+HLCD_Locate(4,x+2);
+HLCD_Write_Char('L');
+HLCD_Locate(4,x+4);
+HLCD_Write_Char('B');
+HLCD_Locate(4,x+6);
+HLCD_Write_Char('A');
+}
+
+/* NOT IN USE
+_GENERAL_HVS_NODEBUG
+cofunc void ENTRT_Logo_ALBA_Demo(int timing,char *on_flag)
+{
+int i;
+i=1;
+while((*on_flag)>0)
+	{
+	   if(i<=1)
+	   {
+	   for(i=1;i<=10;++i)
+      	{
+	  		ENTRT_Logo_ALBA(i);
+         waitfor(DelayMs(timing));
+         }
+   	}
+
+      else if(i>=10)
+   	{
+   	for(i=9;i>1;--i)
+      	{
+  			ENTRT_Logo_ALBA(i);
+         waitfor(DelayMs(timing));
+         }
+	   }
+   	else i=1;
+	}
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

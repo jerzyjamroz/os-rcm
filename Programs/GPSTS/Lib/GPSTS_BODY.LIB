@@ -1,0 +1,168 @@
+/*** BeginHeader */
+#ifndef __GPSTS_BODY_LIB
+#define __GPSTS_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "GPSTS_HEADER.LIB"
+#use "GPSTS_TLN_ORDERS.LIB"
+#use "GPSTS_TLN_EVENTS.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+GPSTS_Init,GPSTS_SNTP_Serv_IP_Set,GPSTS_SNTP_Serv_IP_Get,GPSTS_Ser_Int32HSB_Send,
+GPSTS_PPS_Read,GPSTS_Ethernet_LED,GPSTS_PPS_LED
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int GPSTS_Init(char * gps_sntp_serv);
+char * GPSTS_SNTP_Serv_IP_Get(void);
+int GPSTS_SNTP_Serv_IP_Set(char * new_dns);
+int GPSTS_Ser_Int32HSB_Send(char * ser_data);
+int GPSTS_PPS_Read(void);
+cofunc int GPSTS_Ethernet_LED(int is_gps, int is_rtc);
+int GPSTS_PPS_LED(int trigger);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//_________________________________<CONFIGLOCAL>________________________________
+#define LOC_PPS_Pin 0
+#define LOC_Pin1_No 2
+#define LOC_Pin0_No 1
+#define LOC_Ser_Delay 100
+#define LOC_GPSTS_Port SYSPORTE
+
+#define LOC_LED_Eth_Pin 4
+#define LOC_LED_RTC_Pin 3
+#define LOC_LED_Port SYSPORTE
+
+//_________________________________</CONFIGLOCAL>_______________________________
+static struct{
+char SNTP_Serv_IP[SYS_ETH_IP4_MAX_LEN+1];
+}GPSTS;
+
+_GPSTS_NODEBUG
+char * GPSTS_SNTP_Serv_IP_Get(void)
+{
+return GPSTS.SNTP_Serv_IP;
+}
+
+_GPSTS_NODEBUG
+int GPSTS_SNTP_Serv_IP_Set(char * new_ip)
+{
+int len;
+len=strlen(new_ip);
+
+strncpy(GPSTS.SNTP_Serv_IP,new_ip,len);
+GPSTS.SNTP_Serv_IP[len]=0;
+return len;
+}
+
+_GPSTS_NODEBUG
+int GPSTS_Init(char * gps_sntp_serv_ip)
+{
+char buf[SYS_SFlash_Page_Size+1];
+
+SYS_IO_PortX_Config(SYSPORTE,0x00); //just a fast init as input - to remove eventual alternative pin generations
+
+if(SYS_SFlash_FlPage2Str(buf,SYS_SFl_IP_StrPage)>0)
+	GPSTS_SNTP_Serv_IP_Set(buf);
+else GPSTS_SNTP_Serv_IP_Set(gps_sntp_serv_ip);
+
+SYS_Time_SNTP2RTC1900_Update_hdl(GPSTS_SNTP_Serv_IP_Get());
+
+SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin0_No);
+SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin1_No);
+SYS_IO_PortX_Pin_Res(LOC_LED_Port,LOC_LED_Eth_Pin);
+
+return 1;
+}
+
+
+_GPSTS_NODEBUG
+int GPSTS_Ser_Int32HSB_Send(char * ser_data)
+{
+int i;
+
+for(i=31;i>=0;i--)
+	{
+	if(ser_data[i]=='1')
+      {
+//      SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin0_No);
+      SYS_IO_PortX_Pin_Set(LOC_GPSTS_Port,LOC_Pin1_No);
+   	}
+   else
+      {
+      SYS_IO_PortX_Pin_Set(LOC_GPSTS_Port,LOC_Pin0_No);
+//      SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin1_No);
+   	}
+	SYS_DelayUs(LOC_Ser_Delay);
+
+   SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin0_No);
+	SYS_IO_PortX_Pin_Res(LOC_GPSTS_Port,LOC_Pin1_No);
+
+   SYS_DelayUs(LOC_Ser_Delay);
+   }
+
+return i+1+32;
+}
+
+_GPSTS_NODEBUG
+int GPSTS_PPS_Read(void)
+{
+return SYS_IO_PortX_Pin_Read(LOC_GPSTS_Port,LOC_PPS_Pin);
+}
+
+
+_GPSTS_NODEBUG
+int GPSTS_PPS_LED(int trigger)
+{
+if (trigger>0)
+   {
+   SYS_IO_PortX_Pin_Set(LOC_LED_Port,LOC_LED_RTC_Pin);
+   return 1;
+   }
+else
+	{
+	SYS_IO_PortX_Pin_Res(LOC_LED_Port,LOC_LED_RTC_Pin);
+   return 0;
+   }
+}
+
+//function config
+#define LOC_Blink_Time 200
+_GPSTS_NODEBUG
+cofunc int GPSTS_Ethernet_LED(int is_gps, int is_rtc)
+{
+if( (is_gps>0) && (is_rtc>0) )
+   {
+   SYS_IO_PortX_Pin_Res(LOC_LED_Port,LOC_LED_Eth_Pin);
+   waitfor( DelayMs(LOC_Blink_Time) );
+   SYS_IO_PortX_Pin_Set(LOC_LED_Port,LOC_LED_Eth_Pin);
+   waitfor( DelayMs(1000-LOC_Blink_Time) );
+   return 1;
+   }
+else if( (is_gps==0) && (is_rtc>0) )
+	{
+   SYS_IO_PortX_Pin_Set(LOC_LED_Port,LOC_LED_Eth_Pin);
+   waitfor( DelayMs(1000) );
+   return 2;
+   }
+else
+	{
+   SYS_IO_PortX_Pin_Res(LOC_LED_Port,LOC_LED_Eth_Pin);
+   waitfor( DelayMs(1000) );
+   return 3;
+   }
+
+return -1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

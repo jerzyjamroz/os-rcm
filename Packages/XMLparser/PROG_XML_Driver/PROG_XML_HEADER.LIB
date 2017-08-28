@@ -1,0 +1,21 @@
+/*** BeginHeader */
+#ifndef __PROG_XML_HEADER_LIB
+#define __PROG_XML_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+
+*/
+
+#ifdef PROG_XML_DEBUG
+#define _PROG_XML_NODEBUG
+#else
+#define _PROG_XML_NODEBUG nodebug
+#endif
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

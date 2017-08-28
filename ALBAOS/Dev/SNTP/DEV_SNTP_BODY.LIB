@@ -1,0 +1,76 @@
+/*** BeginHeader */
+#ifndef __DEV_SNTP_BODY_LIB
+#define __DEV_SNTP_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_SNTP_HEADER.LIB"
+#use "SNTP_DLL.lib"
+
+#ifndef _DCRTCP_LIB
+	#define _DCRTCP_LIB
+	#use "dcrtcp.lib"
+#endif
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+SNTP_Init,SNTP_Time_FastGet
+*/
+//const char SNTP_Cells_Serv[] = "84.89.255.109";
+
+//_____________________________<FUNCTIONS>______________________________________
+int SNTP_Init(void);
+unsigned long SNTP_Time_NetGet(char * sntp_server,unsigned int timeout);
+unsigned long SNTP_Time_NetFastGet(char * sntp_server);
+unsigned long SNTP_Time_FastGet(unsigned long int sntp_server_ip);
+//unsigned long SNTP_RTC_Time_Update_hdl(char * sntp_server);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//_________________________________<CONFIGLOCAL>________________________________
+#define LOC_SNTP_TIMEOUT 300
+//_________________________________</CONFIGLOCAL>_______________________________
+
+_SNTP_NODEBUG
+int SNTP_Init(void)
+{
+int init_error;
+init_error=0;
+
+if(SYS_ENV.isSockInit!=0) SYS_ENV.isSockInit=sock_init();
+
+//SNTP_Time_NetFastGet(SYS_SNTP_Cells_Serv_dft); 		//just to init the socket correctly
+
+return init_error;
+}
+
+
+_SNTP_NODEBUG
+unsigned long SNTP_Time_NetGet(char * sntp_server,unsigned int timeout)
+{
+if(SYS_Eth_isLink()==0) return 0;
+return sntp_gettime(SYS_Eth_Resolve(sntp_server), timeout);
+}
+
+_SNTP_NODEBUG
+unsigned long SNTP_Time_NetFastGet(char * sntp_server)
+{
+if(SYS_Eth_isLink()==0) return 0;
+return sntp_gettime(SYS_Eth_Resolve(sntp_server), LOC_SNTP_TIMEOUT);
+}
+
+_SNTP_NODEBUG
+unsigned long SNTP_Time_FastGet(unsigned long int sntp_server_ip)
+{
+if(SYS_Eth_isLink()==0) return 0;
+else if (sntp_server_ip==0) return 0;
+return sntp_gettime(sntp_server_ip, LOC_SNTP_TIMEOUT);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,87 @@
+/*** BeginHeader */
+#ifndef __TELNET_SESSION_HVS_LIB
+#define __TELNET_SESSION_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+TN_Passwort_Handler,Telnet_Base_StartLogo
+*/
+
+_TELNET_HVS_NODEBUG cofunc char TN_Passwort_Handler(void);
+_TELNET_HVS_NODEBUG void Telnet_Base_StartLogo(void);
+
+/*
+struct{
+unsigned int Password;
+}Session;
+*/
+
+/*** EndHeader */
+_TELNET_HVS_NODEBUG
+int TN_Password_Check(char *buf, int len)
+{
+buf[len]=0;
+
+if(strncmpi(buf,Sys_Return_Password(),4)==0) return 1;
+return -1;
+}
+_TELNET_HVS_NODEBUG
+int TN_WaitforTicker(void)
+{
+tcp_tick(state->s);
+return 0;
+}
+_TELNET_HVS_NODEBUG
+cofunc char TN_Passwort_Handler(void)
+{
+auto int retval;
+Telnet_NewLine;
+sock_fastwrite(state->s,TN_Text_Output,2);
+sock_fastwrite(state->s,"Password?",9);
+Telnet_NewLine;
+sock_fastwrite(state->s,TN_Text_Input,2);
+tcp_tick(state->s);
+waitfor ((retval=sock_fastread(state->s, state->buf, MAX_BUFLEN)) || (TN_WaitforTicker()>0) );
+retval = cook_input(retval);
+
+if (TN_Password_Check(state->buf, retval)<0)
+   {
+   Telnet_NewLine;
+   sock_fastwrite(state->s,TN_Text_Output,2);
+   sock_fastwrite(state->s,"Access Denied",13);
+   sock_close(state->s);
+   return 0;
+	}
+else
+   {
+   tcp_tick(state->s);
+   return 1;
+   }
+}
+
+//*******************ADITIONAL INITIAL FUNCTIONS********************************
+_TELNET_HVS_NODEBUG
+void Telnet_Base_StartLogo(void)
+{
+char i;
+
+sock_fastwrite(state->s, Telnet_Connection_Established, 26);
+for(i=0;i<10;i++) sock_fastwrite(state->s,&Telnet_Alba_Logo[i][0],strlen(&Telnet_Alba_Logo[i][0]));
+
+/*
+sock_fastwrite(state->s,"SN: HVS",7);
+sock_fastwrite(state->s,Sys_Return_SN(), 4);
+Telnet_NewLine;
+sock_fastwrite(state->s,"MAC:",4);
+sock_fastwrite(state->s,System_Return_MAC(), 17);
+Telnet_NewLine;
+*/
+sock_fastwrite(state->s, Telnet_Text_Ready, strlen(Telnet_Text_Ready));
+tcp_tick(state->s);
+}
+//*******************ADITIONAL INITIAL FUNCTIONS********************************
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

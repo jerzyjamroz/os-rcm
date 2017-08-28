@@ -1,0 +1,76 @@
+/*** BeginHeader */
+#ifndef __FLAGS_HVS_LIB
+#define __FLAGS_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Flags_Init,Flags_NoOfOutputs_Adopter
+*/
+#use "System_HVS.lib"
+
+_SYSTEM_HVS_NODEBUG void Flags_NoOfOutputs_Adopter(void);
+_SYSTEM_HVS_NODEBUG void Flags_Init(void);
+
+#define Ch1 0
+#define Ch2 1
+#define Ch3 2
+#define Ch4 3
+#define Ch5 4
+#define Ch6 5
+#define Ch7 6
+#define Ch8 7
+
+#define HVS_Output_Conf 0x00
+
+/*
+const int HVS_IonPump_Models[Sys_ION_Models_Amount]={
+25,
+75,
+150,
+300,
+500
+};
+*/
+char Null_Char;
+
+struct{
+char No_Of_Outputs; //how many outputs splitter has active;2,3,4,5,6,7,8; it sets black LEDs
+char Status_Outputs; //this variable disables relays - interlock - it is independent
+
+char IonPump_Model[8];
+
+}HVS;
+
+//struct{
+//char Interlock_Detection; //1 when interlock is, 0 there is no interlock
+//}Alarm;
+
+/*** EndHeader */
+_SYSTEM_HVS_NODEBUG
+void Flags_NoOfOutputs_Adopter(void)
+{
+ if (HVS.No_Of_Outputs==8) HVS.Status_Outputs=0x00;
+ else if (HVS.No_Of_Outputs==7) HVS.Status_Outputs=0x80;
+ else if (HVS.No_Of_Outputs==6) HVS.Status_Outputs=0xC0;
+ else if (HVS.No_Of_Outputs==5) HVS.Status_Outputs=0xE0;
+ else if (HVS.No_Of_Outputs==4) HVS.Status_Outputs=0xF0;
+ else if (HVS.No_Of_Outputs==3) HVS.Status_Outputs=0xF8;
+ else if (HVS.No_Of_Outputs==2) HVS.Status_Outputs=0xFC;
+ else HVS.Status_Outputs=0xFC;
+}
+
+
+_SYSTEM_HVS_NODEBUG
+void Flags_Init(void)
+{
+	#GLOBAL_INIT
+   {
+	HVS.Status_Outputs=HVS_Output_Conf;
+//	Alarm.Interlock_Detection=0;
+	EPS.Threshold_Status=0;
+	}
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

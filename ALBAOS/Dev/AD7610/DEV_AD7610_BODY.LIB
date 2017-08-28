@@ -1,0 +1,117 @@
+/*************************************************************************
+	PB7 acts as the CS line on the ADC
+	PB0 is the serial B clock line(SCLK)
+
+	PC4 is the data output(MOSI)
+	PC5 is the data input(MISO)
+************************************************************************/
+
+/*** BeginHeader */
+#ifndef __DEV_AD7610_BODY_LIB
+#define __DEV_AD7610_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#ifndef ___AUTO
+	#define ___AUTO
+	#class auto
+#endif
+
+#ifndef Dev_SPIB_Driver
+	#use "DEV_SPIB_MOUNT.LIB"
+#endif
+
+#use "DEV_AD7610_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+AD7610_Init,AD7610_Read,AD7610_DisClk_Read
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int AD7610_Init(void);
+void AD7610_Read(char *buf);
+//long AD7610_DisClk_Read(void);
+//_____________________________</FUNCTIONS>______________________________________
+
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//#define LOC_Eth_Ping_Timeout 0xffffffffL
+//#define LOC_Eth_Det_Delay_Time 2000
+//</LOC_DEFINES>
+
+_AD7610_NODEBUG
+int AD7610_Init(void)
+{
+char buf[5];
+
+#ifdef AD7610_SPIB
+	#ifndef __Dev_SPIB_Init__
+		#define __Dev_SPIB_Init__
+		Dev_SPIB_Init__(0);    //should be 0
+   #else
+   	#warnt "Other device is using SPIB already"
+	#endif
+
+/*
+If SERB is in use the
+SDOUT -> PC3
+SDCLK -> PB0
+CS		-> PB7
+*/
+
+#define LOC_AD7610_CS 7
+#define LOC_AD7610_BUSY X
+#define LOC_AD7610_CNVST 6
+#define LOC_AD7610_RESET 5
+#define LOC_SPIX_Read(buf,len) Dev_SPIB_Read(buf,len)
+
+#define LOC_AD7610_PORT(bit,bit_no) BitWrPortI(PBDR,&PBDRShadow,bit,bit_no)
+
+/*
+BitWrPortI(PBDDR, &PBDDRShadow, 1, LOC_AD7610_CNVST);
+BitWrPortI(PBDR,  &PBDRShadow,  1, LOC_AD7610_CNVST);
+BitWrPortI(PBDR,  &PBDRShadow,  0, LOC_AD7610_CNVST);
+BitWrPortI(PBDR,  &PBDRShadow,  1, LOC_AD7610_CNVST);
+*/
+
+#endif
+
+AD7610_Read(buf);
+
+return 1;
+}
+
+void AD7610_Read(char *buf)
+{
+	LOC_AD7610_PORT(0,LOC_AD7610_CNVST);
+//	SYS_DelayUs(1);   //not necessary - the processor is too slow
+	LOC_AD7610_PORT(1,LOC_AD7610_CNVST);
+//	SYS_DelayUs(1000);   //not necessary - the processor is too slow
+	LOC_SPIX_Read(buf,2);
+}
+
+/*  not in use anymore
+long AD7610_DisClk_Read(void)
+{
+char buf[4];
+
+	LOC_AD7610_PORT(0,LOC_AD7610_CNVST);
+//	SYS_DelayUs(1);   //not necessary - the processor is too slow
+	LOC_AD7610_PORT(1,LOC_AD7610_CNVST);
+//	SYS_DelayUs(1000);   //not necessary - the processor is too slow
+	LOC_SPIX_Read(buf,3);
+
+   buf[3]=0;
+   RES(&buf[0],7);
+   return (buf[0]<<8)+(buf[1]<<1)+BIT(&buf[2],7);
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,104 @@
+/*** BeginHeader */
+#ifndef __PROG_XML_BODY_LIB
+#define __PROG_XML_BODY_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+XML_hexParse,XML_strParse,XML_decParse,XML_funcParse,XML_Test,
+XML_HeaderCount,XML_BeginHeader,XML_EndHeader,
+*/
+#use "PROG_XML_HEADER.LIB"
+
+int XML_hexParse(char *buf,int hex,char *header);
+int XML_strParse(char *buf,char *str,char *header);
+int XML_decParse(char *buf,int dec,char *header);
+int XML_funcParse(char *buf,int (*fnc)(),char *header);
+
+int XML_HeaderCount(char *buf,char *header,int no);
+int XML_BeginHeader(char *buf,char *header);
+int XML_EndHeader(char *buf,char *header);
+int XML_Test(char *buf);
+/*** EndHeader */
+
+_PROG_XML_NODEBUG
+int XML_hexParse(char *buf,int hex,char *header)
+{
+sprintf(buf,"<%s>\r\n%x\r\n</%s>\r\n",header,hex,header);
+return strlen(buf);
+}
+
+_PROG_XML_NODEBUG
+int XML_strParse(char *buf,char *str,char *header)
+{
+sprintf(buf,"<%s>\r\n%s\r\n</%s>\r\n",header,str,header);
+return strlen(buf);
+}
+
+_PROG_XML_NODEBUG
+int XML_decParse(char *buf,int dec,char *header)
+{
+sprintf(buf,"<%s>\r\n%d\r\n</%s>\r\n",header,dec,header);
+return strlen(buf);
+}
+
+int XML_Test(char *buf)
+{
+int idx;
+idx=0;
+
+idx+=XML_hexParse(buf,0x123,"TEST");
+idx+=XML_decParse(&buf[idx],123,"DEC");
+idx+=XML_decParse(&buf[idx],456,"DEC1");
+
+return strlen(buf);
+}
+
+_PROG_XML_NODEBUG
+int XML_funcParse(char *buf,int (*fnc)(),char *header)
+{
+int idx;
+idx=0;
+
+sprintf(buf,"<%s>\r\n",header);
+idx+=strlen(buf);
+idx+=(*fnc)(&buf[idx]);
+sprintf(&buf[idx],"</%s>\r\n",header);
+
+return strlen(buf);
+}
+
+int XML_HeaderCount(char *buf,char *header,int no)
+{
+sprintf(buf,"%s-No.%d",header,no);
+
+return strlen(buf);
+}
+
+int XML_BeginHeader(char *buf,char *header)
+{
+sprintf(buf,"<%s>",header);
+return strlen(buf);
+}
+
+int XML_EndHeader(char *buf,char *header)
+{
+sprintf(buf,"</%s>",header);
+return strlen(buf);
+}
+
+/*
+int XML_Package_Make(char *buf, struct SYSXML xml)
+{
+int i;
+int idx;
+idx=0;
+
+for(i=0;xml.ID>0;i++) idx+=XML_strParse(&buf[idx],&xml.StrArg[i][0],&xml.Header[i][0]);
+
+return idx;
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

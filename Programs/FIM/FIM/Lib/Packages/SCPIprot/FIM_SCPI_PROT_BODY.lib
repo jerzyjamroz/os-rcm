@@ -1,0 +1,133 @@
+/*** BeginHeader */
+#ifndef __FIM_SCPI_PROT_BODY_LIB
+#define __FIM_SCPI_PROT_BODY_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader
+SCPI_Parse,SCPI_CmdinStr,SCPI_DeParse
+*/
+#use "FIM_SCPI_PROT_HEADER.LIB"
+
+//*********************FUNCTIONS************************************************
+_SCPIprot_NODEBUG struct SYSOrd SCPI_Parse(char *arg_str);
+_SCPIprot_NODEBUG char * SCPI_CmdinStr(char *arg_str);
+_SCPIprot_NODEBUG int SCPI_DeParse(char * buf, int ordID,char * param);
+//************************DEFINES***********************************************
+
+/*** EndHeader */
+
+_SCPIprot_NODEBUG
+struct SYSOrd SCPI_Parse(char *arg_str)
+{
+struct SYSOrd scpi_sysord;
+int i,j;
+int str_idx;
+int cmd_len,param_len;
+
+//BeginInit vars
+scpi_sysord=SYSOrd_NULL;
+str_idx=0;
+//EndInit vars
+if (strlen(arg_str)==0) return SYSOrd_NULL;
+
+for(i=SCPI_Tln2Dev_BeginIndex+1;i<SCPI_Tln2Dev_EndIndex;i++)
+{
+//*** MAIN FOR------------------------------------------------------------------
+str_idx=0;
+for(j=0;SCPI_REF[i].Tree[j][0]!=0;j++)
+	{
+	cmd_len=strlen(&SCPI_REF[i].Tree[j][0]);
+   if( strncmp(&arg_str[str_idx], &SCPI_REF[i].Tree[j][0], cmd_len)!=0 )
+   	{
+      str_idx+=cmd_len+1;
+      break;
+      }
+   str_idx+=cmd_len+1;
+	}
+
+if(SCPI_REF[i].Tree[j][0]==0)
+   {
+   for(j=0;SCPI_REF[i].Param[j]>0;j++)
+   	{
+//      if(SCPI_REF[i].Param[j+1]>0) param_len=SYS_Detect_CharPos(&arg_str[str_idx],',');  //usefull for a detection of all kinds of arguments
+//      else param_len=strlen(&arg_str[str_idx]);
+		param_len=SYS_HexLenDetect(&arg_str[str_idx]);
+
+      if(param_len!=SCPI_REF[i].Param[j]) return SYSOrd_NULL; //it determines that amount of characters in the arument should be the same as in the pattern
+
+      if(param_len>SCPI_REF[i].Param[j]) param_len=SCPI_REF[i].Param[j];
+      if( (param_len==0) || (arg_str[str_idx]=='\n') || (arg_str[str_idx]=='\r') ) return SYSOrd_NULL;
+      strncpy(&scpi_sysord.Param[j][0],&arg_str[str_idx],param_len);
+      scpi_sysord.Param[j][param_len]=0; //terminator
+      str_idx+=param_len+1;
+      }
+
+   scpi_sysord.ID=SCPI_REF[i].ID;
+   return scpi_sysord;
+   }
+//*** MAIN FOR------------------------------------------------------------------
+}
+
+return SYSOrd_NULL;
+}
+
+_SCPIprot_NODEBUG
+char * SCPI_CmdinStr(char *arg_str)
+{
+int i;
+char * pCmd;
+
+for(i=SCPI_FirstID;i<SCPI_LastID;i++)
+{
+
+if(SCPI_REF[i].Tree[0][0]!=0)
+	{
+   if( (pCmd=strstr(arg_str,&SCPI_REF[i].Tree[0][0]))!=NULL) return pCmd;
+   }
+
+}
+
+return NULL;
+}
+
+_SCPIprot_NODEBUG
+int SCPI_DeParse(char * buf, int ordID,char * param)
+{
+int i;
+int idx;
+int len;
+
+idx=0;
+for(i=0;SCPI_REF[ordID].Tree[i][0]!=0;i++)
+	{
+   if(i!=0)
+   	{
+   	strncpy(&buf[idx],":",1);
+      idx++;
+      }
+   len=strlen(&SCPI_REF[ordID].Tree[i][0]);
+   strncpy(&buf[idx],&SCPI_REF[ordID].Tree[i][0],len );
+   idx+=len;
+   }
+buf[idx]=0;
+
+if(param[0]!=0)
+	{
+   buf[idx]=' ';
+   idx++;
+	len=strlen(param);
+	strncpy(&buf[idx],param,len );
+	idx+=len;
+	buf[idx]=0;
+	}
+
+return idx;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+//   param_len=SYS_HexLenDetect(&arg_str[str_idx]);

@@ -1,0 +1,174 @@
+/*** BeginHeader */
+#ifndef __MENU_IONPUMP_MODEL_HVS_LIB
+#define __MENU_IONPUMP_MODEL_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_IonPump_Change_Handler,
+*/
+
+_MENU_HVS_NODEBUG cofunc void Submenu_IonPump_Change_Handler(void);
+
+char * const Submenu_IonPump_String={
+" Ion pump"
+};
+
+/*** EndHeader */
+
+_MENU_HVS_NODEBUG
+cofunc void SubSubmenu_IonPump_Change(char channel)
+{
+char text[32];
+int pump_id;
+char order;
+order=0;
+pump_id=System.I2P_Tab_Ch[channel];
+
+LCD_Display_Clear();
+
+LCD_Write_Text("Ion pump model:");
+
+while( (order!=Designator_Exit) && (order!=Designator_Ok) )
+ {
+   if(order==Designator_Up)
+      {
+      pump_id++;
+      if (pump_id>12) pump_id=12;
+      }
+   else if (order==Designator_Down)
+      {
+      if (pump_id<1) pump_id=1;
+      pump_id--;
+      }
+
+   LCD_Locate(2,5);
+//   LCD_Write_Text(General_Convert_UInt2String_Shift3(HVS_IonPump_Models[pump_counter]));
+		if(I2Pref[pump_id].Model<9)
+			{
+			  sprintf(text, "CST:%03d[-]  ", I2Pref[pump_id].Model);
+			}
+		else sprintf(text, "ION:%03d[l/s]", I2Pref[pump_id].Model);
+
+   LCD_Write_Text(text);
+//   LCD_Write_Text(" [l/s]");
+	LCD_Locate(3,OK_Confirm_Shift);
+	LCD_Write_Text(Menu2_Ok_Confirm);
+
+	wfd order = Menu_Button_Wait4Get();
+ }
+
+ if(order==Designator_Ok)
+  {
+  System.I2P_Tab_Ch[channel]=pump_id;
+  }
+}
+
+
+void Submenu_IonPump_TextBox(int chan,int menu_pointer)
+{
+      LCD_Display_Clear();
+
+      if(menu_pointer==1)
+      	{
+ 			LCD_Locate(1,1);
+         LCD_Write_Char(SubMenuPointer);
+      	}
+      else LCD_Locate(1,2);
+
+      LCD_Write_Text("Ch:");LCD_Write_Char(chan+48);
+      LCD_Write_Text(Submenu_IonPump_String);
+		LCD_Locate(2,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+
+      if(menu_pointer==2)
+      	{
+ 			LCD_Locate(3,1);
+         LCD_Write_Char(SubMenuPointer);
+      	}
+      else LCD_Locate(3,2);
+
+		LCD_Write_Text("Ch:");LCD_Write_Char(chan+49);
+      LCD_Write_Text(Submenu_IonPump_String);
+		LCD_Locate(4,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Submenu_IonPump_TextMenu(int chan, int ord)
+{
+      if(ord==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd SubSubmenu_IonPump_Change(chan-1);
+         Menu2.Element_ID=chan;
+         }
+
+      Submenu_IonPump_TextBox(chan,1);
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_IonPump_Change_Handler(void)
+{
+char order;
+order=0;
+
+while(order!=Designator_Exit)
+	{
+		if(Menu2.Element_ID<1)
+		{
+		Menu2.Element_ID=1;
+		}
+		else if (Menu2.Element_ID>HVS.No_Of_Outputs)
+		{
+		Menu2.Element_ID=HVS.No_Of_Outputs;
+		}
+
+	switch (Menu2.Element_ID)
+		{
+		case 1:
+		wfd Submenu_Submenu_IonPump_TextMenu(1,order);
+		break;
+
+		case 2:
+		wfd Submenu_Submenu_IonPump_TextMenu(2,order);
+
+		break;
+
+
+		case 3:
+		wfd Submenu_Submenu_IonPump_TextMenu(3,order);
+		break;
+
+		case 4:
+		wfd Submenu_Submenu_IonPump_TextMenu(4,order);
+		break;
+
+
+		case 5:
+		wfd Submenu_Submenu_IonPump_TextMenu(5,order);
+		break;
+
+		case 6:
+		wfd Submenu_Submenu_IonPump_TextMenu(6,order);
+		break;
+
+
+		case 7:
+		wfd Submenu_Submenu_IonPump_TextMenu(7,order);
+		break;
+
+		case 8:
+		wfd Submenu_Submenu_IonPump_TextMenu(8,order);
+		break;
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

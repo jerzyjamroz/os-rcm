@@ -1,0 +1,95 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_SYS_LIB
+#define __ALBAOS_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SYS_MAC,
+SYS_ID_RAB,
+SYS_PrFW,
+SYS_ALBAOS_Ver,
+SYS_IP,
+SYS_DEV_SNO_READ,
+SYS_DEV_UB_WRITE,
+*/
+#use "idblock_api.lib"
+#define UB_ADDR (4096*GetIDBlockSize()-ZWORLD_RESERVED_SIZE)
+
+int SYS_MAC(char *buf, char separator);
+int SYS_ID_RAB(void);
+int SYS_ALBAOS_Ver(char *buf);
+int SYS_IP(char *buf);
+int SYS_DEV_SNO_READ(char * buf, int len);
+int SYS_DEV_UB_WRITE(char * buf);
+/*** EndHeader */
+
+
+_ALBAOS_NODEBUG
+int SYS_ALBAOS_Ver(char *buf)
+{
+strcpy(buf,ALBAOS_Ver);
+return strlen(ALBAOS_Ver);
+}
+
+_ALBAOS_NODEBUG
+int SYS_MAC(char *buf, char separator)
+{
+
+if(separator==0)
+	{
+	sprintf(buf,"%02X%02X%02X%02X%02X%02X",
+	SysIDBlock.macAddr[0], SysIDBlock.macAddr[1], SysIDBlock.macAddr[2],
+	SysIDBlock.macAddr[3], SysIDBlock.macAddr[4], SysIDBlock.macAddr[5]);
+   }
+else
+	{
+	sprintf(buf,"%02X%c%02X%c%02X%c%02X%c%02X%c%02X",
+	SysIDBlock.macAddr[0],separator, SysIDBlock.macAddr[1],separator, SysIDBlock.macAddr[2],separator,
+	SysIDBlock.macAddr[3],separator, SysIDBlock.macAddr[4],separator, SysIDBlock.macAddr[5]);
+   }
+
+return strlen(buf);
+}
+
+_ALBAOS_NODEBUG
+int SYS_ID_RAB(void)
+{
+return SysIDBlock.productID;
+}
+
+//void ip_print_ifs(void)  has all the network status
+_ALBAOS_NODEBUG
+int SYS_IP(char *buf)
+{
+inet_ntoa(buf, _if_tab[0].ipaddr);
+return 0;
+}
+
+_ALBAOS_NODEBUG
+int SYS_DEV_SNO_READ(char * buf, int len)
+{
+int status;
+status=readUserBlock(buf, UB_ADDR, len);
+return status;
+}
+
+_ALBAOS_NODEBUG
+int SYS_DEV_UB_WRITE(char * buf)
+{
+return writeUserBlock(UB_ADDR, buf, strlen(buf)+1);
+}
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+/*
+   printf("Compiling file: %s\n", __FILE__);
+	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+   printf("Current line number: %d\n", __LINE__);
+   printf("Current line number: %d\n", __LINE__);
+
+   printf("Compiler version %d.%02x\n", CC_VER >> 8, CC_VER & 0x0FF);
+ */

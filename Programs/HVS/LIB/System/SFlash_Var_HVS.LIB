@@ -1,0 +1,72 @@
+/*** BeginHeader */
+#ifndef __SFLASH_VAR_HVS_LIB
+#define __SFLASH_VAR_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SFlash_Var_Save,SFlash_Var_Load,SFlash_Var_Init
+*/
+#define SFlash_Var_5Bytes 5
+#define SFlash_Var_Page 5
+
+_SYSTEM_HVS_NODEBUG int SFlash_Var_Save(int var,int shift);
+_SYSTEM_HVS_NODEBUG unsigned int SFlash_Var_Load(int shift);
+_SYSTEM_HVS_NODEBUG void SFlash_Var_Init(void);
+
+//var1 - resets of port expander1
+//var2 - resets of port expander2
+
+#define SFl_Var1_Shift 1
+#define SFl_Var2_Shift 6
+
+#define SFl_Ret_Var1 SFlash_Var_Load(SFl_Var1_Shift)
+#define SFl_Ret_Var2 SFlash_Var_Load(SFl_Var2_Shift)
+/*** EndHeader */
+
+_SYSTEM_HVS_NODEBUG
+void SFlash_Var_Init(void)
+{
+char buf[64];
+
+sf_pageToRAM(SFlash_Var_Page);
+sf_readRAM(buf, 0, 1);
+
+if(buf[0]!='S')
+	{
+   buf[0]='S';
+   buf[SFl_Var1_Shift]=0;
+	buf[SFl_Var2_Shift]=0;
+
+   sf_writeRAM(buf, 0, 64);
+	sf_RAMToPage(SFlash_Var_Page);
+   }
+}
+
+_SYSTEM_HVS_NODEBUG
+int SFlash_Var_Save(int var,int shift)
+{
+char buf[10];
+
+sprintf(buf,"%d",var);
+
+sf_writeRAM(buf, shift, SFlash_Var_5Bytes);
+sf_RAMToPage(SFlash_Var_Page);
+
+return 1;
+}
+
+_SYSTEM_HVS_NODEBUG 
+unsigned int SFlash_Var_Load(int shift)
+{
+char buf[10];
+
+sf_pageToRAM(SFlash_Var_Page);
+sf_readRAM(buf, shift, SFlash_Var_5Bytes);
+
+return atoi(buf);
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,21 @@
+Pros The assert macro is self-checking software. It lets you explicitly state something
+is true, and if it turns out to be false, the program terminates with an error message.
+At the time of this writing, this link contained an excellent write-up on the
+assert macro:
+http://www.embedded.com/story/OEG20010311S0021
+Cons Side effects can occur if the assert macro is not coded properly, e.g.,
+assert(i=1)
+will never trigger the assert and will change the value of the variable i; it should
+be coded as:
+assert(i==1)
+Uses Use the assert macro when you must make sure your assumption is accurate.
+Example Check for a NULL pointer before using it.
+void my_function (int * ptr){
+assert(ptr);
+...
+}
+//--------------------------------------------------------------------------------------
+reset_demo.c
+The sample program Samples\reset_demo.c demonstrates using the functions that check the reason
+for a reset: hard reset (power failure or pressing the reset button), soft reset (initiated by software), or a
+watchdog timeout.

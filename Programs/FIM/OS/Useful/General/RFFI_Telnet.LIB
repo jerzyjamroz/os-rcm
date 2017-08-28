@@ -1,0 +1,55 @@
+/*** BeginHeader */
+#ifndef __RFFI_TELNET_LIB
+#define __RFFI_TELNET_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+TN_Logo,TN_Order_Execute
+*/
+#use "RFFI_Telnet_Base.LIB"
+#use "RFFI_Telnet_Patterns.LIB"
+
+void TN_Logo(void);
+int TN_Order_Execute(char *buf, int len);
+
+/*** EndHeader */
+
+void TN_Logo(void)
+{
+char i;
+char buf[10];
+
+sock_fastwrite(state->s, TN_Text_Con_Established, 23);
+TN_NL;
+
+for(i=0;i<10;i++) sock_fastwrite(state->s,&TN_Alba_Logo[i][0],23);
+
+/*
+sock_fastwrite(state->s,"SN:",3);
+for(i=0;i<SN_MAX;i++)
+	{
+   sprintf(buf, "%2x",(int)System_Label.Serial_Number[i]);
+	sock_fastwrite(state->s,buf, 2);
+   sock_fastwrite(state->s,".", 2);
+   }
+*/
+
+TN_NL;
+sock_fastwrite(state->s, TN_Text_Ready, 6);TN_NL;
+}
+
+
+
+int TN_Order_Execute(char *buf, int len)
+{
+int error;
+error=0;
+//LED_Status(0);
+buf[len]=0;
+
+
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

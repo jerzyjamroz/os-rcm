@@ -1,0 +1,150 @@
+/*** BeginHeader */
+#ifndef __MENU_DATA_SAVE_HVS_LIB
+#define __MENU_DATA_SAVE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_Data_Save,
+*/
+_MENU_HVS_NODEBUG cofunc void Submenu_Data_Save(void);
+
+/*** EndHeader */
+_MENU_HVS_NODEBUG
+cofunc void SubSubmenu_Settings_Save(void)
+{
+LCD_Display_Clear();
+
+SFlash_Settings_Save();
+
+LCD_Write_Text("The conf. has");
+LCD_Locate(2,1);
+LCD_Write_Text("been saved to");
+LCD_Locate(3,1);
+LCD_Write_Text("flash memory.");
+LCD_Locate(4,1);
+LCD_Write_Text("Press any key.");
+wfd Menu_Button_Wait4Get();
+}
+_MENU_HVS_NODEBUG
+cofunc void SubSubmenu_Settings_Load(void)
+{
+LCD_Display_Clear();
+
+SFlash_Settings_Load();
+
+LCD_Write_Text("The conf. has");
+LCD_Locate(2,1);
+LCD_Write_Text("been load from");
+LCD_Locate(3,1);
+LCD_Write_Text("flash memory.");
+LCD_Locate(4,1);
+LCD_Write_Text("Press any key.");
+wfd Menu_Button_Wait4Get();
+}
+_MENU_HVS_NODEBUG
+cofunc void SubSubmenu_Settings_Default(void)
+{
+LCD_Display_Clear();
+
+SFlash_Settings_Load_Default();
+
+LCD_Write_Text("The default");
+LCD_Locate(2,1);
+LCD_Write_Text("settings have");
+LCD_Locate(3,1);
+LCD_Write_Text("been restored.");
+LCD_Locate(4,1);
+LCD_Write_Text("Press any key.");
+wfd Menu_Button_Wait4Get();
+}
+_MENU_HVS_NODEBUG 
+cofunc void Submenu_Data_Save(void)
+{
+char order;
+order=0;
+
+while(order!=Designator_Exit)
+	{
+		if(Menu2.Element_ID<1)
+		{
+		Menu2.Element_ID=1;
+		}
+		else if (Menu2.Element_ID>3)
+		{
+		Menu2.Element_ID=3;
+		}
+
+	switch (Menu2.Element_ID)
+		{
+		case 1:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd SubSubmenu_Settings_Save();
+         Menu2.Element_ID=1;
+         }
+		LCD_Display_Clear();
+      LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+		LCD_Write_Text("Save settings?");
+		LCD_Locate(2,OK_Canc_Shift);
+		LCD_Write_Text(Menu2_Ok_Canc);
+		LCD_Locate(3,2);
+		LCD_Write_Text("Load settings?");
+		LCD_Locate(4,OK_Canc_Shift);
+		LCD_Write_Text(Menu2_Ok_Canc);
+		break;
+
+      case 2:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd SubSubmenu_Settings_Load();
+         Menu2.Element_ID=2;
+         }
+		LCD_Display_Clear();
+      LCD_Locate(1,2);
+		LCD_Write_Text("Save settings?");
+		LCD_Locate(2,OK_Canc_Shift);
+		LCD_Write_Text(Menu2_Ok_Canc);
+		LCD_Locate(3,1);
+      LCD_Write_Char(SubMenuPointer);
+		LCD_Write_Text("Load settings?");
+		LCD_Locate(4,OK_Canc_Shift);
+		LCD_Write_Text(Menu2_Ok_Canc);
+		break;
+
+		case 3:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd SubSubmenu_Settings_Default();
+         Menu2.Element_ID=3;
+         }
+		LCD_Display_Clear();
+      LCD_Locate(1,1);
+      LCD_Write_Char(SubMenuPointer);
+		LCD_Write_Text("Restore default");
+		LCD_Locate(2,OK_Canc_Shift);
+		LCD_Write_Text(Menu2_Ok_Canc);
+      Menu_Clean2Lines(3,4);
+		break;
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+
+}
+
+
+
+
+
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

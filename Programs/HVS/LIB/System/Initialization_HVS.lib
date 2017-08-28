@@ -1,0 +1,185 @@
+/*** BeginHeader */
+#ifndef __INITIALIZATION_HVS_LIB
+#define __INITIALIZATION_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Initialization_HVS,
+*/
+
+//******************************************************************************
+//********************************Main includes*********************************
+//******************************************************************************
+#class auto
+#use "RCM4200_HVS.LIB"
+#use "i2c_devices_HVS.lib"
+#use "MENU_HVS.lib"
+#use "General.lib"
+#use "LED_HVS.lib"
+#use "RS232_HVS.lib"
+#use "I2C_General_HVS.lib"
+#use "ADC_HVS.lib"
+#use "Serial_Flash_HVS.lib"
+#use "LCD_4LINES_HVS.lib"
+#use "Message_HVS.lib"
+#use "QLambda_HVS.lib"
+#use "Interlock_HVS.lib"
+//#use "Operations_HVS.lib"
+#use "Interrupt_HVS.lib"
+#use "Flags_HVS.lib"
+//#use "Alert_HVS.lib"
+#use "Calculate_HVS.lib"
+#use "Keithley_HVS.lib"
+#use "Calibrate_HVS.lib"
+#use "EPS_HVS.lib"
+#use "Expander_HVS.lib"
+//#use "Error_HVS.lib"
+#use "Telnet_HVS.lib"
+#use "Telnet_Base_HVS.lib"
+#use "Entertainment_HVS.lib"
+#use "Protection_HVS.lib"
+
+#use "System_HVS.lib"
+#use "Sflash_Var_HVS.lib"
+//********************************Main includes*********************************
+#define Demo_Delay 80
+#define Michael_Minus_Delay 50
+
+_SYSTEM_HVS_NODEBUG void Initialization_HVS(void);
+/*** EndHeader */
+
+_SYSTEM_HVS_NODEBUG
+void Init_LCD_Screen(void)
+{
+if ((Menu1.Element_ID<9) && (Menu1.Element_ID>1))
+	{
+	if (!Menu1.Toggle) Menu1_Background_Pressure();
+	else Menu1_Background_Current();
+	}
+
+LCD_Locate(2,9);
+LCD_Write_Text("  <XXX> ");
+
+LCD_Locate(4,9);
+LCD_Write_Text("  <XXX> ");
+
+Menu1.Element_ID=2;
+}
+
+_SYSTEM_HVS_NODEBUG
+void Init_Demo(void)
+{
+char i,j;
+LED_Calibration(1);
+General_Delay_Ms(Demo_Delay);
+LED_Status(1);
+General_Delay_Ms(Demo_Delay);
+LED_Alarm(1);
+General_Delay_Ms(Demo_Delay);
+LED_HVController(1);
+General_Delay_Ms(Demo_Delay);
+LED_Black_All();
+General_Delay_Ms(Demo_Delay);
+
+for(j=0;j<2;j++)
+	{
+	LED_Red(0);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	LED_Red(1);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	LED_Red(2);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+
+	for(i=0;i<5;i++)
+		{
+		LED_Red(3+i);
+   	LED_Green(0+i);
+   	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+		}
+
+   LED_Green(5);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+   LED_Green(6);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	LED_Green(7);
+   General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+   LED_Red(7);
+   General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+   LED_Red(6);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+   LED_Red(5);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+
+	for(i=0;i<5;i++)
+		{
+		LED_Red(4-i);
+   	LED_Green(7-i);
+   	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+		}
+
+	LED_Green(2);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	LED_Green(1);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	LED_Green(0);
+	General_Delay_Ms(Demo_Delay-Michael_Minus_Delay);
+	}
+
+LED_HVController(0);
+General_Delay_Ms(Demo_Delay);
+LED_Alarm(0);
+General_Delay_Ms(Demo_Delay);
+LED_Status(0);
+General_Delay_Ms(Demo_Delay);
+LED_Calibration(0);
+General_Delay_Ms(Demo_Delay);
+}
+
+_SYSTEM_HVS_NODEBUG 
+void Initialization_HVS(void)
+{
+brdInit_HVS();  //----------
+i2c_init();  	 //----------
+//I2C_Init();     //----------
+ADC_Init();     //----------
+SFlash_Init();  //----------
+Flags_Init();   //----------
+Interlock_Init();//----------
+Calculate_Init();//----------
+
+Expander_FastInit();//----------
+EPS_Set_Out(0);
+//******************************************
+LCD_Init_4bit(); //----------
+Msg_AlbaLogo_Loading();
+//Error_Init(); //NOT FINISHED   //8
+LED_Black_All();
+LED_HVController(0);
+LED_Alarm(0);
+LED_Status(0);
+LED_Calibration(0);
+Interrupt_Init_PE5();  //----------
+Serial_Init_D();       //----------
+
+Sys_Keypad_SNconfig_Detect();   //backdoor to the SN
+
+Init_Demo();  //----------
+System_Init(); //must be here because it sets the BIOS status
+Msg_HVS_Bios_Status();  //----------
+Telnet_Init();         //----------
+LCD_Backlight(ON);
+
+SFlash_Init();         //---------- *2
+SFlash_Var_Init();     //----------
+
+System_Init();
+
+Menu_Init();           //----------
+
+Init_LCD_Screen();     //----------
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

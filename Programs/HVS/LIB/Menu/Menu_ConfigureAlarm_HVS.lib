@@ -1,0 +1,611 @@
+/*** BeginHeader */
+#ifndef __MENU_CONFIGUREALARM_HVS_LIB
+#define __MENU_CONFIGUREALARM_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_ConfigureAlarm1_Handler,Submenu_ConfigureAlarm2_Handler
+*/
+#define Max_Alarm_Base 9
+#define Min_Alarm_Base 1
+#define Max_Alarm_Exp 9
+#define Min_Alarm_Exp 5
+
+_MENU_HVS_NODEBUG cofunc void Submenu_ConfigureAlarm1_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Submenu_ConfigureAlarm2_Handler(void);
+
+/*** EndHeader */
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm_Float_Change(char *base, char *exponent)
+{
+char order;
+char switcher;
+order=0;
+switcher=0;
+
+while(order!=Designator_Exit)
+ {
+
+   if(order==Designator_Up)
+      {
+      if(switcher==0)
+            {
+            (*base)++;
+      		if ((*base)>Max_Alarm_Base) *base=Max_Alarm_Base;
+            }
+      else
+      		{
+            (*exponent)++;
+      		if ((*exponent)>Max_Alarm_Exp) *exponent=Max_Alarm_Exp;
+            }
+      }
+   else if (order==Designator_Down)
+      {
+      if(switcher==0)
+            {
+            (*base)--;
+      		if ((*base)<Min_Alarm_Base) *base=Min_Alarm_Base;
+            }
+      else
+      		{
+            (*exponent)--;
+      		if ((*exponent)<Min_Alarm_Exp) *exponent=Min_Alarm_Exp;
+            }
+      }
+   else if (order==Designator_Ok)
+      {
+		switcher=General_Invert_Bool(switcher);
+      }
+
+   if(Message_Box.On==1) Virtual_LCD_Make_Real();
+
+   LCD_Locate(2,10);
+   LCD_Write_Char(*base+48);
+   LCD_Write_Text("E-0");
+   LCD_Write_Char(*exponent+48);
+
+   if(switcher==0)
+      {
+      LCD_Locate(2,10);
+      LCD.Cursor_Position[0]=2;LCD.Cursor_Position[1]=10;
+   	}
+   else
+   	{
+      LCD_Locate(2,14);
+      LCD.Cursor_Position[0]=2;LCD.Cursor_Position[1]=14;
+      }
+
+	wfd order = Menu_Button_Wait4Get();
+ }
+
+}
+
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm1_Menu_Text(char row, char channel)
+{
+      LCD_Locate(row,2);
+      if(Setting.Threshold_Warning_Disable_Flag==1)
+       {
+       LCD_Write_Text(Menu_Text_Channel);
+       LCD_Write_Text(" X[off]");
+       }
+      else
+       {
+       LCD_Write_Text(Menu_Text_Channel);
+		 LCD_Write_Text(" X[mbar]");
+       }
+      LCD_Locate(row,10);
+      LCD_Write_Char(channel+49);
+		LCD_Locate(row+1,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm1_Change(char channel)
+{
+char buffer[8];
+char base;
+char exponent;
+
+LCD_Cursor_ON;LCD.Cursor=1;
+
+LCD_Display_Clear();
+LCD_Write_Text("Alarm threshold");
+LCD_Locate(2,1);
+LCD_Write_Text("P(mbar)=");
+LCD_Locate(3,OK_Change_Shift);
+LCD_Write_Text(Menu2_Ok_Change);
+LCD_Locate(4,3);
+LCD_Write_Text(Menu_Text_ExitConfirm);
+
+sprintf(buffer,"%.0e",Setting.Threshold_Warning[channel]);
+base=buffer[0]-48;
+exponent=buffer[4]-48;
+
+wfd Submenu_ConfigureAlarm_Float_Change(&base,&exponent);
+
+buffer[0]=base+48;
+buffer[1]='E';
+buffer[2]='-';
+buffer[3]='0';
+buffer[4]=exponent+48;
+buffer[5]=0;
+
+Setting.Threshold_Warning[channel]=atof(buffer);
+
+LCD.Cursor_Position[0]=4;LCD.Cursor_Position[1]=17;
+LCD_Cursor_OFF;LCD.Cursor=-1;
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm1_Change_All(void)
+{
+char i;
+char buffer[8];
+char base;
+char exponent;
+
+LCD_Cursor_ON;LCD.Cursor=1;
+
+LCD_Display_Clear();
+LCD_Write_Text("Alarm threshold");
+LCD_Locate(2,1);
+LCD_Write_Text("P(mbar)=");
+LCD_Locate(3,OK_Change_Shift);
+LCD_Write_Text(Menu2_Ok_Change);
+LCD_Locate(4,3);
+LCD_Write_Text(Menu_Text_ExitConfirm);
+
+sprintf(buffer,"%.0e",Setting.Threshold_Warning_ForAll);
+base=buffer[0]-48;
+exponent=buffer[4]-48;
+
+wfd Submenu_ConfigureAlarm_Float_Change(&base,&exponent);
+
+buffer[0]=base+48;
+buffer[1]='E';
+buffer[2]='-';
+buffer[3]='0';
+buffer[4]=exponent+48;
+buffer[5]=0;
+
+Setting.Threshold_Warning_ForAll=atof(buffer);
+for(i=0;i<8;i++) Setting.Threshold_Warning[i]=Setting.Threshold_Warning_ForAll;
+
+LCD.Cursor_Position[0]=4;LCD.Cursor_Position[1]=17;
+LCD_Cursor_OFF;LCD.Cursor=-1;
+}
+
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm1_Menu_SetAll_Text(void)
+{
+      LCD_Locate(1,2);
+      LCD_Write_Text("Set a threshold");
+      LCD_Locate(2,2);
+      LCD_Write_Text("protection for");
+      LCD_Locate(3,2);
+      LCD_Write_Text("all channels.");
+		LCD_Locate(4,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+}
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm1_Disable_Text(void)
+{
+      LCD_Locate(1,2);
+      LCD_Write_Text("Do you want to");
+      LCD_Locate(2,2);
+      if(Setting.Threshold_Warning_Disable_Flag==1) LCD_Write_Text("enable all");
+      else LCD_Write_Text("disable all");
+      LCD_Locate(3,2);
+      LCD_Write_Text("channels?");
+		LCD_Locate(4,OK_Confirm_Shift);
+		LCD_Write_Text(Menu2_Ok_Confirm);
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm1_Disable(void)
+{
+Setting.Threshold_Warning_Disable_Flag=General_Invert_Bool(Setting.Threshold_Warning_Disable_Flag);
+LCD_Display_Clear();
+      LCD_Locate(1,2);
+      LCD_Write_Text("The threshold");
+      LCD_Locate(2,2);
+      LCD_Write_Text("protection is");
+      LCD_Locate(3,2);
+      LCD_Write_Text("switched ");
+      if(Setting.Threshold_Warning_Disable_Flag==1) LCD_Write_Text("off");
+      else LCD_Write_Text("on");
+      LCD_Locate(4,3);
+      LCD_Write_Text(Menu2_Press_Any_Key);
+      wfd Menu_Button_Wait4Press();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm1_TextBox(int chan,int ord,int sec_line_flag)
+{
+int odd;
+odd=chan%2;
+
+      if(ord==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_ConfigureAlarm1_Change(chan-1);
+         Menu2.Element_ID=chan+1;
+         }
+
+      LCD_Display_Clear();
+		if (odd==1) LCD_Locate(1,1);
+      else LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      if(odd==1)
+      	{
+      	Submenu_ConfigureAlarm1_Menu_Text(1,chan-1);
+      	if(sec_line_flag==1)Submenu_ConfigureAlarm1_Menu_Text(3,chan);
+      	else Menu_Clean2Lines(3,4);
+      	}
+      else
+      	{
+      	Submenu_ConfigureAlarm1_Menu_Text(1,chan-2);
+      	if(sec_line_flag==1)Submenu_ConfigureAlarm1_Menu_Text(3,chan-1);
+      	else Menu_Clean2Lines(3,4);
+         }
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm1_Handler(void)
+{
+char order;
+order=0;
+Menu2.Element_ID=0;
+
+while(order!=Designator_Exit)
+	{
+		if(Menu2.Element_ID>250)
+		{
+		Menu2.Element_ID=0;
+		}
+      else if (Menu2.Element_ID>HVS.No_Of_Outputs+1) Menu2.Element_ID=HVS.No_Of_Outputs+1;
+		else if (Menu2.Element_ID>9)
+		{
+		Menu2.Element_ID=9;
+		}
+
+	switch (Menu2.Element_ID)
+		{
+      case 0:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=0;
+         wfd Submenu_ConfigureAlarm1_Change_All();
+         Menu2.Element_ID=0;
+         }
+
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_ConfigureAlarm1_Menu_SetAll_Text();
+		break;
+
+		case 2:
+      wfd Submenu_ConfigureAlarm1_TextBox(1,order,1);
+		break;
+
+		case 3:
+      wfd Submenu_ConfigureAlarm1_TextBox(2,order,1);
+		break;
+
+
+		case 4:
+      wfd Submenu_ConfigureAlarm1_TextBox(3,order,HVS.No_Of_Outputs!=3);
+		break;
+
+		case 5:
+      wfd Submenu_ConfigureAlarm1_TextBox(4,order,1);
+		break;
+
+
+		case 6:
+      wfd Submenu_ConfigureAlarm1_TextBox(5,order,HVS.No_Of_Outputs!=5);
+		break;
+
+		case 7:
+      wfd Submenu_ConfigureAlarm1_TextBox(6,order,1);
+		break;
+
+
+		case 8:
+      wfd Submenu_ConfigureAlarm1_TextBox(7,order,HVS.No_Of_Outputs!=7);
+		break;
+
+		case 9:
+      wfd Submenu_ConfigureAlarm1_TextBox(8,order,1);
+		break;
+
+      case 1:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_ConfigureAlarm1_Disable();
+         Menu2.Element_ID=1;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_ConfigureAlarm1_Disable_Text();
+		break;
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+}
+
+
+//******************************************************************************
+//*********************************ALARM2***************************************
+//******************************************************************************
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm2_Menu_Text(char row, char channel)
+{
+      LCD_Locate(row,2);
+      if(Setting.EPS_Disable==1)
+       {
+       LCD_Write_Text(Menu_Text_Channel);
+       LCD_Write_Text(" X[off]");
+       }
+      else
+       {
+       LCD_Write_Text(Menu_Text_Channel);
+		 LCD_Write_Text(" X[mbar]");
+       }
+      LCD_Locate(row,10);
+      LCD_Write_Char(channel+49);
+		LCD_Locate(row+1,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm2_Change(char channel)
+{
+char buffer[8];
+char base;
+char exponent;
+
+LCD_Cursor_ON;LCD.Cursor=1;
+
+LCD_Display_Clear();
+LCD_Write_Text("Alarm threshold");
+LCD_Locate(2,1);
+LCD_Write_Text("P(mbar)=");
+LCD_Locate(3,OK_Change_Shift);
+LCD_Write_Text(Menu2_Ok_Change);
+LCD_Locate(4,3);
+LCD_Write_Text(Menu_Text_ExitConfirm);
+
+sprintf(buffer,"%.0e",Setting.Threshold_EPS[channel]);
+base=buffer[0]-48;
+exponent=buffer[4]-48;
+
+wfd Submenu_ConfigureAlarm_Float_Change(&base,&exponent);
+
+buffer[0]=base+48;
+buffer[1]='E';
+buffer[2]='-';
+buffer[3]='0';
+buffer[4]=exponent+48;
+buffer[5]=0;
+
+Setting.Threshold_EPS[channel]=atof(buffer);
+
+LCD.Cursor_Position[0]=4;LCD.Cursor_Position[1]=17;
+LCD_Cursor_OFF;LCD.Cursor=-1;
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm2_Change_All(void)
+{
+char i;
+char buffer[8];
+char base;
+char exponent;
+
+LCD_Cursor_ON;LCD.Cursor=1;
+
+LCD_Display_Clear();
+LCD_Write_Text("Alarm threshold");
+LCD_Locate(2,1);
+LCD_Write_Text("P(mbar)=");
+LCD_Locate(3,OK_Change_Shift);
+LCD_Write_Text(Menu2_Ok_Change);
+LCD_Locate(4,3);
+LCD_Write_Text(Menu_Text_ExitConfirm);
+
+sprintf(buffer,"%.0e",Setting.Threshold_EPS_ForAll);
+base=buffer[0]-48;
+exponent=buffer[4]-48;
+
+wfd Submenu_ConfigureAlarm_Float_Change(&base,&exponent);
+
+buffer[0]=base+48;
+buffer[1]='E';
+buffer[2]='-';
+buffer[3]='0';
+buffer[4]=exponent+48;
+buffer[5]=0;
+
+Setting.Threshold_EPS_ForAll=atof(buffer);
+for(i=0;i<8;i++) Setting.Threshold_EPS[i]=Setting.Threshold_EPS_ForAll;
+
+LCD.Cursor_Position[0]=4;LCD.Cursor_Position[1]=17;
+LCD_Cursor_OFF;LCD.Cursor=-1;
+}
+
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm2_Menu_SetAll_Text(void)
+{
+      LCD_Locate(1,2);
+      LCD_Write_Text("Set a threshold");
+      LCD_Locate(2,2);
+      LCD_Write_Text("protection for");
+      LCD_Locate(3,2);
+      LCD_Write_Text("all channels.");
+		LCD_Locate(4,OK_Change_Shift);
+		LCD_Write_Text(Menu2_Ok_Change);
+}
+_MENU_HVS_NODEBUG
+void Submenu_ConfigureAlarm2_Disable_Text(void)
+{
+      LCD_Locate(1,2);
+      LCD_Write_Text("Do you want to");
+      LCD_Locate(2,2);
+      if(Setting.EPS_Disable==1) LCD_Write_Text("enable all");
+      else LCD_Write_Text("disable all");
+      LCD_Locate(3,2);
+      LCD_Write_Text("channels?");
+		LCD_Locate(4,OK_Confirm_Shift);
+		LCD_Write_Text(Menu2_Ok_Confirm);
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm2_Disable(void)
+{
+Setting.EPS_Disable=General_Invert_Bool(Setting.EPS_Disable);
+LCD_Display_Clear();
+      LCD_Locate(1,2);
+      LCD_Write_Text("The threshold");
+      LCD_Locate(2,2);
+      LCD_Write_Text("protection is");
+      LCD_Locate(3,2);
+      LCD_Write_Text("switched ");
+      if(Setting.EPS_Disable==1) LCD_Write_Text("off");
+      else LCD_Write_Text("on");
+      LCD_Locate(4,3);
+      LCD_Write_Text(Menu2_Press_Any_Key);
+      wfd Menu_Button_Wait4Press();
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm2_TextBox(int chan,int ord,int sec_line_flag)
+{
+int odd;
+odd=chan%2;
+
+      if(ord==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_ConfigureAlarm2_Change(chan-1);
+         Menu2.Element_ID=chan+1;
+         }
+
+      LCD_Display_Clear();
+		if (odd==1) LCD_Locate(1,1);
+      else LCD_Locate(3,1);
+		LCD_Write_Char(SubMenuPointer);
+      if(odd==1)
+      	{
+      	Submenu_ConfigureAlarm2_Menu_Text(1,chan-1);
+      	if(sec_line_flag==1) Submenu_ConfigureAlarm2_Menu_Text(3,chan);
+      	else Menu_Clean2Lines(3,4);
+      	}
+      else
+      	{
+      	Submenu_ConfigureAlarm2_Menu_Text(1,chan-2);
+      	if(sec_line_flag==1) Submenu_ConfigureAlarm2_Menu_Text(3,chan-1);
+      	else Menu_Clean2Lines(3,4);
+         }
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_ConfigureAlarm2_Handler(void)
+{
+char order;
+order=0;
+Menu2.Element_ID=0;
+
+while(order!=Designator_Exit)
+	{
+		if(Menu2.Element_ID>250)
+		{
+		Menu2.Element_ID=0;
+		}
+      else if (Menu2.Element_ID>HVS.No_Of_Outputs+1) Menu2.Element_ID=HVS.No_Of_Outputs+1;
+		else if (Menu2.Element_ID>9)
+		{
+		Menu2.Element_ID=9;
+		}
+
+	switch (Menu2.Element_ID)
+		{
+
+      case 0:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=0;
+         wfd Submenu_ConfigureAlarm2_Change_All();
+         Menu2.Element_ID=0;
+         }
+
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_ConfigureAlarm2_Menu_SetAll_Text();
+		break;
+
+		case 2:
+      wfd Submenu_ConfigureAlarm2_TextBox(1,order,1);
+		break;
+
+		case 3:
+      wfd Submenu_ConfigureAlarm2_TextBox(2,order,1);
+		break;
+
+
+		case 4:
+      wfd Submenu_ConfigureAlarm2_TextBox(3,order,HVS.No_Of_Outputs!=3);
+		break;
+
+		case 5:
+      wfd Submenu_ConfigureAlarm2_TextBox(4,order,1);
+		break;
+
+
+		case 6:
+      wfd Submenu_ConfigureAlarm2_TextBox(5,order,HVS.No_Of_Outputs!=5);
+		break;
+
+		case 7:
+      wfd Submenu_ConfigureAlarm2_TextBox(6,order,1);
+		break;
+
+
+		case 8:
+      wfd Submenu_ConfigureAlarm2_TextBox(7,order,HVS.No_Of_Outputs!=7);
+		break;
+
+		case 9:
+      wfd Submenu_ConfigureAlarm2_TextBox(8,order,1);
+		break;
+
+      case 1:
+      if(order==Designator_Ok)
+         {
+         Menu2.Element_ID=1;
+         wfd Submenu_ConfigureAlarm2_Disable();
+         Menu2.Element_ID=1;
+         }
+      LCD_Display_Clear();
+		LCD_Locate(1,1);
+		LCD_Write_Char(SubMenuPointer);
+      Submenu_ConfigureAlarm2_Disable_Text();
+		break;
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

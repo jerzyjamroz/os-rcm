@@ -1,0 +1,585 @@
+This is a machine generated file.
+Modifications by hand must be made carefully at one's own risk.
+Deleting an entry will result in factory default for that entry.
+----------------------------------------------------------------
+
+[COMM]
+port=8
+coldload baud=2400
+pilot baud=57600
+bios baud=115200
+Max Negotiated Baud=460800
+stop bits=0
+use TCP=0
+TCP Port=0
+TCP Name=
+Net Address=
+Serial Response Timeout=400
+Ethernet Response Timeout=8000
+Serial Retry Count=5
+Ethernet Retry Count=0
+Serial Poll Interval=3000
+Ethernet Poll Interval=30000
+Verify DSR=1
+Use USB to Serial Converter=1
+Disable Baud Negotiation=0
+USB to Serial Delay=500
+Begin Probe Delay=100
+End Probe Delay=300
+Begin Pilot Delay=0
+End Pilot Delay=0
+Pilot Bios Physical Address=0x4000
+Flash erase timeout=10000
+Use RabbitLink=0
+RabbitLink Port=0
+RabbitLink Address=
+RabbitLink Name=
+[Compiler Options]
+Max Errors Shown=10
+Max Warnings Shown=32
+All Serious None=A
+RTC Indices=1
+RTC Pointers=0
+Optimize For Size=0
+Prototypes=1
+Demotion=1
+Pointers=1
+BIOS Memory Mode=0
+Restrict Watch Expressions=0
+Separate Instruction and Data=1
+Generate List Files=0
+Inline Internal IO Functions=1
+Detect Internal Memory=1
+Detect Memory=1
+Flash type=32
+Memory type=8
+Default Compile Mode=2
+[Debug Options]
+Enable Breakpoints=0
+Enable Instruction Level Single Step=0
+Enable Watch Expressions=0
+Max Breakpoints=32
+Max Watch Expressions=10
+Watch Memory for Structs=0
+Enable Stack Tracing=0
+Stack Tracing Memory=4096
+Enable debug kernel=0
+[Include RST 28]
+Include RST=2
+[Include BIOS]
+Include BIOS=1
+[Poll Target]
+Poll target while running=1
+[Targetless Compile]
+Board ID=0x2900
+CPU ID=4000
+CPU Revision=0
+Crystal Speed MHz=29.4912
+RAM Size KBytes=512
+Flash Size KBytes=512
+Description=58MHz, RCM4200, 512K+512K SRAM, 512K Flash, analog, 8M serial flash
+Macros=CLK_DBL=1;BRD_OPT0=0x24;DFLASH0=0x11701;MD0=0x1;MD0_ID=0xBFD7;MD0_TYPE=0x1;MD0_SIZE=0x80;MD0_SECSIZE=0x1000;MD0_SECNUM=0x80;MD0_SPEED=0x46;MD0_MBC=0x0;MD2=0x1;MD2_ID=0x0;MD2_TYPE=0x0;MD2_SIZE=0x80;MD2_SECSIZE=0x0;MD2_SECNUM=0x0;MD2_SPEED=0xF;MD2_MBC=0xC6;MD3=0x1;MD3_ID=0x0;MD3_TYPE=0x0;MD3_SIZE=0x80;MD3_SECSIZE=0x0;MD3_SECNUM=0x0;MD3_SPEED=0x37;MD3_MBC=0x45
+[Output File]
+Auto open STDIO=1
+Append=0
+Log STDIO=0
+Output File Name=DC.OUT
+[Dynamic C Files]
+Use Rabbit 4000 Libs=1
+Use Lib File=0
+Use BIOS File=0
+Use Default Source File=0
+LIB File=
+BIOS File=
+CS0 RAM Detect File=bios\checkRamCS0.bin
+Pre-Cold Loader File=bios\precoldload.bin
+Cold Loader File=bios\coldload.bin
+16-bit Cold Loader File=bios\coldload16bit.bin
+Serial Flash Cold Loader File=bios\coldloadserflash.bin
+Pilot BIOS File=bios\pilot.bin
+16-bit Pilot BIOS File=bios\pilot16bit.bin
+Serial Flash Pilot BIOS File=bios\pilotserflash.bin
+Default Source File=
+Start Dir=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ADC\
+[DEFINES]
+Defines=
+[Compression Utility]
+Zimport External Utility=ZCOMPRESS.EXE
+[MRU Files]
+FileCount=10
+[Open Files]
+Number Open=1
+[C FILES]
+C Files=C:\elerepo\DynamicC\Programs\SimpleEM\SimpleEM.C;
+[Project Explorer]
+ProjEx Window Open=0
+ProjEx Window X=50
+ProjEx Window Y=50
+ProjEx Window W=600
+ProjEx Window H=400
+ProjEx Window State=0
+[INCLUDES]
+Includes=C:\DCRABBIT_10.64\Include;C:\elerepo\DynamicC\ALBAOS;
+[OpenFile  1]
+OpenFile  1 Path=C:\elerepo\DynamicC\Programs\SimpleEM\SimpleEM.C
+OpenFile  1 Read Only=0
+OpenFile  1 X=4
+OpenFile  1 Y=12
+OpenFile  1 W=679
+OpenFile  1 H=817
+OpenFile  1 Top Row=0
+OpenFile  1 Top Col=0
+OpenFile  1 WindowState=0
+OpenFile  1 Cursor Row=13
+OpenFile  1 Cursor Col=39
+[MRU 1]
+MRU 1 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_QUERY_API.LIB
+MRU 1 Read Only=0
+MRU 1 X=242
+MRU 1 Y=67
+MRU 1 W=952
+MRU 1 H=795
+MRU 1 Top Row=153
+MRU 1 WindowState=0
+MRU 1 Cursor Row=181
+MRU 1 Cursor Col=73
+[MRU 2]
+MRU 2 Path=C:\ELEREPO\DYNAMICC\PROGRAMS\SIMPLEEM\LIB\ADC\EM_ADC_API.LIB
+MRU 2 Read Only=0
+MRU 2 X=304
+MRU 2 Y=100
+MRU 2 W=903
+MRU 2 H=642
+MRU 2 Top Row=91
+MRU 2 WindowState=0
+MRU 2 Cursor Row=99
+MRU 2 Cursor Col=55
+[MRU 3]
+MRU 3 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_API.LIB
+MRU 3 Read Only=0
+MRU 3 X=66
+MRU 3 Y=66
+MRU 3 W=800
+MRU 3 H=500
+MRU 3 Top Row=0
+MRU 3 WindowState=0
+MRU 3 Cursor Row=51
+MRU 3 Cursor Col=11
+[MRU 4]
+MRU 4 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_QUERY.H
+MRU 4 Read Only=0
+MRU 4 X=110
+MRU 4 Y=110
+MRU 4 W=800
+MRU 4 H=500
+MRU 4 Top Row=63
+MRU 4 WindowState=0
+MRU 4 Cursor Row=82
+MRU 4 Cursor Col=91
+[MRU 5]
+MRU 5 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ADC\EM_ADC.H
+MRU 5 Read Only=0
+MRU 5 X=110
+MRU 5 Y=110
+MRU 5 W=800
+MRU 5 H=500
+MRU 5 Top Row=0
+MRU 5 WindowState=0
+MRU 5 Cursor Row=5
+MRU 5 Cursor Col=23
+[MRU 6]
+MRU 6 Path=C:\elerepo\DynamicC\ALBAOS\SYS\ALBAOS_SYSORD.H
+MRU 6 Read Only=0
+MRU 6 X=360
+MRU 6 Y=144
+MRU 6 W=800
+MRU 6 H=500
+MRU 6 Top Row=78
+MRU 6 WindowState=0
+MRU 6 Cursor Row=92
+MRU 6 Cursor Col=69
+[MRU 7]
+MRU 7 Path=C:\elerepo\DynamicC\ALBAOS\SYS\ALBAOS_SYSORD_API.LIB
+MRU 7 Read Only=0
+MRU 7 X=266
+MRU 7 Y=116
+MRU 7 W=733
+MRU 7 H=575
+MRU 7 Top Row=0
+MRU 7 WindowState=0
+MRU 7 Cursor Row=16
+MRU 7 Cursor Col=114
+[MRU 8]
+MRU 8 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\SENSOR\EM_SENSOR.LIB
+MRU 8 Read Only=0
+MRU 8 X=264
+MRU 8 Y=264
+MRU 8 W=800
+MRU 8 H=500
+MRU 8 Top Row=311
+MRU 8 WindowState=0
+MRU 8 Cursor Row=287
+MRU 8 Cursor Col=58
+[MRU 9]
+MRU 9 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\SENSOR\EM_SENSOR.H
+MRU 9 Read Only=0
+MRU 9 X=286
+MRU 9 Y=286
+MRU 9 W=800
+MRU 9 H=500
+MRU 9 Top Row=0
+MRU 9 WindowState=0
+MRU 9 Cursor Row=8
+MRU 9 Cursor Col=26
+[OpenFile  2]
+OpenFile  2 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_API.LIB
+OpenFile  2 Read Only=0
+OpenFile  2 X=253
+OpenFile  2 Y=69
+OpenFile  2 W=800
+OpenFile  2 H=500
+OpenFile  2 Top Row=63
+OpenFile  2 Top Col=0
+OpenFile  2 WindowState=0
+OpenFile  2 Cursor Row=79
+OpenFile  2 Cursor Col=6
+[OpenFile  3]
+OpenFile  3 Path=C:\elerepo\DynamicC\ALBAOS\ALBAOS_RUN.LIB
+OpenFile  3 Read Only=0
+OpenFile  3 X=339
+OpenFile  3 Y=257
+OpenFile  3 W=800
+OpenFile  3 H=500
+OpenFile  3 Top Row=39
+OpenFile  3 Top Col=0
+OpenFile  3 WindowState=0
+OpenFile  3 Cursor Row=54
+OpenFile  3 Cursor Col=35
+[MRU10]
+MRU10 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_SETTING_API.LIB
+MRU10 Read Only=0
+MRU10 X=413
+MRU10 Y=61
+MRU10 W=861
+MRU10 H=752
+MRU10 Top Row=0
+MRU10 WindowState=0
+MRU10 Cursor Row=103
+MRU10 Cursor Col=15
+[MRU11]
+MRU11 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\EM\EM_API.LIB
+MRU11 Read Only=0
+MRU11 X=198
+MRU11 Y=198
+MRU11 W=800
+MRU11 H=500
+MRU11 Top Row=0
+MRU11 WindowState=0
+MRU11 Cursor Row=0
+MRU11 Cursor Col=0
+[MRU12]
+MRU12 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_SETTING.H
+MRU12 Read Only=0
+MRU12 X=319
+MRU12 Y=113
+MRU12 W=893
+MRU12 H=660
+MRU12 Top Row=32
+MRU12 WindowState=0
+MRU12 Cursor Row=41
+MRU12 Cursor Col=71
+[OpenFile  4]
+OpenFile  4 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_QUERY_API.LIB
+OpenFile  4 Read Only=0
+OpenFile  4 X=64
+OpenFile  4 Y=73
+OpenFile  4 W=965
+OpenFile  4 H=602
+OpenFile  4 Top Row=176
+OpenFile  4 Top Col=0
+OpenFile  4 WindowState=0
+OpenFile  4 Cursor Row=183
+OpenFile  4 Cursor Col=20
+[OpenFile  5]
+OpenFile  5 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_SETTING_API.LIB
+OpenFile  5 Read Only=0
+OpenFile  5 X=417
+OpenFile  5 Y=219
+OpenFile  5 W=800
+OpenFile  5 H=500
+OpenFile  5 Top Row=124
+OpenFile  5 Top Col=0
+OpenFile  5 WindowState=0
+OpenFile  5 Cursor Row=0
+OpenFile  5 Cursor Col=0
+[OpenFile  6]
+OpenFile  6 Path=C:\elerepo\DynamicC\ALBAOS\Dev1\UDP\DEV_UDP.LIB
+OpenFile  6 Read Only=0
+OpenFile  6 X=132
+OpenFile  6 Y=132
+OpenFile  6 W=800
+OpenFile  6 H=500
+OpenFile  6 Top Row=96
+OpenFile  6 Top Col=13
+OpenFile  6 WindowState=0
+OpenFile  6 Cursor Row=115
+OpenFile  6 Cursor Col=88
+[MRU13]
+MRU13 Path=C:\DCRABBIT_10.64\LIB\RABBIT4000\LIBC\STDIO_SCANF.C
+MRU13 Read Only=0
+MRU13 X=88
+MRU13 Y=88
+MRU13 W=800
+MRU13 H=500
+MRU13 Top Row=335
+MRU13 WindowState=0
+MRU13 Cursor Row=335
+MRU13 Cursor Col=21
+[MRU14]
+MRU14 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_QUERY.H
+MRU14 Read Only=0
+MRU14 X=364
+MRU14 Y=118
+MRU14 W=840
+MRU14 H=528
+MRU14 Top Row=55
+MRU14 WindowState=0
+MRU14 Cursor Row=70
+MRU14 Cursor Col=19
+[MRU15]
+MRU15 Path=C:\ELEREPO\DYNAMICC\ALBAOS\\SYS\ALBAOS_SYSORD.H
+MRU15 Read Only=0
+MRU15 X=129
+MRU15 Y=184
+MRU15 W=800
+MRU15 H=500
+MRU15 Top Row=38
+MRU15 WindowState=0
+MRU15 Cursor Row=63
+MRU15 Cursor Col=83
+[MRU16]
+MRU16 Path=C:\elerepo\DynamicC\ALBAOS\SYS\ALBAOS_SYS.LIB
+MRU16 Read Only=0
+MRU16 X=88
+MRU16 Y=88
+MRU16 W=800
+MRU16 H=500
+MRU16 Top Row=24
+MRU16 WindowState=0
+MRU16 Cursor Row=0
+MRU16 Cursor Col=0
+[MRU17]
+MRU17 Path=C:\elerepo\DynamicC\ALBAOS\SYS\ALBAOS_LIBRARIES.LIB
+MRU17 Read Only=0
+MRU17 X=66
+MRU17 Y=66
+MRU17 W=800
+MRU17 H=500
+MRU17 Top Row=0
+MRU17 WindowState=0
+MRU17 Cursor Row=0
+MRU17 Cursor Col=0
+[MRU18]
+MRU18 Path=C:\ELEREPO\DYNAMICC\ALBAOS\..\PROGRAMS\SIMPLEEM\LIB\ORD\EM_ORD_SETTING.H
+MRU18 Read Only=0
+MRU18 X=44
+MRU18 Y=44
+MRU18 W=800
+MRU18 H=500
+MRU18 Top Row=42
+MRU18 WindowState=0
+MRU18 Cursor Row=20
+MRU18 Cursor Col=41
+[MRU19]
+MRU19 Path=C:\ELEREPO\DYNAMICC\ALBAOS\..\PROGRAMS\SIMPLEEM\LIB\ORD\EM_ORD_QUERY.H
+MRU19 Read Only=0
+MRU19 X=0
+MRU19 Y=0
+MRU19 W=1088
+MRU19 H=821
+MRU19 Top Row=0
+MRU19 WindowState=0
+MRU19 Cursor Row=35
+MRU19 Cursor Col=46
+[MRU20]
+MRU20 Path=C:\elerepo\DynamicC\ALBAOS\ALBAOS_RUN.LIB
+MRU20 Read Only=0
+MRU20 X=339
+MRU20 Y=257
+MRU20 W=800
+MRU20 H=500
+MRU20 Top Row=19
+MRU20 WindowState=0
+MRU20 Cursor Row=44
+MRU20 Cursor Col=79
+[MRU21]
+MRU21 Path=C:\elerepo\DynamicC\ALBAOS\Dev\ETH\DEV_ETH.LIB
+MRU21 Read Only=0
+MRU21 X=88
+MRU21 Y=88
+MRU21 W=800
+MRU21 H=500
+MRU21 Top Row=27
+MRU21 WindowState=0
+MRU21 Cursor Row=35
+MRU21 Cursor Col=0
+[MRU22]
+MRU22 Path=C:\elerepo\DynamicC\ALBAOS\Dev1\UDP\DEV_UDP.H
+MRU22 Read Only=0
+MRU22 X=132
+MRU22 Y=132
+MRU22 W=800
+MRU22 H=500
+MRU22 Top Row=0
+MRU22 WindowState=0
+MRU22 Cursor Row=4
+MRU22 Cursor Col=16
+[MRU23]
+MRU23 Path=C:\elerepo\DynamicC\ALBAOS\Dev1\UDP\DEV_UDP_MOUNT.H
+MRU23 Read Only=0
+MRU23 X=292
+MRU23 Y=85
+MRU23 W=800
+MRU23 H=500
+MRU23 Top Row=18
+MRU23 WindowState=0
+MRU23 Cursor Row=33
+MRU23 Cursor Col=6
+[MRU24]
+MRU24 Path=C:\ELEREPO\DYNAMICC\ALBAOS\DEV1\DEC4X16\DEV_DEC4X16.LIB
+MRU24 Read Only=0
+MRU24 X=132
+MRU24 Y=132
+MRU24 W=800
+MRU24 H=500
+MRU24 Top Row=24
+MRU24 WindowState=0
+MRU24 Cursor Row=34
+MRU24 Cursor Col=14
+[MRU25]
+MRU25 Path=C:\elerepo\DynamicC\ALBAOS\Dev\SPID\DEV_SPID.H
+MRU25 Read Only=0
+MRU25 X=220
+MRU25 Y=220
+MRU25 W=800
+MRU25 H=500
+MRU25 Top Row=0
+MRU25 WindowState=0
+MRU25 Cursor Row=0
+MRU25 Cursor Col=0
+[MRU26]
+MRU26 Path=C:\ELEREPO\DYNAMICC\ALBAOS\\DEV1\IC25LC020\DEV_IC25LC020_MOUNT.H
+MRU26 Read Only=0
+MRU26 X=176
+MRU26 Y=176
+MRU26 W=800
+MRU26 H=500
+MRU26 Top Row=9
+MRU26 WindowState=0
+MRU26 Cursor Row=20
+MRU26 Cursor Col=60
+[MRU27]
+MRU27 Path=C:\elerepo\DynamicC\ALBAOS\Dev\IOports\DEV_IO_BODY.LIB
+MRU27 Read Only=0
+MRU27 X=332
+MRU27 Y=215
+MRU27 W=800
+MRU27 H=501
+MRU27 Top Row=37
+MRU27 WindowState=0
+MRU27 Cursor Row=57
+MRU27 Cursor Col=44
+[MRU28]
+MRU28 Path=C:\elerepo\DynamicC\ALBAOS\Dev\ExtIO\DEV_ExtIO_MOUNT.H
+MRU28 Read Only=0
+MRU28 X=321
+MRU28 Y=23
+MRU28 W=742
+MRU28 H=837
+MRU28 Top Row=0
+MRU28 WindowState=0
+MRU28 Cursor Row=5
+MRU28 Cursor Col=10
+[MRU29]
+MRU29 Path=C:\DCRABBIT_10.64\LIB\RABBIT4000\TCPIP\TFTP.LIB
+MRU29 Read Only=0
+MRU29 X=198
+MRU29 Y=198
+MRU29 W=800
+MRU29 H=500
+MRU29 Top Row=575
+MRU29 WindowState=0
+MRU29 Cursor Row=577
+MRU29 Cursor Col=33
+[OpenFile  7]
+OpenFile  7 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_SETTING.H
+OpenFile  7 Read Only=0
+OpenFile  7 X=250
+OpenFile  7 Y=149
+OpenFile  7 W=800
+OpenFile  7 H=500
+OpenFile  7 Top Row=36
+OpenFile  7 Top Col=0
+OpenFile  7 WindowState=0
+OpenFile  7 Cursor Row=56
+OpenFile  7 Cursor Col=95
+[OpenFile  8]
+OpenFile  8 Path=C:\elerepo\DynamicC\ALBAOS\Dev1\UDP\DEV_UDP.LIB
+OpenFile  8 Read Only=0
+OpenFile  8 X=88
+OpenFile  8 Y=201
+OpenFile  8 W=800
+OpenFile  8 H=500
+OpenFile  8 Top Row=102
+OpenFile  8 Top Col=0
+OpenFile  8 WindowState=0
+OpenFile  8 Cursor Row=115
+OpenFile  8 Cursor Col=88
+[OpenFile  9]
+OpenFile  9 Path=C:\elerepo\DynamicC\Programs\SimpleEM\Lib\ORD\EM_ORD_QUERY.H
+OpenFile  9 Read Only=0
+OpenFile  9 X=94
+OpenFile  9 Y=198
+OpenFile  9 W=800
+OpenFile  9 H=500
+OpenFile  9 Top Row=63
+OpenFile  9 Top Col=0
+OpenFile  9 WindowState=0
+OpenFile  9 Cursor Row=67
+OpenFile  9 Cursor Col=79
+[OpenFile 10]
+OpenFile 10 Path=C:\ELEREPO\DYNAMICC\ALBAOS\\DEV\ADS7870\DEV_ADS7870_MOUNT.H
+OpenFile 10 Read Only=0
+OpenFile 10 X=44
+OpenFile 10 Y=44
+OpenFile 10 W=800
+OpenFile 10 H=500
+OpenFile 10 Top Row=2
+OpenFile 10 Top Col=0
+OpenFile 10 WindowState=0
+OpenFile 10 Cursor Row=28
+OpenFile 10 Cursor Col=46
+[OpenFile 11]
+OpenFile 11 Path=C:\ELEREPO\DYNAMICC\ALBAOS\\DEV\ADS7870\DEV_ADS7870_MOUNT.H
+OpenFile 11 Read Only=0
+OpenFile 11 X=22
+OpenFile 11 Y=22
+OpenFile 11 W=800
+OpenFile 11 H=500
+OpenFile 11 Top Row=0
+OpenFile 11 Top Col=0
+OpenFile 11 WindowState=0
+OpenFile 11 Cursor Row=28
+OpenFile 11 Cursor Col=46
+[OpenFile 12]
+OpenFile 12 Path=C:\elerepo\DynamicC\ALBAOS\Dev\ExtIO\DEV_ExtIO.H
+OpenFile 12 Read Only=0
+OpenFile 12 X=161
+OpenFile 12 Y=99
+OpenFile 12 W=800
+OpenFile 12 H=500
+OpenFile 12 Top Row=0
+OpenFile 12 Top Col=0
+OpenFile 12 WindowState=0
+OpenFile 12 Cursor Row=0
+OpenFile 12 Cursor Col=0

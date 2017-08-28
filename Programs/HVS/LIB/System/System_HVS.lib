@@ -1,0 +1,700 @@
+/*** BeginHeader */
+#ifndef __SYSTEM_HVS_LIB
+#define __SYSTEM_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+System_Arg_Handler,System_Init,System_Threshold_Warning_Handler,System_Update_Flag_Interlock,
+System_Alert_Flags,System_Return_MAC,System_Return_ShortMAC,Sys_Fl_Calibration,
+Sys_Fl_EPS_Occurence,Sys_Fl_Threshold_Warning_Occurence,
+Sys_Timer_ButPress,Sys_Return_SN,Sys_Keypad_SNconfig_Detect,Sys_Reset,
+System_Return_ActualRawDataMean,Sys_Pth_Warning_BoolFlag_Handler,
+Sys_ConfigEPS_Occurence_Handler,Sys_EPS_BoolFlag_Handler,Sys_Change_Password,Sys_Return_Password,
+Sys_HVS_Mode_Indicator_Handler,Sys_BrokenQlambda_Remover_Handler,System_Threshold_EPS_Handler,
+Sys_Fl_Calibration_Set
+*/
+#use "SYSTEM_HVS_DEBUG.LIB"
+#use "Device_HVS.lib"
+
+#define Sys_Msg_LED_BlinkTime 300
+
+_SYSTEM_HVS_NODEBUG void Sys_Fl_Calibration_Set(char bool);
+//******************************************************************************
+//**********************************ACCESSORS***********************************
+_SYSTEM_HVS_NODEBUG void Sys_Fl_Calibration(char bool);
+_SYSTEM_HVS_NODEBUG int Sys_Fl_EPS_Occurence(void);
+_SYSTEM_HVS_NODEBUG int Sys_Fl_Threshold_Warning_Occurence(void);
+_SYSTEM_HVS_NODEBUG char *Sys_Return_SN(void);
+_SYSTEM_HVS_NODEBUG char *Sys_Return_Password(void);
+
+_SYSTEM_HVS_NODEBUG char *System_Return_MAC(void);
+_SYSTEM_HVS_NODEBUG char *System_Return_ShortMAC(void);
+_SYSTEM_HVS_NODEBUG int System_Return_ActualRawDataMean(char channel);
+//**********************************ACCESSORS***********************************
+//******************************************************************************
+
+
+//******************************************************************************
+//****************************SYSTEM FLAGS HANDLERS*****************************
+_SYSTEM_HVS_NODEBUG void Sys_Pth_Warning_BoolFlag_Handler(void);
+_SYSTEM_HVS_NODEBUG int Sys_ConfigEPS_Occurence_Handler(void);
+_SYSTEM_HVS_NODEBUG void Sys_EPS_BoolFlag_Handler(void);
+_SYSTEM_HVS_NODEBUG cofunc void Sys_Change_Password(void);
+//****************************SYSTEM FLAGS HANDLERS*****************************
+//******************************************************************************
+
+
+//******************************************************************************
+//*********************************DEVICE*FEATURES******************************
+#define HVS_Max_No_Of_Outputs 8
+#define Sys_ION_Models_Amount 5
+
+/* System IP Handler
+   printf(" macAddr = %02X:%02X:%02X:%02X:%02X:%02X\n",
+	SysIDBlock.macAddr[0], SysIDBlock.macAddr[1], SysIDBlock.macAddr[2],
+	SysIDBlock.macAddr[3], SysIDBlock.macAddr[4], SysIDBlock.macAddr[5]);
+*/
+//*********************************DEVICE*FEATURES******************************
+//******************************************************************************
+#define Return_Voltage(Ch) Calculate_Voltage(ADC.FinalMean[Ch])
+
+#define Return_Current(i) Calculate_Current(ADC.FinalMean[i])
+#define Return_Calibrated_Current(Ch,i) Calculate_Calibrated_Current(Ch,ADC.FinalMean[i])
+
+#define Return_Pressure(Ch) I2P_Calculate_Pressure(System.I2P_Tab_Ch[Ch],System.Current[Ch])
+#define Sys_Ret_P(Ch) I2P_Calculate_Pressure(System.I2P_Tab_Ch[Ch],System.Current[Ch])
+#define Sys_Ret_Px(Ch,I) I2P_Calculate_Pressure(System.I2P_Tab_Ch[Ch],I)
+
+#define Ret_ICal(i) Return_Calibrated_Current(i,i)
+#define Ret_I(i) Return_Current(i)
+#define Ret_P(i) Return_Pressure(i)
+#define Ret_Int (Interlock.Status_Relays|HVS.Status_Outputs)
+
+#define Sys_MsgBox_Refresh_Time 20
+#define Ret_Alert_Ocurence (((System_Flag.Interlock>0)||(System_Flag.EPS>0)||(System_Flag.Pth_Warning>0))&&(Sys_Arg.ButtonPressTimer>Sys_MsgBox_Refresh_Time))
+#define Ret_Alert_Ocurence_NoTimer ((System_Flag.Interlock>0)||(System_Flag.EPS>0)||(System_Flag.Pth_Warning>0))
+
+#define Ret_Alert_OnFlag ( (System_Flag.Interlock>0) || (System_Flag.EPS>0) || (System_Flag.Pth_Warning>0) )
+//**********************************Functions***********************************
+_SYSTEM_HVS_NODEBUG void System_Arg_Handler(void);
+_SYSTEM_HVS_NODEBUG void System_Init(void);
+int System_Threshold_Warning_Handler(void);
+_SYSTEM_HVS_NODEBUG void System_Threshold_EPS_Handler(void);
+_SYSTEM_HVS_NODEBUG void System_Update_Flag_Interlock(void);
+_SYSTEM_HVS_NODEBUG int System_Alert_Flags(void);
+
+_SYSTEM_HVS_NODEBUG cofunc int Sys_Timer_ButPress(void);
+_SYSTEM_HVS_NODEBUG cofunc int Sys_Telnet_Timer_Handler(void);
+
+_SYSTEM_HVS_NODEBUG char Sys_Keypad_SNconfig_Detect(void);
+_SYSTEM_HVS_NODEBUG void Sys_Reset(void);
+_SYSTEM_HVS_NODEBUG cofunc void Sys_HVS_Mode_Indicator_Handler(int timing);
+_SYSTEM_HVS_NODEBUG int Sys_BrokenQlambda_Remover_Handler(void);
+//**********************************STRUCTURS***********************************
+struct{
+//******************************************************************************
+float Pressure[8];
+float Current[8];
+//******************************************************************************
+int Int_Tab_Cal_Ird[20][8]; //actual calibrated raw data in SFLASH
+//******************************************************************************
+int I2P_Tab_Ch[8];
+}System;
+
+struct{
+//******************************************************************************
+char EPS_Output_Mask[8];  //mask which covers the adequate interlock signals ang generates EPS
+//******************************************************************************
+float Threshold_Warning[8];    //pressure
+float Threshold_Warning_ForAll;//pressure
+char  Threshold_Warning_Disable_Flag;//pressure  //1-disabled;0-enabled
+//******************************************************************************
+float Threshold_EPS[8];//pressure
+float Threshold_EPS_ForAll;//pressure
+//char  Threshold_EPS_Disable_Flag;//pressure  //1-disabled;0-enabled
+char  EPS_Disable;//pressure  //1-disabled;0-enabled
+//******************************************************************************
+//char Manual_EPS;    //manual EPS which can be swtiched on only by an user
+//******************************************************************************
+//char MessageBox_Disable;
+//******************************************************************************
+long int Telnet_Message_Delay;
+char Telnet_Alert_Disable; //EPS,Warning,Interlock
+//******************************************************************************
+unsigned long Telnet_CloseSocket; //contains after how many seconds to close the ethernet connection, when there is no activity
+//******************************************************************************
+}Setting;
+
+struct{
+//******************************************************************************
+char EPS_Alarm_No; //possibilities: 1,2,3,4,5,6,7,8, shows which alarm occured
+//******************************************************************************
+char Calibration; //contains calibrated chanels
+//******************************************************************************
+char Threshold_Warning[8]; //contains flags where the pressure is exceeded // 0 or 1 each channel
+//char Threshold_EPS[8]; //contains flags where the pressure is exceeded // 0 or 1 each channel  not neccesary
+//-wfd EPS_Threshold_Alarm_Handler(); is enought
+//******************************************************************************
+char EPS_Config_Occurence[8]; //when one configuration occures
+//******************************************************************************
+char Interlock; //0 means no interlock, 1,2,3,4,5,6,7,8- channel interlocked
+//******************************************************************************
+char EthernetLED;   //0-off;1-on;2-refresh
+char CalibrationLED;
+char LED_Alarm_Status;
+char InterlockLED;
+//******************************************************************************
+char EPS_Status; //status of the EPS
+//******************************************************************************
+char EPS;           //bool
+char Pth_Warning;   //bool
+char Test_Blocker;  //bool for the test purposes
+char Refresher;     //bool shows menu with refreshing implemented
+char HVS_Mode;			//1-commissioning, 2-secure mode
+char Telnet;			//bool
+int MsgBox_BlockFlag;  //-1 and 1
+int MainRedInt; //0 and 1
+
+//int DamagedChannels[8];    //1 damaged; 0-ok
+//int DamagedChannels_Bool; //at least one channel damaged
+//char DamagedChannels_Char; //char representation of the damaged channels
+//char BrokenChannels_Char; //all channels stored in Flash
+}System_Flag;
+
+//struct{
+//int Interlock_On;
+//}Sys_Flag;  //read olny, 1 write in adequate procedure
+
+
+struct{
+unsigned long ButtonPressTimer; //refers in [s] when any button was pressed
+unsigned long TelnetTimer;  //refers in [s] how many seconds ago there was a ethernet activity
+unsigned long int InterruptInc; //detects activity of the interrupt pin
+unsigned long int Refresh_Counter;      //refreshes the coostates
+}Sys_Arg;
+
+
+struct{
+//******************************************************************************
+unsigned int SN;		//4 dignits
+//******************************************************************************
+//char Software_Version;
+//******************************************************************************
+unsigned int Password;		//4 dignits
+//******************************************************************************
+}System_Label;
+
+/*** EndHeader */
+_SYSTEM_HVS_NODEBUG
+void System_Init_CalibrationFlags(void)
+{
+char i,channel;
+
+for(channel=0;channel<8;channel++)
+ {
+
+   for(i=0;i<Keithley_Current_Loop_Arg;i++)
+	{
+   if (abs(System.Int_Tab_Cal_Ird[i][channel]-Calibration_Pattern[i])<100)
+   	{
+      }
+   else
+   	{
+      break;
+      }
+   }
+
+ if (i==Keithley_Current_Loop_Arg) set(&System_Flag.Calibration,channel);
+ else res(&System_Flag.Calibration,channel);
+ }
+
+}
+_SYSTEM_HVS_NODEBUG
+void System_Init(void)
+{
+char i;
+//***************************
+//System flags initialization
+	#GLOBAL_INIT
+   {
+   System_Flag.HVS_Mode=1;
+	Setting.EPS_Disable=0;
+	System_Flag.EPS_Status=0;
+	System_Flag.EPS=0;           //bool
+	System_Flag.Pth_Warning=0;   //bool
+   System_Flag.Test_Blocker=0;  //bool
+   System_Flag.Refresher=0;	  //bool
+   System_Flag.Telnet=0;        //bool
+//   Setting.MessageBox_Disable=0; //bool
+   LCD.Cursor=-1;   //int bool
+   System_Flag.MsgBox_BlockFlag=1; //bool
+	}
+
+for(i=0;i<8;i++)
+	{
+	System_Flag.EPS_Config_Occurence[i]=0;
+	System_Flag.Threshold_Warning[i]=0;
+	}
+//System_Flag.Calibration=0; //initialized
+System_Flag.EPS_Alarm_No=0;
+
+for(i=0;i<8;i++)
+	{
+	System.Pressure[i]=0;
+   System.Current[i]=0;
+   }
+//System flags initialization
+//***************************
+System_Init_CalibrationFlags();
+SFlash_Sys_Label_Load();
+SFlash_Sys_Label_Password_Load();
+//System_Label.Software_Version=Sver;
+
+Flags_NoOfOutputs_Adopter();				//it sets the flag of removed channels
+
+System.I2P_Tab_Ch[0]=SFlash_VarRead(ID_I2P_Tab_Ch0);
+System.I2P_Tab_Ch[1]=SFlash_VarRead(ID_I2P_Tab_Ch1);
+System.I2P_Tab_Ch[2]=SFlash_VarRead(ID_I2P_Tab_Ch2);
+System.I2P_Tab_Ch[3]=SFlash_VarRead(ID_I2P_Tab_Ch3);
+System.I2P_Tab_Ch[4]=SFlash_VarRead(ID_I2P_Tab_Ch4);
+System.I2P_Tab_Ch[5]=SFlash_VarRead(ID_I2P_Tab_Ch5);
+System.I2P_Tab_Ch[6]=SFlash_VarRead(ID_I2P_Tab_Ch6);
+System.I2P_Tab_Ch[7]=SFlash_VarRead(ID_I2P_Tab_Ch7);
+
+for(i=0;i<8;i++)
+	{
+	if( (System.I2P_Tab_Ch[i]>12) || (System.I2P_Tab_Ch[i]<0) ) System.I2P_Tab_Ch[i]=0;
+   }
+}
+
+//******************************************************************************
+//****************************SYSTEM MAIN HANDLERS******************************
+_SYSTEM_HVS_NODEBUG
+void System_Arg_Current_Handler(void)
+{
+char i,j;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+   if (BIT(&System_Flag.Calibration,i)==1) System.Current[i]=Ret_ICal(i);
+   else System.Current[i]=Ret_I(i);
+   }
+for(j=i;j<8;j++) System.Current[j]=0;
+}
+
+_SYSTEM_HVS_NODEBUG
+void System_Arg_Pressure_Handler(void)
+{
+char i,j;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+	System.Pressure[i]=Ret_P(i);
+   }
+for(j=i;j<8;j++) System.Pressure[j]=0;
+}
+
+_SYSTEM_HVS_NODEBUG
+void System_Arg_Handler(void)
+{
+System_Arg_Current_Handler();
+System_Arg_Pressure_Handler();
+}
+//****************************SYSTEM MAIN HANDLERS******************************
+//******************************************************************************
+
+
+//******************************************************************************
+//****************************SYSTEM FLAGS HANDLERS*****************************
+_SYSTEM_HVS_NODEBUG
+void System_Update_Flag_Interlock(void)
+{
+#GLOBAL_INIT{
+System_Flag.Interlock=0;
+}
+
+if( (Interlock.Red_LED<HVS.No_Of_Outputs) && (Interlock.Red_LED>=0) )
+	{
+   System_Flag.Interlock=Interlock.Red_LED+1;
+	}
+else if(Interlock.Red_LED==RED_LED_FORBIDDEN) System_Flag.Interlock=RED_LED_FORBIDDEN;
+else System_Flag.Interlock=0;
+}
+
+int System_Alert_Flags(void)
+{
+#GLOBAL_INIT{
+System_Flag.Interlock=0;
+}
+
+if (System_Flag.Interlock>0) return 1;
+else return 0;
+}
+
+//************************Pth WARNING*******************************************
+_SYSTEM_HVS_NODEBUG
+int System_Threshold_Warning_Handler(void)
+{
+char i,j;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+	if((System.Pressure[i]>Setting.Threshold_Warning[i]) && (Setting.Threshold_Warning_Disable_Flag==0) && (Broken_Channel.FlashFlag[i]==0) ) System_Flag.Threshold_Warning[i]=1;
+	else System_Flag.Threshold_Warning[i]=0;
+   }
+for(j=i;j<8;j++) System_Flag.Threshold_Warning[j]=0;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	if(System_Flag.Threshold_Warning[i]>0)
+      {
+      System_Flag.Pth_Warning=1;
+      return 1;
+      }
+
+System_Flag.Pth_Warning=0;
+return 0;
+}
+
+_SYSTEM_HVS_NODEBUG
+void System_Threshold_EPS_Handler(void)
+{
+char i,j;
+j=0;
+
+EPS.Threshold_Status=0;
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+	if(System.Pressure[i]>Setting.Threshold_EPS[i]) set(&EPS.Threshold_Status,i);
+	else res(&EPS.Threshold_Status,i);
+   }
+
+if(EPS.Threshold_Status==0)
+	{
+	Dev.EPS=0;
+   System_Flag.EPS=0;
+   System_Flag.EPS_Alarm_No=0;
+   }
+}
+
+//***********************EPS*******************************
+_SYSTEM_HVS_NODEBUG
+int Sys_ConfigEPS_Occurence_Handler(void)
+{
+char i,j;
+
+if ( (EPS.Threshold_Status==Broken_Channel.FlashFlag_Char) || (EPS.Threshold_Status==0) )
+	{
+	Dev.EPS=0;
+   System_Flag.EPS=0;
+   System_Flag.EPS_Alarm_No=0;
+   for(i=0;i<8;i++) System_Flag.EPS_Config_Occurence[i]=0;
+   return 0;
+   }
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+   if(Setting.EPS_Output_Mask[i]==0) System_Flag.EPS_Config_Occurence[i]=0;
+   else if((EPS.Threshold_Status&Setting.EPS_Output_Mask[i])==Setting.EPS_Output_Mask[i])
+      {
+      if ( (Setting.EPS_Disable==0) && (Broken_Channel.FlashFlag[i]==0) ) System_Flag.EPS_Config_Occurence[i]=1;
+      else System_Flag.EPS_Config_Occurence[i]=0;
+   	}
+   else
+   	{
+		System_Flag.EPS_Config_Occurence[i]=0;
+      }
+   }
+
+for(j=i;j<8;j++) System_Flag.EPS_Config_Occurence[j]=0;
+
+if (EPS.Threshold_Status>0)
+	{
+	for(i=0;i<HVS.No_Of_Outputs;i++)
+   	{
+   	if(System_Flag.EPS_Config_Occurence[i]>0)
+      	{
+      	System_Flag.EPS_Alarm_No=i+1;
+      	System_Flag.EPS=1;
+      	Dev.EPS=1;
+      	return 1;
+      	}
+      else
+      	{
+         System_Flag.EPS_Alarm_No=0;
+      	System_Flag.EPS=0;
+      	Dev.EPS=0;
+         }
+   	}
+   }
+
+return 0;
+}
+
+/*
+int Sys_Fl_EPS_Occurence(void)
+{
+char i;
+
+if (Setting.EPS_Disable>0) return 0;
+
+for(i=0;i<HVS.No_Of_Outputs;i++) if(System_Flag.EPS_Config_Occurence[i]>0) return 1;
+return 0;
+}
+
+
+void Sys_EPS_BoolFlag_Handler(void)
+{
+System_Flag.EPS=(char) Sys_Fl_EPS_Occurence();
+}
+*/
+//****************************SYSTEM FLAGS HANDLERS*****************************
+//******************************************************************************
+
+
+//******************************************************************************
+//**************************************ACCESSORS*******************************
+_SYSTEM_HVS_NODEBUG
+void Sys_Fl_Calibration_Set(char bool)
+{
+System_Flag.CalibrationLED=bool;
+}
+
+_SYSTEM_HVS_NODEBUG
+char *Sys_Return_SN(void)
+{
+sprintf(General.Buffer,"%04d",System_Label.SN);
+return General.Buffer;
+}
+
+_SYSTEM_HVS_NODEBUG
+char *Sys_Return_Password(void)
+{
+sprintf(General.Buffer,"%04d",System_Label.Password);
+return General.Buffer;
+}
+
+_SYSTEM_HVS_NODEBUG
+char *System_Return_MAC(void)
+{
+sprintf(General.Buffer,"%02X:%02X:%02X:%02X:%02X:%02X",
+SysIDBlock.macAddr[0], SysIDBlock.macAddr[1], SysIDBlock.macAddr[2],
+SysIDBlock.macAddr[3], SysIDBlock.macAddr[4], SysIDBlock.macAddr[5]);
+
+return General.Buffer;
+}
+
+_SYSTEM_HVS_NODEBUG
+char *System_Return_ShortMAC(void)
+{
+sprintf(General.Buffer,"%02X%02X%02X%02X%02X%02X",
+SysIDBlock.macAddr[0], SysIDBlock.macAddr[1], SysIDBlock.macAddr[2],
+SysIDBlock.macAddr[3], SysIDBlock.macAddr[4], SysIDBlock.macAddr[5]);
+
+return General.Buffer;
+}
+
+_SYSTEM_HVS_NODEBUG
+int System_Return_ActualRawDataMean(char channel07)
+{
+return ADC.ActualRawDataMean[channel07];
+}
+//**************************************ACCESSORS*******************************
+//******************************************************************************
+
+
+//******************************************************************************
+//********************************SYSTEM LABEL HANDLER**************************
+_SYSTEM_HVS_NODEBUG
+char Sys_Keypad_SNconfig_Detect(void)
+{
+   char data;
+   I2C.error=I2CRead(PORT_EXP3_ADDRESS,0x01,&data,1);
+//   printf("start=%x",data);
+   if ((data&0x0F)==0x04)
+   	{
+      LCD_Display_Clear();
+      LCD_Write_Text("SERIAL NUMBER");
+      LCD_Locate(2,1);
+      LCD_Write_Text("configuration");
+      LCD_Locate(3,1);
+      LCD_Write_Text("SN: HVS");
+
+      SFlash_Sys_Label_Load();
+      if (System_Label.SN==9999) System_Label.SN=1000;
+//      printf("DZIALA BIOS ENTRY!!!!!");
+		while((data!=0x0B) && (data!=0x07))
+      	{
+         I2CRead(PORT_EXP3_ADDRESS,0x01,&data,1);
+         data=data&0x0F;
+         if(data==0x0D) System_Label.SN++;
+         else if(data==0x0E) System_Label.SN--;
+         LCD_Locate(3,8);
+         LCD_Write_Text(Sys_Return_SN());
+         General_Delay_Ms(200);
+//         printf("d=%x\n",data);
+         }
+
+      if(data==0x0B) SFlash_Sys_Label_Save();
+      else SFlash_Sys_Label_Load();
+      }
+}
+
+_SYSTEM_HVS_NODEBUG
+cofunc void Sys_Change_Password(void)
+{
+char keypad_port;
+keypad_port=0;
+
+if (System_Label.Password==9999) System_Label.Password=1000;
+
+		while((keypad_port!=0x0B) && (keypad_port!=0x07))
+      	{
+      	LCD_Display_Clear();
+      	LCD_Write_Text("   PASSWORD");
+      	LCD_Locate(2,1);
+      	LCD_Write_Text(" configuration");
+      	LCD_Locate(3,1);
+      	LCD_Write_Text(" NEW:");
+
+         I2CRead(PORT_EXP3_ADDRESS,0x01,&keypad_port,1);
+         keypad_port=keypad_port&0x0F;
+
+         if(keypad_port==0x0D) System_Label.Password++;
+         else if(keypad_port==0x0E) System_Label.Password--;
+         LCD_Locate(3,7);
+         LCD_Write_Text(Sys_Return_Password());
+         waitfor(DelayMs(200));
+         Sys_Arg.ButtonPressTimer=0;
+         }
+
+      if(keypad_port==0x0B) SFlash_Sys_Label_Password_Save();
+      else SFlash_Sys_Label_Password_Load();
+
+}
+//********************************SYSTEM LABEL HANDLER**************************
+//******************************************************************************
+
+_SYSTEM_HVS_NODEBUG
+cofunc int Sys_Timer_ButPress(void)
+{
+static unsigned long start_timer;
+#GLOBAL_INIT{
+start_timer=MS_TIMER;
+Sys_Arg.ButtonPressTimer=0;
+}
+
+start_timer=MS_TIMER;
+
+waitfor(Gn_Abs_Lint(MS_TIMER-start_timer)>1000);
+
+Sys_Arg.ButtonPressTimer++;
+
+if(Sys_Arg.ButtonPressTimer>2000000000) Sys_Arg.ButtonPressTimer=0;
+
+return 1;
+}
+
+_SYSTEM_HVS_NODEBUG
+cofunc int Sys_Telnet_Timer_Handler(void)
+{
+unsigned long start_timer;
+
+start_timer=MS_TIMER;
+
+waitfor(Gn_Abs_Lint(MS_TIMER-start_timer)>1000);
+
+Sys_Arg.TelnetTimer++;
+
+if( (Sys_Arg.TelnetTimer>Setting.Telnet_CloseSocket) && (Setting.Telnet_CloseSocket!=0) )
+	{
+   tcp_tick(state->s);
+   if(System_Flag.Telnet==1)
+   	{
+      sock_fastwrite(state->s, "<TELNET_TIMEOUT>", 16);
+      Telnet_NewLine;
+      tcp_tick(state->s);
+      sock_close(state->s);
+      }
+   Sys_Arg.TelnetTimer=0;
+   }
+
+if(Sys_Arg.TelnetTimer>2000000000) Sys_Arg.TelnetTimer=0;
+}
+
+_SYSTEM_HVS_NODEBUG
+void Sys_Reset(void)
+{
+Expander_FastInit();
+LCD_FastInit_4bit();
+Virtual_LCD_Make_Real();
+//Interlock.Activity++;
+//Sys_Arg.Refresh++;
+}
+
+_SYSTEM_HVS_NODEBUG
+cofunc void Sys_HVS_Mode_Indicator_Handler(int timing)
+{
+LED_Status(1);
+waitfor(DelayMs(timing));
+LED_Status(0);
+waitfor(DelayMs(timing));
+}
+
+/*
+int Sys_BrokenQlambda_Remover_Handler(void)
+{
+int i;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+{
+if (Broken_Channel.Flags[i]>0)
+	{
+   SET(&Interlock.Status_Relays,i);
+   }
+}
+
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+/*
+//***********************EPS*******************************
+void Sys_ConfigEPS_Occurence_Handler(void)
+{
+char i,j;
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+   if(Setting.EPS_Output_Mask[i]==0) System_Flag.EPS_Config_Occurence[i]=0;
+//   else if (  )
+   else if((EPS.Threshold_Status&Setting.EPS_Output_Mask[i])==Setting.EPS_Output_Mask[i])
+      {
+      if (Setting.EPS_Disable==0) System_Flag.EPS_Config_Occurence[i]=1;
+      else System_Flag.EPS_Config_Occurence[i]=0;
+   	}
+   else
+   	{
+		System_Flag.EPS_Config_Occurence[i]=0;
+      }
+   }
+
+for(j=i;j<8;j++) System_Flag.EPS_Config_Occurence[j]=0;
+
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+   {
+   if(System_Flag.EPS_Config_Occurence[i]>0)
+      {
+      System_Flag.EPS_Alarm_No=i+1;
+      break;
+      }
+   else System_Flag.EPS_Alarm_No=0;
+   }
+
+}
+*/
+

@@ -1,0 +1,138 @@
+/*** BeginHeader */
+#ifndef __FIM_COM_ORDER_HEADER_LIB
+#define __FIM_COM_ORDER_HEADER_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#ifdef COMORD_DEBUG
+#define _COMORD_NODEBUG
+#else
+#define _COMORD_NODEBUG nodebug
+#endif
+//************************DEFINES***********************************************
+#define Local_MKR_Ord_StrLen_Const 5
+//************************GLOBAL VARIABLES**************************************
+const char ComOrd_TheEndChar='/';
+const char Cmd_Ack[Local_MKR_Ord_StrLen_Const+1+1]="ACKNW/";
+
+enum{
+R2Fdir=0,
+F2Rdir
+}ComOrd_Dir;
+
+struct ComOrd_RefStruc{
+int ID;
+char Command[Local_MKR_Ord_StrLen_Const+1];
+int Param1;
+int Param2;
+};
+
+enum{
+//--------------
+//Ord_R2F_Ref
+R2F_BeginIndex=0,
+//--------------
+R2F_RESET,
+R2F_REMAL,
+R2F_STAGT,
+R2F_DISGT,
+R2F_DISST,
+R2F_OVxGT,
+R2F_OVxST,
+R2F_FIFGT,
+R2F_EEPGT,
+R2F_EEPST,
+R2F_FRMGT,
+R2F_SERGT,
+R2F_MC1ST,
+R2F_MC2ST,
+R2F_NETST,
+R2F_ALSGT,
+//R2F_ACKNW,
+R2F_ERROR,
+//--------------
+R2F_EndIndex,
+//--------------
+//Ord_F2R_Ref
+F2R_BeginIndex,
+//--------------
+F2R_RSTUC,
+F2R_RESET,
+F2R_STAVL,
+F2R_DISVL,
+F2R_OVxVL,
+F2R_FIFOE,
+F2R_FIFOF,
+F2R_FIFAL,
+F2R_FIFT1,
+F2R_FIFT2,
+F2R_FRMVL,
+F2R_SERVL,
+F2R_MACGT,
+F2R_NETGT,
+F2R_ALSST,
+//F2R_ACKNW,
+F2R_ERROR,
+//--------------
+F2R_EndIndex,
+//--------------
+ComOrd_Len
+}ComOrd_IDs;
+
+
+const struct ComOrd_RefStruc ComOrd_Ref[ComOrd_Len+1]={
+//Ord_R2F_Ref
+R2F_BeginIndex,"",				-1,-1,
+R2F_RESET,		"RESET",			 0, 0,
+R2F_REMAL,		"REMAL",    	 0, 0,
+R2F_STAGT,  	"STAGT",    	 0, 0,
+R2F_DISGT,  	"DISGT",    	 0, 0,
+R2F_DISST,		"DISST",    	 4, 0,
+R2F_OVxGT,		"OVxGT",    	 2, 0,
+R2F_OVxST,		"OVxST",    	 2, 4,
+R2F_FIFGT,		"FIFGT",    	 0, 0,
+R2F_EEPGT,		"EEPGT",    	 0, 0,
+R2F_EEPST,		"EEPST",    	 0, 0,
+R2F_FRMGT,		"FRMGT",    	 0, 0,
+R2F_SERGT,		"SERGT",    	 0, 0,
+R2F_MC1ST,		"MC1ST",    	 6, 0,
+R2F_MC2ST,		"MC2ST",    	 6, 0,
+R2F_NETST,		"NETST",    	 2, 0,
+R2F_ALSGT,		"ALSGT",			 2, 0,
+//R2F_ACKNW,		"ACKNW",    	 0, 0,
+R2F_ERROR,		"ERROR",    	 2, 0,
+R2F_EndIndex,	"",		     	-1,-1,
+//Ord_F2R_Ref
+F2R_BeginIndex,"",            -1,-1,
+F2R_RSTUC,		"RSTUC",			 0, 0,
+F2R_RESET,		"RESET",			 0, 0,
+F2R_STAVL,		"STAVL",			 2, 0,
+F2R_DISVL,		"DISVL",			 4, 0,
+F2R_OVxVL,		"OVxVL",			 2, 4,
+F2R_FIFOE,		"FIFOE",			 0, 0,
+F2R_FIFOF,		"FIFOF",			 0, 0,
+F2R_FIFAL,		"FIFAL",        3, 4,
+F2R_FIFT1,		"FIFT1",        3, 8,
+F2R_FIFT2,		"FIFT2",        3, 8,
+F2R_FRMVL,		"FRMVL",        4, 0,
+F2R_SERVL,		"SERVL",        4, 0,
+F2R_MACGT,		"MACGT",        0, 0,
+F2R_NETGT,		"NETGT",        0, 0,
+F2R_ALSST,		"ALSST",			 2, 1,
+//F2R_ACKNW,		"ACKNW",        0, 0,
+F2R_ERROR,		"ERROR",        2, 0,
+F2R_EndIndex,	"",				-1,-1,
+SYSNULL,			"",				-1,-1
+};
+
+/*** EndHeader */
+
+//*******************************INITIALIZATION********************************
+
+//*******************************INITIALIZATION********************************
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

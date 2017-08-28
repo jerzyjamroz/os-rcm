@@ -1,0 +1,49 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_MOUNT_SYS_LIB
+#define __ALBAOS_MOUNT_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#include "ALBAOS_ENVIRONMENT.H"
+#warnt "******<MOUNTING_SYSTEM>******"
+//*********************************************************************************
+//<Mount_Dev_ALBAOS_Driver>
+#use "ALBAOS_SYS.LIB"
+#use "ALBAOS_SYSORD_API.LIB"
+#use "ALBAOS_LIBRARIES.LIB"
+//</Mount_Dev_ALBAOS_Driver>
+
+#include "/Dev/ExtIO/DEV_ExtIO_MOUNT.H"
+
+#include "/Dev/ETH/DEV_ETH_MOUNT.H"            //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#include "/SYS/RemProgUpdate/SYS_REMPROGUPDATE_MOUNT.H"        //<NOTE: DEPENDS ON ETH>
+
+#include "/Dev/SPID/DEV_SPID_MOUNT.H"
+
+#include "/Dev/ADS7870/DEV_ADS7870_MOUNT.H"
+
+#include "/Dev/INT/DEV_INT_MOUNT.H"  
+
+#include "/Dev1/UDP/DEV_UDP_MOUNT.H"     //<NOTE: DEPENDS ON ETH>
+
+#include "/Dev1/DEC4X16/DEV_DEC4X16_MOUNT.H"
+
+#include "/Dev1/MCP23S08/DEV_MCP23S08_MOUNT.H"
+
+#include "/Dev1/IC25LC020/DEV_IC25LC020_MOUNT.H"
+
+#include "/Dev1/DAC7611/DEV_DAC7611_MOUNT.H"
+
+#define ALBAOS_INIT brdInit();Dev_Eth_Init();Dev_UDP_Init();Dev_SPID_Init();
+
+#define ALBAOS_DAEMONS DEV_Eth_Daemon();
+
+#warnt "******</MOUNTING_SYSTEM>******"
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

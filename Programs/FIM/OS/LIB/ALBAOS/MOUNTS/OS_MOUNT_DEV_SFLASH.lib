@@ -1,0 +1,69 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//******************************************************************************
+//<Mount_Dev_SFlash_Driver>
+#ifdef Mount_Dev_SFlash_Driver
+
+	#warnt "Dev_SFlash: ACTIVE"
+
+	#use "DEV_SFlash_MOUNT.LIB"
+
+	#define _SYS_MOUNT_DEV_SFlash_DRIVER_INIT_ 	DEV_SFLASH_DRIVER_INIT__
+
+	#define SYS_SFlash_Ver 								Dev_SFlash_Ver
+	#define SYS_SFlash_VarRead(id) 					Dev_SFlash_IntRead(id)
+	#define SYS_SFlash_VarWrite(id,var) 			Dev_SFlash_IntWrite(id,var)
+	#define SYS_SFlash_IntRead(id) 					Dev_SFlash_IntRead(id)
+	#define SYS_SFlash_IntWrite(id,var) 			Dev_SFlash_IntWrite(id,var)
+
+#else
+
+	#warnt "Simulator Dev_SFlash: ACTIVE"
+
+	const char SYS_SFlash_Ver[]="UNMONTED";
+	#define _SYS_MOUNT_DEV_SFlash_DRIVER_INIT_	//SYS_Void();
+
+	int SYS_SFlash_VarRead(int id){ return -0xFF;}
+	int SYS_SFlash_VarWrite(int id,int var){ return -0xFF;}
+	int SYS_SFlash_IntRead(int id){ return -0xFF;}
+	int SYS_SFlash_IntWrite(int id,int var){ return -0xFF;}
+
+#endif
+//</Mount_Dev_SFlash_Driver>
+//******************************************************************************
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

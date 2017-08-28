@@ -1,0 +1,20 @@
+/*** BeginHeader */
+#ifndef __DEV_SFlash_HEADER_LIB
+#define __DEV_SFlash_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+const char SFlash_Ver[]="1.01.02"; 
+
+#ifdef SFlash_DEBUG
+#define _SFlash_NODEBUG
+#else
+#define _SFlash_NODEBUG nodebug
+#endif
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

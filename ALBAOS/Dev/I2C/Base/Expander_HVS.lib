@@ -1,0 +1,277 @@
+/*** BeginHeader */
+#ifndef __EXPANDER_HVS_LIB
+#define __EXPANDER_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Expander_FastInit
+*/
+_DEVICE_HVS_NODEBUG void Expander_FastInit(void);
+
+_DEVICE_HVS_NODEBUG void Expander_FastInit_First(void);
+_DEVICE_HVS_NODEBUG void Expander_FastInit_Second(void);
+
+static unsigned char PortExp1_Val0;
+static unsigned char PortExp1_Val1;
+static unsigned char PortExp2_Val0;
+//static unsigned char PortExp2_Val1;
+//static unsigned char PortExp3_Val0;
+//static unsigned char PortExp3_Val1;
+
+/*** EndHeader */
+
+/*START DESCRIPTION******************************************************
+
+	Port Expander 1 Configuration (IC600 - Address 0xE8)
+
+Pin   Port  ADC Function                  I/O      I/O State
+====  ====  ===========================   ======   ============================
+04    P00   Led_2_R                       Output   Low
+05    P01   Led_2_G                       Output   Low
+06    P02   Led_1_R                       Output   Low
+07    P03   Led_1_G                       Output   Low
+08    P04   Led_Alarm                     Output   Low
+09    P05   Led_Status                    Output   Low
+10    P06   Led_Cal                       Output   Low
+11    P07   Led_Cont		            		Output   Low
+13    P10   Led_6_R                       Output   Low
+14    P11   Led_6_G                       Output   Low
+15    P12   Led_5_R                       Output   Low
+16    P13   Led_5_G						      Output   Low
+17    P14   Led_4_R								Output   Low
+18    P15   Led_4_G								Output   Low
+19    P16   Led_3_R								Output   Low
+20    P17   Led_3_G								Output   Low
+
+	Port Expander 2 Configuration (IC601 - Address 0xEA)
+
+Pin   Port  ADC Function                  I/O      I/O State
+====  ====  ===========================   ======   ============================
+04    P00   Reset_Q_Lambda                Output   Low
+05    P01   Led_7_G							   Output   Low
+06    P02   Led_7_R								Output   Low
+07    P03   Led_8_G								Output   Low
+08    P04   Led_8_R	                     Output   Low
+09    P05   Int_Sense_C							Input   	Not set
+10    P06   *Not Used*       					Output   Low
+11    P07   *Not Used*             			Output   Low
+13    P10   Int_Dis_Sense_8               Input   	Not set
+14    P11   Int_Sense_8							Input   	Not set
+15    P12   Int_Dis_Sense_4					Input   	Not set
+16    P13   Int_Sense_4                   Input   	Not set
+17    P14   Int_Dis_Sense_6               Input   	Not set
+18    P15   Int_Sense_6							Input   	Not set
+19    P16   Int_Dis_Sense_2					Input   	Not set
+20    P17   Int_Sense_2							Input   	Not set
+
+	Port Expander 3 Configuration (IC602 - Address 0xEC)
+
+Pin   Port  ADC Function                  I/O      I/O State
+====  ====  ===========================   ======   ============================
+04    P00   Int_Dis_Sense_1               Input   	Not set
+05    P01   Int_Sense_1                   Input   	Not set
+06    P02   Int_Dis_Sense_3               Input   	Not set
+07    P03   Int_Sense_3                   Input   	Not set
+08    P04   Int_Dis_Sense_5               Input   	Not set
+09    P05   Int_Sense_5                   Input   	Not set
+10    P06   Int_Dis_Sense_7               Input   	Not set
+11    P07   Int_Sense_7                   Input   	Not set
+13    P10   LCD_Backlight                 Output  	Low
+14    P11   Button_1                      Input   	Not set
+15    P12   Button_2                      Input   	Not set
+16    P13   Button_3						      Input   	Not set
+17    P14   Button_4								Input   	Not set
+18    P15   *Not Used*							Output   Low
+19    P16   *Not Used* 							Output   Low
+20    P17   *Not Used* 							Output   Low
+
+END DESCRIPTION *******************************************************/
+
+
+
+
+   /////////////////////////////////////////////////////////////////////////
+	// Port Expander 1 Configuration
+   /////////////////////////////////////////////////////////////////////////
+/*
+void Expander_Init_First(void)
+{
+char value;
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x04, &value, 1); //Polarity of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x05, &value, 1); //Polarity of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x06, &value, 1); //Configuration of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x07, &value, 1); //Configuration of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x02, &value, 1); //Initial Value of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp1_Val0 = value; // Initial value of Port Expander 1 - Port 0.
+
+ 	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x03, &value, 1); //Initial Value of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp1_Val1 = value; // Initial value of Port Expander 1 - Port 1.
+}
+ */
+_DEVICE_HVS_NODEBUG
+void Expander_FastInit_First(void)
+{
+char value;
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x06, &value, 1); //Configuration of Port 0
+
+  	value=0x00;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x07, &value, 1); //Configuration of Port 1
+
+  	PortExp1_Val0=0x0F;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1); //Configuration of Port 0
+
+  	PortExp1_Val1=0xFF;
+	I2C.Error_Expander1 =
+	I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1); //Configuration of Port 1
+
+
+//   LED_Calibration(0);
+//   LED_Status(0);
+//   LED_Alarm(0);
+}
+
+
+   /////////////////////////////////////////////////////////////////////////
+	// Port Expander 2 Configuration
+   /////////////////////////////////////////////////////////////////////////
+
+/*
+void Expander_Init_Second(void)
+{
+char value;
+
+  	value=0x00;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x04, &value, 1); //Polarity of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x05, &value, 1); //Polarity of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x20;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x06, &value, 1); //Configuration of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0xFF;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x07, &value, 1); //Configuration of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x02, &value, 1); //Initial Value of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp2_Val0 = value; // Initial value of Port Expander 2 - Port 0.
+
+ 	value=0x00;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x03, &value, 1); //Initial Value of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp2_Val1 = value; // Initial value of Port Expander 2 - Port 1.
+}
+*/
+_DEVICE_HVS_NODEBUG
+void Expander_FastInit_Second(void)
+{
+char value;
+
+  	value=0x20;
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x06, &value, 1); //Configuration of Port 0
+
+  	PortExp2_Val0=0xBE;    //LCD_RW_Set(0);//QLambda_Set(0);
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1); //Configuration of Port 0
+}
+   /////////////////////////////////////////////////////////////////////////
+	// Port Expander 3 Configuration
+   /////////////////////////////////////////////////////////////////////////
+/*
+void Expander_Init_Third(void)
+{
+char value;
+
+  	value=0x00;
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x04, &value, 1); //Polarity of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x05, &value, 1); //Polarity of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+  	value=0x00;
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x02, &value, 1); //Initial Value of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp3_Val0 = value; // Initial value of Port Expander 3 - Port 0.
+
+ 	value=0x00;
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x03, &value, 1); //Initial Value of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+
+   PortExp3_Val1 = value; // Initial value of Port Expander 3 - Port 1.
+
+   value=0xFF;     //test value
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x06, &value, 1); //Configuration of Port 0
+//	General_Delay_Ms(WRITE_TIME);
+
+   I2CRead(PORT_EXP3_ADDRESS,0x00,&Null_Char,1);  //it only resets the interrupt
+
+	value=0xFF;
+//   value=0x1E;
+	I2C.Error_Expander3 =
+	I2CWrite(PORT_EXP3_ADDRESS , 0x07, &value, 1); //Configuration of Port 1
+//	General_Delay_Ms(WRITE_TIME);
+}
+*/
+_DEVICE_HVS_NODEBUG 
+void Expander_FastInit(void)
+{
+Expander_FastInit_First();
+
+Expander_FastInit_Second();
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

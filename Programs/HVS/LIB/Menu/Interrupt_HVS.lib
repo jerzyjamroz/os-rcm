@@ -1,0 +1,40 @@
+/*** BeginHeader */
+#ifndef __INTERRUPT_HVS_LIB
+#define __INTERRUPT_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Interrupt_PE5, Interrupt_Init_PE5
+*/
+#define Disable_Int WrPortI(I1CR,&I1CRShadow,0x00)
+//#define Enable_Int WrPortI(I1CR,&I1CRShadow,0x11)
+#define Enable_Int WrPortI(I1CR,&I1CRShadow,0x13)
+
+_MENU_HVS_NODEBUG root interrupt void Interrupt_PE5(void);
+_MENU_HVS_NODEBUG void Interrupt_Init_PE5();
+
+/*** EndHeader */
+
+_MENU_HVS_NODEBUG
+void Interrupt_Init_PE5()
+{
+   #GLOBAL_INIT
+   {
+	BitWrPortI(PEDDR, &PEDDRShadow,0,5);	// set port PE5 as an input
+	SetVectExtern4000(1, Interrupt_PE5);
+//	WrPortI(I1CR, &I1CRShadow, 0x11);		// enable external INT1 on PE5, falling edge, priority 1
+	Enable_Int;
+//	Interrupt.Status=0;    //interrupt enable - everything ok
+   }
+}
+
+
+_MENU_HVS_NODEBUG 
+root interrupt void Interrupt_PE5(void)
+{
+Sys_Arg.InterruptInc++;  //interrupt counter
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

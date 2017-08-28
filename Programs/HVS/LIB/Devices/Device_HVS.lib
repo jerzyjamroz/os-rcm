@@ -1,0 +1,88 @@
+/*** BeginHeader */
+#ifndef __DEVICE_HVS_LIB
+#define __DEVICE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Dev_LED_Alarm_Handler,Dev_EPS_Relay_Handler,Dev_LED_Calibration_Handler,
+Dev_LED_Telnet_Handler
+*/
+#use "DEVICE_HVS_DEBUG.LIB"
+_DEVICE_HVS_NODEBUG void Dev_LED_Alarm_Handler(void);
+_DEVICE_HVS_NODEBUG cofunc void Dev_EPS_Relay_Handler(void);
+_DEVICE_HVS_NODEBUG cofunc void Dev_LED_Calibration_Handler(void);
+_DEVICE_HVS_NODEBUG cofunc void Dev_LED_Telnet_Handler(void);
+
+struct{
+char EPS;
+char Manual_EPS;
+}Dev;
+
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG
+void Dev_LED_Alarm_Handler(void)       // it is a main Red alarm diode
+{
+if (Interlock.Status_Manual_Interlock>0)
+   {
+   if(System_Flag.LED_Alarm_Status==0) LED_Alarm(ON);
+   }
+else if ( (System_Flag.EPS>0) && (Setting.EPS_Disable==0) )
+   {
+   if(System_Flag.LED_Alarm_Status==0) LED_Alarm(ON);
+   }
+else if ( (System_Flag.Pth_Warning>0) && (Setting.Threshold_Warning_Disable_Flag==0) )
+   {
+   if(System_Flag.LED_Alarm_Status==0) LED_Alarm(ON);
+   }
+//else if (Sys_Flag.Interlock_On>0)
+else if (System_Flag.Interlock>0)
+   {
+   if(System_Flag.LED_Alarm_Status==0) LED_Alarm(ON);
+   }
+else
+	{
+   if(System_Flag.LED_Alarm_Status>0) LED_Alarm(OFF);
+   }
+}
+_DEVICE_HVS_NODEBUG
+cofunc void Dev_EPS_Relay_Handler(void)
+{
+char eps_set;
+int dis_flag;
+
+dis_flag=Setting.EPS_Disable;
+eps_set=Dev.EPS+Dev.Manual_EPS+System_Flag.EPS_Status;
+
+if (((Dev.EPS==1) && (Setting.EPS_Disable==0)) || (Dev.Manual_EPS==1) )
+   {
+   waitfor(DelaySec(5));
+   if (((Dev.EPS==1) && (Setting.EPS_Disable==0)) || (Dev.Manual_EPS==1) )
+      {
+      EPS_Set_Out(1);
+      }
+   else EPS_Set_Out(0);
+   }
+else EPS_Set_Out(0);
+
+waitfor((eps_set!=(Dev.EPS+Dev.Manual_EPS+System_Flag.EPS_Status))||(dis_flag!=Setting.EPS_Disable));
+}
+
+_DEVICE_HVS_NODEBUG
+cofunc void Dev_LED_Calibration_Handler(void)
+{
+waitfor(System_Flag.CalibrationLED>=1);
+LED_Calibration(0);
+}
+_DEVICE_HVS_NODEBUG
+cofunc void Dev_LED_Telnet_Handler(void)
+{
+static char Status;
+LED_Status(System_Flag.EthernetLED);
+Status=System_Flag.EthernetLED;
+waitfor(Status!=System_Flag.EthernetLED);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

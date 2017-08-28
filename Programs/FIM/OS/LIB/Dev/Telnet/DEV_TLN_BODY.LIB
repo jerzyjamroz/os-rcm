@@ -1,0 +1,406 @@
+/*** BeginHeader */
+#ifndef __DEV_TLN_BODY_LIB
+#define __DEV_TLN_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_TLN_HEADER.LIB"
+#memmap xmem
+#use "dcrtcp.lib"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+/*** BeginHeader
+Tln_Init, Tln_Daemon,Tln_Read,Tln_Write,Tln_isActive,Tln_Close,Tln_getWatchdog,
+Tln_setWatchdog,Tln_getPassword,Tln_setPassword
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+void Tln_Init(void);
+int Tln_Daemon(void);
+int Tln_Read(char *buf, int max_buflen);
+int Tln_Write(char *buf);
+//int Tln_isDin(void);
+//int Tln_isDout(void);
+int Tln_isActive(void);
+void Tln_Close(void);
+
+unsigned long int Tln_getWatchdog(void);
+int Tln_setWatchdog(unsigned long int newTimer);
+int Tln_getPassword(void);
+int Tln_setPassword(int newPassword);
+//_____________________________</FUNCTIONS>_____________________________________
+
+//_________________________________<CONFIG>_____________________________________
+#define INPUT_COOKED
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+//_________________________________<CONFIGLOCAL>________________________________
+#define Tln_WatchdogLimit_Default 60
+#define Tln_Password_Default 1234
+//_________________________________</CONFIGLOCAL>_______________________________
+
+//_____________________________<VARSLOCAL>______________________________________
+static struct{
+   struct{
+   int Output;
+	unsigned long int WatchdogLimit;
+   }Control;
+
+   int isActive;
+   int Password;
+
+}Tln;
+
+static unsigned long int loc_watchdog_T0;
+static int loc_password_pass;
+/*************************************************************
+ * TELNET HANDLER
+ *************************************************************/
+/* states */
+#define STATE_INIT	0
+#define STATE_STEADY	1
+
+typedef struct {
+	tcp_Socket sock;
+	tcp_Socket *s;
+
+	int lport;
+	int state;
+
+//	char buf[MAX_BUFLEN+1];
+//	char cmdbuf[10];
+} telnet_recv;
+
+static telnet_recv tr_state;
+static telnet_recv * const state = &tr_state;
+//_____________________________</VARSLOCAL>______________________________________
+
+/* vars for telnet recieve daemon */
+int init_recv(int port);
+
+_TLN_NODEBUG
+unsigned long int Tln_getWatchdog(void)
+{
+return Tln.Control.WatchdogLimit;
+}
+
+_TLN_NODEBUG
+int Tln_setWatchdog(unsigned long int newTimer)
+{
+Tln.Control.WatchdogLimit=newTimer;
+SYS_SFlash_IntWrite(SFlash_TlnWatchdog,(int) Tln.Control.WatchdogLimit);
+return SYSOK;
+}
+
+_TLN_NODEBUG
+int Tln_getPassword(void)
+{
+return Tln.Password;
+}
+
+_TLN_NODEBUG
+int Tln_setPassword(int newPassword)
+{
+Tln.Password=newPassword;
+SYS_SFlash_IntWrite(SFlash_TlnPassword,Tln.Password);
+return SYSOK;
+}
+
+_TLN_NODEBUG
+void Tln_Close(void)
+{
+Tln.Control.Output=FALSE;
+}
+
+
+_TLN_NODEBUG
+void Tln_Init(void)
+{
+int arg;
+
+#GLOBAL_INIT{
+Tln.isActive=FALSE;
+Tln.Control.Output=TRUE;
+loc_password_pass=FALSE;
+}
+
+if(SYS_ENV.isSockInit!=0) SYS_ENV.isSockInit=sock_init(); 
+init_recv(23);
+
+#ifndef Mount_Dev_SFlash_Driver
+	#warnt "Serial driver unmonted - flash settings are disabled"
+#endif
+
+arg=SYS_SFlash_IntRead(SFlash_TlnWatchdog);
+if(arg<0)
+   {
+   Tln.Control.WatchdogLimit=Tln_WatchdogLimit_Default;
+//   SYS_SFlash_IntWrite(SFlash_TlnWatchdog,Tln_WatchdogLimit_Default);
+   }
+else Tln.Control.WatchdogLimit=arg;
+
+arg=SYS_SFlash_IntRead(SFlash_TlnPassword);
+if( (arg<0) || (arg>9999) )
+   {
+   Tln.Password=Tln_Password_Default;
+//   SYS_SFlash_IntWrite(SFlash_TlnPassword,Tln_Password_Default);
+   }
+else Tln.Password=arg;
+
+}
+
+/* init the socket */
+_TLN_NODEBUG
+int init_recv(int port)
+{
+int error;
+
+	state->s = &state->sock;
+	state->lport = port;
+	error=tcp_listen(state->s, port, 0, 0, NULL, 0);
+	state->state = STATE_INIT;
+	return error;
+}
+
+#ifdef INPUT_COOKED
+_TLN_NODEBUG
+void cook_cmd(char * cmdbuf)
+{
+	auto int len;
+	len = 3;
+
+	while(len > 0) {
+		len -= sock_fastwrite(state->s, cmdbuf + 3 - len, len);
+	}
+}
+
+_TLN_NODEBUG
+int cook_input(int len, char * buf)
+{
+	auto int newlen, i;
+   char cmdbuf[10];
+
+	newlen = len;
+
+	for(i=0; i<(len-2); i++) {
+		if(buf[i] == 255) {
+			/* controll code */
+			switch(buf[i + 1]) {
+			case 251:
+			case 252: {
+				sprintf(cmdbuf, "%c%c%c",
+					255, 254, buf[i + 2]);
+				cook_cmd(cmdbuf);
+				memcpy(buf + i, buf + i + 3, len - (i + 3));
+				newlen -= 3;
+				break;
+			}
+			case 253:
+			case 254:
+				sprintf(cmdbuf, "%c%c%c",
+					255, 252, buf[i + 2]);
+				cook_cmd(cmdbuf);
+				memcpy(buf + i, buf + i + 3, len - (i + 3));
+				newlen -= 3;
+				break;
+
+			case 255:
+				break;
+
+			default:
+				/* unknown command; kill it */
+				memcpy(buf + i, buf + i + 2, len - (i + 2));
+				newlen -= 2;
+				break;
+			}
+		}
+	}
+
+	return newlen;
+}
+#endif
+
+_TLN_NODEBUG
+int Tln_isActive(void)
+{
+return Tln.isActive;
+}
+
+_TLN_NODEBUG
+int Tln_isPassword(char *buf)
+{
+if(buf[0]!=0)
+	if(atoi(buf)!=Tln.Password) return 0;
+   else return 1;
+}
+
+_TLN_NODEBUG
+int Tln_CloseProcedures(void)
+{
+tcp_tick(state->s);
+Tln_Write(Tln_Txt_SessionClosed);
+Tln.isActive = state->state = STATE_INIT;
+Tln.Control.Output=TRUE;
+loc_password_pass=FALSE;
+sock_flush(state->s);
+sock_close(state->s);
+//state->s = NULL;
+init_recv(state->lport);
+}
+
+_TLN_NODEBUG
+void Tln_Watchdog_Reset(void)
+{
+loc_watchdog_T0=SEC_TIMER;
+}
+
+_TLN_NODEBUG
+int Tln_isWatchdog(void)
+{
+if( (SYS_Abs_UL(SEC_TIMER-loc_watchdog_T0)>Tln.Control.WatchdogLimit) && (Tln.Control.WatchdogLimit!=0) )
+	return TRUE;
+else return FALSE;
+}
+
+//****************************DAEMON****************************************
+_TLN_NODEBUG
+int Tln_Daemon(void)
+{
+/*
+static longword timer;
+#GLOBAL_INIT{
+timer=0;
+}
+*/
+	switch(state->state)
+   {
+	case STATE_INIT:
+   	if(tcp_tick(state->s)==0) init_recv(state->lport);
+
+		if(sock_established(state->s))
+      {
+      	sock_flush(state->s);
+			Tln.isActive = state->state = STATE_STEADY;
+         Tln_Watchdog_Reset();
+
+         Tln_Logo();
+         if(Tln.Password!=0){Tln_Write("PASSword?");Tln_Write(SYSCRNL);}
+		}
+      else Tln.isActive = state->state = STATE_INIT;
+   	tcp_tick(state->s);
+	break;
+
+	case STATE_STEADY:
+		if(!sock_established(state->s))
+      {
+      	Tln_CloseProcedures();
+			init_recv(state->lport);
+			break;
+		}
+//***************************ESTABLISHED****************************************
+/*		if (chk_timeout(timer))
+         {
+         sock_fastwrite(state->s,"", 1);       //it checks that a client is still on.
+         timer = _SET_TIMEOUT(2000);
+         }
+*/
+		if (sock_resolved(state->s)==0) 			Tln_CloseProcedures();
+   	else if (tcp_tick(state->s)==0)			Tln_CloseProcedures();
+      else if ( Tln_isWatchdog() ) 				Tln_CloseProcedures();
+      else if (Tln.Control.Output==FALSE) 	Tln_CloseProcedures();
+//***************************ESTABLISHED****************************************
+	break;
+
+	default:
+      Tln_CloseProcedures();
+		exit(-1);
+	}
+
+return 1;
+}
+//****************************DAEMON****************************************
+
+/*** BeginTheMostImportant */
+//#define MAX_BUFLEN 255
+_TLN_NODEBUG
+int Tln_Read(char *buf, int max_buflen)
+{
+int len;
+static int char_counter;
+#GLOBAL_INIT{
+char_counter=0;
+}
+
+if(Tln.isActive==FALSE) return -1;
+
+len=sock_fastread(state->s, buf, max_buflen);
+#ifdef INPUT_COOKED
+len = cook_input(len,buf);
+#endif
+buf[len]=0;
+
+char_counter+=len;
+if( (char_counter>256) || (char_counter<0) )
+   {
+   tcp_tick(state->s);
+   char_counter=0;
+   }
+
+if(len>0) Tln_Watchdog_Reset();
+
+if(loc_password_pass==FALSE)
+{
+if(Tln.Password==0)
+   {
+   loc_password_pass=TRUE;
+   return len;
+   }
+else
+	if(len)
+   	if (Tln_isPassword(buf)==1)
+         {
+         loc_password_pass=TRUE;
+         return 0;
+         }
+
+return -1;
+}
+
+
+return len;
+}
+
+_TLN_NODEBUG
+int Tln_Write(char *buf)
+{
+int len;
+static int char_counter;
+#GLOBAL_INIT{
+char_counter=0;
+}
+
+if(Tln.isActive==FALSE) return -1;
+
+len=strlen(buf);
+len=sock_fastwrite(state->s, buf, len);
+
+char_counter+=len;
+if( (char_counter>256) || (char_counter<0) )
+   {
+   tcp_tick(state->s);
+   char_counter=0;
+   }
+
+return len;
+}
+/*** EndTheMostImportant */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

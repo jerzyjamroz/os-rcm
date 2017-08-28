@@ -1,0 +1,25 @@
+/*** BeginHeader */
+#ifndef __DEV_AD7610_HEADER_LIB
+#define __DEV_AD7610_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef AD7610_DEBUG
+#define _AD7610_NODEBUG
+#else
+#define _AD7610_NODEBUG nodebug
+#endif
+
+//_________________________________<CONFIG>_____________________________________
+//****************************<SETTINGS>****************************************
+#define AD7610_SPIB
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

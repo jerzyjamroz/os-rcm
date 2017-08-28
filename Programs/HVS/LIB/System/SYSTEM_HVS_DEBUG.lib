@@ -1,0 +1,23 @@
+/*** BeginHeader */
+#ifndef __DEVICE_HVS_DEBUG_LIB
+#define __DEVICE_HVS_DEBUG_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+
+*/
+
+#ifdef SYSTEM_HVS_DEBUG
+#define _SYSTEM_HVS_NODEBUG
+#else
+#define _SYSTEM_HVS_NODEBUG nodebug
+#endif
+
+/*** EndHeader */
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

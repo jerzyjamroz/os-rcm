@@ -1,0 +1,26 @@
+/*** BeginHeader */
+#ifndef __PACK_SCPI_PROT_HEADER_LIB
+#define __PACK_SCPI_PROT_HEADER_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#ifdef PACK_SCPIprot_DEBUG
+#define _PACK_SCPIprot_NODEBUG
+#else
+#define _PACK_SCPIprot_NODEBUG nodebug
+#endif
+//************************GLOBAL VARIABLES**************************************
+
+const char SCPI_Syntax_Error[]={
+"SYSTem:ERRor:SYNTax"
+};
+
+const char SCPI_ACKNW[]="ACKNowledge"; 
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,100 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_ENVIRONMENT_LIB
+#define __ALBAOS_ENVIRONMENT_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#define SYS_Reset exit(-1)
+const char ALBAOS_Ver[]="1.01.01";
+const char SYS_ACKNW[]="ACKNowledge";
+enum SYSBOOL{SYSTRUE = 1,SYSFALSE = 0};
+const char SYSCRNL[] = "\r\n";
+enum { SYSNULL = 0, SYSERROR = -1, SYSOK=1 }SYSParams;
+//SYSTEM VARIABLES 1 SOLUTION - OBSTACLE
+#define SYSOrd_ParamsLen 10
+struct SYSOrd{
+	int ID;
+	char Param[3][SYSOrd_ParamsLen];
+};
+const struct SYSOrd SYSOrd_NULL = {-1,"","",""};
+
+//SYSTEM VARIABLES 2 SOLUTION - OBSTACLE
+struct SYSVarOrd{
+	int No;
+	int ID;
+	char **Param;
+};
+char * const SYS_2DimChar_NULL[]={
+""
+};
+const int SYS_1DimInt_NULL[]={
+0
+};
+#define SYSVarOrd_Last -1
+const struct SYSVarOrd SYSVarOrd_NULL = {-1,SYSVarOrd_Last,SYS_2DimChar_NULL};
+struct SYSVarOrd_REF{
+struct SYSVarOrd SYSVarOrdRef;
+char **Tree;
+int *Param;
+char ** Unit;
+int Attribute;
+};
+enum{
+SYS_At_NULL=-1,
+SYS_At_Request=1,
+SYS_At_Event,
+SYS_At_Hidden,
+}SYS_Attribute;
+const struct SYSVarOrd_REF SYSVarOrd_REF_NULL = {-1,SYSVarOrd_Last,SYS_2DimChar_NULL,SYS_2DimChar_NULL,SYS_1DimInt_NULL,SYS_2DimChar_NULL,SYS_At_NULL};
+//********************<SFLASH_VARIABLES>****************************************
+enum{
+SFlash_Start = -1,
+//--------------------
+SFlash_TlnWatchdog = 0,
+SFlash_TlnPassword,
+//--------------------
+SFlash_End
+}SFlash_Vars;
+//********************</SFLASH_VARIABLES>***************************************
+/*
+struct SYS_Environment{
+int isSockInit;
+};
+*/
+/*
+const struct SYS_Environment SYS_ENV = {
+-1
+};
+*/
+
+char *const SYS_Buf2Dim[] = {
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+};
+
+/*** EndHeader */
+
+
+/*
+   printf("Compiling file: %s\n", __FILE__);
+	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+   printf("Current line number: %d\n", __LINE__);
+   printf("Current line number: %d\n", __LINE__);
+
+   printf("Compiler version %d.%02x\n", CC_VER >> 8, CC_VER & 0x0FF);
+ */
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

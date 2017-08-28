@@ -1,0 +1,23 @@
+/*** BeginHeader */
+#ifndef __DEV_SER_D_HEADER_LIB
+#define __DEV_SER_D_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SerD_Logo,
+*/
+
+#ifdef SER_D_DEBUG
+#define _SER_D_NODEBUG
+#else
+#define _SER_D_NODEBUG nodebug
+#endif
+
+#define SR_BAUD 19200L //define the speed of RS232
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

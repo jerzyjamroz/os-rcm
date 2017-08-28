@@ -1,0 +1,525 @@
+/*** BeginHeader */
+#ifndef __SERIAL_FLASH_HVS_LIB
+#define __SERIAL_FLASH_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SFlash_Init,SFlash_CalibratedCurrent_Write,
+SFlash_Settings_Load,SFlash_Settings_Load_Default,
+SFlash_Sys_Load_Ird,SFlash_Sys_Save_Ird,
+SFlash_Sys_Label_Save,SFlash_Sys_Label_Load,
+SFlash_Sys_Label_Password_Save,SFlash_Sys_Label_Password_Load,
+SFlash_VarWrite,SFlash_VarRead
+*/
+#use "sflash.lib"
+#use "General.lib"
+#use "Keithley_HVS.lib"
+#use "Calibrate_HVS.lib"
+
+#define SFlash_Ird_Page 2
+#define SFlash_Settings_Page 3
+#define SFlash_Sys_Settings_Page 4
+
+#define SFlash_Settings_Length 512
+#define SFlash_Sys_Settings_Length 16
+
+_DEVICE_HVS_NODEBUG void SFlash_Init();
+_DEVICE_HVS_NODEBUG void SFlash_CalibratedCurrent_Write(char channel);
+_DEVICE_HVS_NODEBUG void SFlash_Settings_Load(void);
+_DEVICE_HVS_NODEBUG void SFlash_Settings_Load_Default(void);
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Load_Ird(char channel);
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Save_Ird(char channel);
+
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Label_Save(void);
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Label_Load(void);
+
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Label_Password_Save(void);
+_DEVICE_HVS_NODEBUG void SFlash_Sys_Label_Password_Load(void);
+int SFlash_VarWrite(int id, int var);
+int SFlash_VarRead(int id);
+
+struct{
+char Read_Buffer[512];
+char Write_Buffer[512];
+}SFlash;
+
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG
+char SFlash_Check(void)
+{
+sf_pageToRAM(SFlash_Settings_Page);
+sf_readRAM(SFlash.Read_Buffer, 0, 1);
+if (SFlash.Read_Buffer[0]==1) return 1;
+else 0;
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Init()
+{
+char i;
+
+   sfspi_init();
+   sf_init();
+
+   for(i=0;i<8;i++) SFlash_Sys_Load_Ird(i);
+
+	if (SFlash_Check()==1) SFlash_Settings_Load();
+	else SFlash_Settings_Load_Default();
+
+//	SFlash_Settings_Load_Default();
+}
+
+//******************************************************************************
+//***************************CURRENT CALIBRATION FLASH STORE********************
+_DEVICE_HVS_NODEBUG
+void SFlash_CalibratedCurrent_Write(char channel)
+{
+int i;
+char char_H;
+char char_L;
+
+sf_pageToRAM(SFlash_Ird_Page);
+
+for (i=0;i<Keithley_Current_Loop_Arg;i++)
+   if (Keithley.Current_RawData[i][channel]>255)
+   	{
+      char_H=(char) (Keithley.Current_RawData[i][channel]/256);
+      char_L=(char) (Keithley.Current_RawData[i][channel]%256);
+      SFlash.Write_Buffer[2*i]=char_H;
+      SFlash.Write_Buffer[2*i+1]=char_L;
+      }
+	else
+   	{
+      SFlash.Write_Buffer[2*i]=0;
+      SFlash.Write_Buffer[2*i+1]=(char) Keithley.Current_RawData[i][channel];
+      }
+
+sf_writeRAM(SFlash.Write_Buffer, (channel*Keithley_Current_Loop_Arg*2), Keithley_Current_Loop_Arg*2);
+sf_RAMToPage(SFlash_Ird_Page);
+
+SFlash_Sys_Load_Ird(channel);
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Save_Ird(char channel)
+{
+int i;
+char char_H;
+char char_L;
+
+sf_pageToRAM(SFlash_Ird_Page);
+
+for (i=0;i<Keithley_Current_Loop_Arg;i++)
+   if (System.Int_Tab_Cal_Ird[i][channel]>255)
+   	{
+      char_H=(char) (System.Int_Tab_Cal_Ird[i][channel]/256);
+      char_L=(char) (System.Int_Tab_Cal_Ird[i][channel]%256);
+      SFlash.Write_Buffer[2*i]=char_H;
+      SFlash.Write_Buffer[2*i+1]=char_L;
+      }
+	else
+   	{
+      SFlash.Write_Buffer[2*i]=0;
+      SFlash.Write_Buffer[2*i+1]=(char) System.Int_Tab_Cal_Ird[i][channel];
+      }
+
+sf_writeRAM(SFlash.Write_Buffer, (channel*Keithley_Current_Loop_Arg*2), Keithley_Current_Loop_Arg*2);
+sf_RAMToPage(SFlash_Ird_Page);
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Load_Ird(char channel)
+{
+char i;
+int int_current_raw_data[Keithley_Current_Loop_Arg];
+
+sf_pageToRAM(SFlash_Ird_Page);
+sf_readRAM(SFlash.Read_Buffer, (channel*Keithley_Current_Loop_Arg*2), Keithley_Current_Loop_Arg*2);
+
+for(i=0;i<Keithley_Current_Loop_Arg;i++)
+	{
+   	int_current_raw_data[i]=SFlash.Read_Buffer[2*i]*256;
+      int_current_raw_data[i]+=SFlash.Read_Buffer[2*i+1];
+   }
+
+for (i=0;i<Keithley_Current_Loop_Arg;i++)
+		System.Int_Tab_Cal_Ird[i][channel]=int_current_raw_data[i];
+}
+
+//***********************CURRENT CALIBRATION FLASH STORE************************
+//******************************************************************************
+
+
+//******************************************************************************
+//***************************SFLASH****SETTINGS*********************************
+_DEVICE_HVS_NODEBUG
+void SFlash_Buffer_PutFloat(char *place,float flt)
+{
+char *pbuf;
+
+pbuf=Gn_Convert_Flt2StrDot0(flt);
+*place=*pbuf;
+*(place+1)=*(pbuf+1);
+*(place+2)=*(pbuf+2);
+*(place+3)=*(pbuf+3);
+*(place+4)=*(pbuf+4);
+*(place+5)=0;
+//printf("tt=%s\n",place);
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Settings_Save(void)
+{
+char i;
+int k;
+
+sf_pageToRAM(SFlash_Settings_Page);
+//..............................................................................
+//0-10 general purpose
+//..............................................................................
+SFlash.Write_Buffer[0]=1;
+SFlash.Write_Buffer[1]=Interlock.Status_Relays;
+SFlash.Write_Buffer[2]=HVS.No_Of_Outputs;
+SFlash.Write_Buffer[3]=ADC.MeanDivider;
+//..............................................................................
+//10-20- ion pump models
+//..............................................................................
+for(i=0;i<8;i++)
+	{
+	SFlash.Write_Buffer[10+i]=HVS.IonPump_Model[i];
+	}
+//..............................................................................
+//20- threshold alarms1
+//..............................................................................
+for(i=0,k=0;i<8;i++,k+=6)
+	{
+	SFlash_Buffer_PutFloat(&SFlash.Write_Buffer[20+k],Setting.Threshold_Warning[i]);
+//   printf("F1s=%s\n",&SFlash.Write_Buffer[20+k]);
+	} //end = 68
+
+SFlash_Buffer_PutFloat(&SFlash.Write_Buffer[70],Setting.Threshold_Warning_ForAll);
+//printf("Alarm1_Threshold_ForAll=%s\n",&SFlash.Write_Buffer[70]);
+SFlash.Write_Buffer[76]=Setting.Threshold_Warning_Disable_Flag;
+//printf("Alarm1_Disable_Flag=%x\n",SFlash.Write_Buffer[76]);
+//..............................................................................
+//80- threshold alarms2
+//..............................................................................
+for(i=0,k=0;i<8;i++,k+=6)
+	{
+	SFlash_Buffer_PutFloat(&SFlash.Write_Buffer[80+k],Setting.Threshold_EPS[i]);
+//   printf("F2s=%s\n",&SFlash.Write_Buffer[80+k]);
+	} //end = 128
+
+SFlash_Buffer_PutFloat(&SFlash.Write_Buffer[130],Setting.Threshold_EPS_ForAll);
+//printf("Alarm2_Threshold_ForAll=%s\n",&SFlash.Write_Buffer[130]);
+SFlash.Write_Buffer[136]=Setting.EPS_Disable;
+//printf("Alarm2_Disable_Flag=%x\n",SFlash.Write_Buffer[136]);
+//..............................................................................
+//140- interlock configurations
+//..............................................................................
+for(i=0;i<8;i++)
+   {
+   SFlash.Write_Buffer[140+i]=Setting.EPS_Output_Mask[i]; //end 147
+//   printf("EPS_Output_Mask=%x\n",SFlash.Write_Buffer[140+i]);
+   }
+//threshold alarms
+
+//******************************************************************************
+//************************Telnet*Message*box*timing*****************************
+//150
+sprintf(&SFlash.Write_Buffer[150],"%05u",Setting.Telnet_Message_Delay);
+//************************Telnet*Message*box*timing*****************************
+
+//******************************************************************************
+//************************Calibration*Factor************************************
+//160
+//sprintf(&SFlash.Write_Buffer[160],"%f",Setting.Calibration_Factor[0]);
+//sprintf(&SFlash.Write_Buffer[180],"%f",Setting.Calibration_Factor[1]);
+//sprintf(&SFlash.Write_Buffer[200],"%f",Setting.Calibration_Factor[2]);
+//sprintf(&SFlash.Write_Buffer[220],"%f",Setting.Calibration_Factor[3]);
+//sprintf(&SFlash.Write_Buffer[240],"%f",Setting.Calibration_Factor[4]);
+//sprintf(&SFlash.Write_Buffer[260],"%f",Setting.Calibration_Factor[5]);
+//sprintf(&SFlash.Write_Buffer[280],"%f",Setting.Calibration_Factor[6]);
+//sprintf(&SFlash.Write_Buffer[300],"%f",Setting.Calibration_Factor[7]);
+//************************Calibration*Factor************************************
+
+//******************************************************************************
+//************************Additional*Settings***********************************
+SFlash.Write_Buffer[320]=Setting.Telnet_Alert_Disable; //bool
+
+sprintf(&SFlash.Write_Buffer[330],"%05u",Setting.Telnet_CloseSocket);
+//************************Additional*Settings***********************************
+
+sf_writeRAM(SFlash.Write_Buffer, 0, SFlash_Settings_Length);
+sf_RAMToPage(SFlash_Settings_Page);
+
+
+SFlash_VarWrite(ID_I2P_Tab_Ch0,System.I2P_Tab_Ch[0]);
+SFlash_VarWrite(ID_I2P_Tab_Ch1,System.I2P_Tab_Ch[1]);
+SFlash_VarWrite(ID_I2P_Tab_Ch2,System.I2P_Tab_Ch[2]);
+SFlash_VarWrite(ID_I2P_Tab_Ch3,System.I2P_Tab_Ch[3]);
+SFlash_VarWrite(ID_I2P_Tab_Ch4,System.I2P_Tab_Ch[4]);
+SFlash_VarWrite(ID_I2P_Tab_Ch5,System.I2P_Tab_Ch[5]);
+SFlash_VarWrite(ID_I2P_Tab_Ch6,System.I2P_Tab_Ch[6]);
+SFlash_VarWrite(ID_I2P_Tab_Ch7,System.I2P_Tab_Ch[7]);
+}
+
+_DEVICE_HVS_NODEBUG
+void SFlash_Settings_Load(void)
+{
+char i;
+int k;
+char tester_char;
+
+sf_pageToRAM(SFlash_Settings_Page);
+sf_readRAM(SFlash.Read_Buffer, 0, SFlash_Settings_Length);
+//..............................................................................
+//0-10 general purpose
+//..............................................................................
+tester_char=SFlash.Read_Buffer[0];
+if(tester_char!=1) SFlash_Settings_Load_Default();
+
+Interlock.Status_Relays=SFlash.Read_Buffer[1];
+
+HVS.No_Of_Outputs=SFlash.Read_Buffer[2];
+if(HVS.No_Of_Outputs>HVS_Max_No_Of_Outputs) HVS.No_Of_Outputs=HVS_Max_No_Of_Outputs;//PROTECTION====================
+
+ADC.MeanDivider=SFlash.Read_Buffer[3];
+if(ADC.MeanDivider>8) ADC.MeanDivider=6;        //PROTECTION====================
+//..............................................................................
+//10-20- ion pump models
+//..............................................................................
+for(i=0;i<8;i++)
+	{
+	HVS.IonPump_Model[i]=SFlash.Read_Buffer[10+i];
+   if(HVS.IonPump_Model[i]>Sys_ION_Models_Amount-1) HVS.IonPump_Model[i]=1;//PROTECTION====================
+   }
+//..............................................................................
+//20- threshold alarms1
+//..............................................................................
+for(i=0,k=0;i<8;i++,k+=6)
+	{
+   Setting.Threshold_Warning[i]=atof(&SFlash.Read_Buffer[20+k]);
+//   printf("FF1l=%.0e\n",HVS.Alarm1_Threshold[i]);
+	if(Setting.Threshold_Warning[i]<=0) Setting.Threshold_Warning[i]=5E-7;//PROTECTION====================
+	} //end = 68
+
+Setting.Threshold_Warning_ForAll=atof(&SFlash.Read_Buffer[70]);
+if(Setting.Threshold_Warning_ForAll<=0) Setting.Threshold_Warning_ForAll=5E-7;//PROTECTION====================
+//printf("Alarm1_Threshold_ForAll=%.0e\n",HVS.Alarm1_Threshold_ForAll);
+Setting.Threshold_Warning_Disable_Flag=SFlash.Read_Buffer[76];
+if(Setting.Threshold_Warning_Disable_Flag>1) Setting.Threshold_Warning_Disable_Flag=0;//PROTECTION====================
+//printf("Alarm1_Disable_Flag=%x\n",HVS.Alarm1_Disable_Flag);
+//..............................................................................
+//80- threshold alarms2
+//..............................................................................
+for(i=0,k=0;i<8;i++,k+=6)
+	{
+   Setting.Threshold_EPS[i]=atof(&SFlash.Read_Buffer[80+k]);
+//   printf("FF2l=%.0e\n",HVS.Alarm2_Threshold[i]);
+	if(Setting.Threshold_EPS[i]<=0) Setting.Threshold_EPS[i]=5E-6;//PROTECTION====================
+	} //end = 128
+
+Setting.Threshold_EPS_ForAll=atof(&SFlash.Read_Buffer[130]);
+if(Setting.Threshold_EPS_ForAll<=0) Setting.Threshold_EPS_ForAll=5E-6;//PROTECTION====================
+//printf("Alarm2_Threshold_ForAll=%.0e\n",HVS.Alarm2_Threshold_ForAll);
+Setting.EPS_Disable=SFlash.Read_Buffer[136];
+if(Setting.EPS_Disable>1) Setting.EPS_Disable=0;//PROTECTION====================
+//printf("Alarm2_Disable_Flag=%x\n",HVS.Alarm2_Disable_Flag);
+//..............................................................................
+//140- interlock configurations
+//..............................................................................
+for(i=0;i<8;i++)
+   {
+   Setting.EPS_Output_Mask[i]=SFlash.Read_Buffer[140+i]; //end 147  //PROTECTION NOT NEEDED=============
+//   printf("EPS_Output_Mask=%x\n",Setting.EPS_Output_Mask[i]);
+   }
+
+//******************************************************************************
+//************************Telnet*Message*box*timing*****************************
+//150
+Setting.Telnet_Message_Delay=atol(&SFlash.Read_Buffer[150]);
+if((Setting.Telnet_Message_Delay>65000) || (Setting.Telnet_Message_Delay<=10)) Setting.Telnet_Message_Delay=10000; //PROTECTION====================
+//printf("Setting.Telnet_Message_Delay=%u\n",Setting.Telnet_Message_Delay);
+//************************Telnet*Message*box*timing*****************************
+
+//******************************************************************************
+//************************Calibration*Factor************************************
+//160
+//Setting.Calibration_Factor[0]=atof(&SFlash.Read_Buffer[160]);
+//if(Setting.Calibration_Factor[0]<=0) Setting.Calibration_Factor[0]=1;//PROTECTION====================
+//printf("Setting.Calibration_Factor[0]=%f\n",Setting.Calibration_Factor[0]);
+//Setting.Calibration_Factor[1]=atof(&SFlash.Read_Buffer[180]);
+//if(Setting.Calibration_Factor[1]<=0) Setting.Calibration_Factor[1]=1;//PROTECTION====================
+//printf("Setting.Calibration_Factor[1]=%f\n",Setting.Calibration_Factor[1]);
+//Setting.Calibration_Factor[2]=atof(&SFlash.Read_Buffer[200]);
+//if(Setting.Calibration_Factor[2]<=0) Setting.Calibration_Factor[2]=1;//PROTECTION====================
+//printf("Setting.Calibration_Factor[2]=%f\n",Setting.Calibration_Factor[2]);
+//Setting.Calibration_Factor[3]=atof(&SFlash.Read_Buffer[220]);
+//if(Setting.Calibration_Factor[3]<=0) Setting.Calibration_Factor[3]=1; //PROTECTION====================
+//printf("Setting.Calibration_Factor[3]=%f\n",Setting.Calibration_Factor[3]);
+//Setting.Calibration_Factor[4]=atof(&SFlash.Read_Buffer[240]);
+//if(Setting.Calibration_Factor[4]<=0) Setting.Calibration_Factor[4]=1; //PROTECTION====================
+//printf("Setting.Calibration_Factor[4]=%f\n",Setting.Calibration_Factor[4]);
+//Setting.Calibration_Factor[5]=atof(&SFlash.Read_Buffer[260]);
+//if(Setting.Calibration_Factor[5]<=0) Setting.Calibration_Factor[5]=1;//PROTECTION====================
+//printf("Setting.Calibration_Factor[5]=%f\n",Setting.Calibration_Factor[5]);
+//Setting.Calibration_Factor[6]=atof(&SFlash.Read_Buffer[280]);
+//if(Setting.Calibration_Factor[6]<=0) Setting.Calibration_Factor[6]=1; //PROTECTION====================
+//printf("Setting.Calibration_Factor[6]=%f\n",Setting.Calibration_Factor[6]);
+//Setting.Calibration_Factor[7]=atof(&SFlash.Read_Buffer[300]);
+//if(Setting.Calibration_Factor[7]<=0) Setting.Calibration_Factor[7]=1; //PROTECTION====================
+//printf("Setting.Calibration_Factor[7]=%f\n",Setting.Calibration_Factor[7]);
+//************************Calibration*Factor************************************
+
+
+//******************************************************************************
+//************************Additional*Settings***********************************
+Setting.Telnet_Alert_Disable=SFlash.Read_Buffer[320]; //bool
+if(Setting.Telnet_Alert_Disable>1) Setting.Telnet_Alert_Disable=0;//PROTECTION====================
+//printf("Setting.Telnet_Alert_Disable=%d\n",Setting.Telnet_Alert_Disable);
+
+
+Setting.Telnet_CloseSocket=atol(&SFlash.Read_Buffer[330]);
+if(Setting.Telnet_CloseSocket<0) Setting.Telnet_CloseSocket=60;//PROTECTION====================
+//printf("Setting.Telnet_CloseSocket=%d\n",Setting.Telnet_CloseSocket);
+//************************Additional*Settings***********************************
+
+System.I2P_Tab_Ch[0]=SFlash_VarRead(ID_I2P_Tab_Ch0);
+System.I2P_Tab_Ch[1]=SFlash_VarRead(ID_I2P_Tab_Ch1);
+System.I2P_Tab_Ch[2]=SFlash_VarRead(ID_I2P_Tab_Ch2);
+System.I2P_Tab_Ch[3]=SFlash_VarRead(ID_I2P_Tab_Ch3);
+System.I2P_Tab_Ch[4]=SFlash_VarRead(ID_I2P_Tab_Ch4);
+System.I2P_Tab_Ch[5]=SFlash_VarRead(ID_I2P_Tab_Ch5);
+System.I2P_Tab_Ch[6]=SFlash_VarRead(ID_I2P_Tab_Ch6);
+System.I2P_Tab_Ch[7]=SFlash_VarRead(ID_I2P_Tab_Ch7);
+
+for(i=0;i<8;i++)
+	if( (System.I2P_Tab_Ch[i]>12) || (System.I2P_Tab_Ch[i]<0) ) System.I2P_Tab_Ch[i]=0;
+}
+
+_DEVICE_HVS_NODEBUG
+void SFlash_Settings_Load_Default(void)
+{
+char i;
+//SFlash_CalibrationFlags_Set();  //initialization
+System_Init();
+
+Interlock.Status_Relays=0x00;
+HVS.No_Of_Outputs=HVS_Max_No_Of_Outputs;
+ADC.MeanDivider=Conf_MDivider;
+for(i=0;i<8;i++) HVS.IonPump_Model[i]=Conf_IONmodel;
+
+for(i=0;i<8;i++) Setting.Threshold_Warning[i]=1E-7;
+Setting.Threshold_Warning_ForAll=1E-7;
+Setting.Threshold_Warning_Disable_Flag=0;
+
+for(i=0;i<8;i++) Setting.Threshold_EPS[i]=1E-6;
+Setting.Threshold_EPS_ForAll=1E-6;
+Setting.EPS_Disable=0;
+
+for(i=0;i<8;i++) Setting.EPS_Output_Mask[i]=0x01<<i;
+
+Setting.Telnet_Message_Delay=5000; //ms
+//for(i=0;i<8;i++) Setting.Calibration_Factor[i]=1;
+
+Setting.Telnet_Alert_Disable=0; //bool
+
+Setting.Telnet_CloseSocket=60; //unsignet int
+
+SFlash_Settings_Save();
+
+
+Prt.Trsh=Prt_Trsh_Dft;SFlash_VarWrite(ID_Prt_Trsh,Prt.Trsh);
+Prt.Delta=Prt_Delta_Dft;SFlash_VarWrite(ID_Prt_Delta,Prt.Delta);
+Prt.T=Prt_T_Dft;SFlash_VarWrite(ID_Prt_T,Prt.T);
+}
+//***************************SFLASH*SETTINGS************************************
+//******************************************************************************
+
+
+
+//******************************************************************************
+//***************************SFLASH****SYSTEM*SETTINGS**************************
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Label_Save(void)
+{
+sf_pageToRAM(SFlash_Sys_Settings_Page);
+
+SFlash.Write_Buffer[0]='S';
+SFlash.Write_Buffer[1]=*(Sys_Return_SN());
+SFlash.Write_Buffer[2]=*(Sys_Return_SN()+1);
+SFlash.Write_Buffer[3]=*(Sys_Return_SN()+2);
+SFlash.Write_Buffer[4]=*(Sys_Return_SN()+3);
+SFlash.Write_Buffer[5]=0;
+
+sf_writeRAM(SFlash.Write_Buffer, 0, 6);
+sf_RAMToPage(SFlash_Sys_Settings_Page);
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Label_Load(void)
+{
+sf_pageToRAM(SFlash_Sys_Settings_Page);
+sf_readRAM(SFlash.Read_Buffer, 0, 6);
+
+System_Label.SN=atoi(&SFlash.Read_Buffer[1]);
+if(System_Label.SN==0) System_Label.SN=9999;
+}
+
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Label_Password_Save(void)
+{
+sf_pageToRAM(SFlash_Sys_Settings_Page);
+
+SFlash.Write_Buffer[0]='S';
+SFlash.Write_Buffer[1]=*(Sys_Return_Password());
+SFlash.Write_Buffer[2]=*(Sys_Return_Password()+1);
+SFlash.Write_Buffer[3]=*(Sys_Return_Password()+2);
+SFlash.Write_Buffer[4]=*(Sys_Return_Password()+3);
+SFlash.Write_Buffer[5]=0;
+
+sf_writeRAM(SFlash.Write_Buffer, 10, 6);
+sf_RAMToPage(SFlash_Sys_Settings_Page);
+}
+_DEVICE_HVS_NODEBUG
+void SFlash_Sys_Label_Password_Load(void)
+{
+sf_pageToRAM(SFlash_Sys_Settings_Page);
+sf_readRAM(SFlash.Read_Buffer, 10, 6);
+
+System_Label.Password=atoi(&SFlash.Read_Buffer[1]);
+//if(System_Label.Password==0) System_Label.Password=System_Label.SN;
+if(System_Label.Password==0) System_Label.Password=Ethernet_Password_Default;
+}
+//***************************SFLASH****SYSTEM*SETTINGS**************************
+//******************************************************************************
+
+_DEVICE_HVS_NODEBUG
+int SFlash_VarWrite(int id, int var)
+{
+char buf[16];
+
+sf_pageToRAM(SFlash_Vars_Page);
+
+sprintf(buf,"%06d",var);
+
+buf[7]=0;
+
+sf_writeRAM(buf, (7*id) , 7);
+sf_RAMToPage(SFlash_Vars_Page);
+
+return 1;
+}
+
+_DEVICE_HVS_NODEBUG
+int SFlash_VarRead(int id)
+{
+char buf[16];
+
+sf_pageToRAM(SFlash_Vars_Page);
+sf_readRAM(buf, (7*id), 7);
+
+buf[7]=0;
+
+return atoi(buf);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

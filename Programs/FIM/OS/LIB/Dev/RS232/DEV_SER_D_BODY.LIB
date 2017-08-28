@@ -1,0 +1,61 @@
+/*** BeginHeader */
+#ifndef __DEV_SER_D_BODY_LIB
+#define __DEV_SER_D_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_SER_D_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+SerD_Init, SerD_Read, SerD_Write,
+*/
+//_____________________________<FUNCTIONS>______________________________________
+void SerD_Init(void);
+int SerD_Read(char *buf);
+int SerD_Write(char *buf);
+//_____________________________</FUNCTIONS>______________________________________
+
+//_________________________________<CONFIG>_____________________________________
+#define DINBUFSIZE  255 //initialize the buffer size for RxD
+#define DOUTBUFSIZE 255 //initialize the buffer size for TxD
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+//_________________________________<CONFIGLOCAL>________________________________
+#define SerTimeout 5
+#define SerDmax DINBUFSIZE
+//_________________________________</CONFIGLOCAL>_______________________________
+
+_SER_D_NODEBUG
+void SerD_Init(void)
+{
+	serDopen(SR_BAUD);   //set up the rs232 via portD
+	serDwrFlush();       //crear output buffer of the portD
+	serDrdFlush();       //crear input buffer of the portD
+}
+
+_SER_D_NODEBUG
+int SerD_Write(char *buf)
+{
+int len;
+len=serDputs(buf);
+//serDwrFlush();    //it can be like that because clears at once the buffer
+return len;
+}
+
+_SER_D_NODEBUG
+int SerD_Read(char *buf)
+{
+int len;
+len=serDread(buf, SerDmax, SerTimeout);
+//serDrdFlush();    //it can be like that because clears at once the buffer
+return len;
+}
+/*** BeginHeader */
+#endif
+/*** EndHeader */

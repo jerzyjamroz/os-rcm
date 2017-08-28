@@ -1,0 +1,123 @@
+/*** BeginHeader */
+#ifndef __EM_LIB
+#define __EM_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_Trig_Ext_Event,
+EM_Trig_Tick,
+EM_Autorange_Handler,
+*/
+#include "../Programs/SimpleEM/Lib/EM/EM.H"
+
+root interrupt void EM_Trig_Ext_Event(void);
+int EM_Trig_Tick(void);
+void EM_Autorange_Handler(void);
+/*** EndHeader */
+
+_EM_NODEBUG
+root interrupt void EM_Trig_Ext_Event(void)
+{
+Dev_Int_Isr_Event_Tick();
+Elem_SYS.Trig_Incrementer++;Elem_SYS.Trig_Timer=_SET_TIMEOUT(Elem.Trig_Delay);
+}
+
+_EM_NODEBUG
+int EM_Trig_Tick(void)
+{
+if(Elem_SYS.Trig_Incrementer>0)
+{
+Elem_SYS.Trig=1;
+Elem_SYS.Trig_Incrementer--;
+}
+
+//if((Elem_ADC_SYS.Avs_Max_Act_Idx<Elem_ADC.Avs_Max)&&(Elem.Trig_Mode==EM_TR_MD_INT))Elem_SYS.Trig=0;
+if(Elem_ADC_SYS.Avr_Idx>=EM_ADC_ACQ_MAX)Elem_SYS.Trig=0;
+if(Elem.State==EM_ST_ON) Elem_SYS.Trig=0;
+if(Elem.State==EM_ST_IDLE) Elem_SYS.Trig=0;
+
+return Elem_SYS.Trig;
+}
+
+
+/*
+void EM_Autorange_Handler(int on_off,int min, int max)
+{
+int range;
+int ch;
+int min_raw,max_raw;
+
+if(on_off==1)
+{
+min_raw=(int)EM_RAW_MAX/100*min;
+max_raw=(int)EM_RAW_MAX/100*max;
+
+for (ch=0;ch<EM_SENSOR_MAX;ch++)
+	{
+   range=EM_ADC_Raw_Status_Int_Get(ch);
+   if ( abs(EM_ADC_Raw_Inst_Get)<min_raw)
+   	{
+      range--;
+      if(range>=0)EM_SEN_EXT_Range(ch,range);
+      }
+   else if ( abs(EM_ADC_Raw_Inst_Get)>max_raw)
+   	{
+      range++;
+      if(range<=7)EM_SEN_EXT_Range(ch,range);
+      }
+   }
+
+}
+
+
+}
+*/
+#define EM_RAW_MAX 1800
+#define EM_AUTORANGE_LATENCY 5000
+_EM_NODEBUG
+void EM_Autorange_Handler(void)
+{
+int range;
+int ch;
+static unsigned long int autorange_latency=0;
+
+if(chk_timeout(autorange_latency)>0)
+{
+
+for (ch=0;ch<EM_SENSOR_MAX;ch++)
+{
+   if(Elem.Range_Auto_St_Min_Max[ch][0]>0)
+	{
+   	range=EM_ADC_Raw_Status_Int_Get(ch);
+   	if ( abs((int)EM_ADC_FloatAcc[ch])<(EM_RAW_MAX/100*Elem.Range_Auto_St_Min_Max[ch][1]) )
+   		{
+      	range--;
+      	if(range>=0)
+         	{
+         	EM_SEN_EXT_Range(ch,range);
+            autorange_latency=_SET_TIMEOUT(EM_AUTORANGE_LATENCY);
+            }
+      	}
+   	else if ( abs((int)EM_ADC_FloatAcc[ch])>(EM_RAW_MAX/100*Elem.Range_Auto_St_Min_Max[ch][2]) )
+   		{
+      	range++;
+      	if(range<=7)
+         	{
+         	EM_SEN_EXT_Range(ch,range);
+            autorange_latency=_SET_TIMEOUT(EM_AUTORANGE_LATENCY);
+            }
+      	}
+   }
+
+}
+
+
+
+}
+
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

@@ -1,0 +1,38 @@
+char * const server_hosts[] =
+{
+	"84.89.255.41"
+  ,"time-b.nist.gov"
+  ,"nist1.aol-ca.truetime.com"
+  ,"0.pool.ntp.org"
+  ,"1.pool.ntp.org"
+  ,"2.pool.ntp.org"
+  ,"pool.ntp.org"
+};
+
+#define NSERVERS (sizeof(server_hosts)/sizeof(server_hosts[0]))
+
+
+if (socket) {
+	sock_close(socket);
+	socket = NULL;
+}
+
+
+
+		timer = _SET_TIMEOUT(2000);
+		while (!sock_resolved(socket)) {
+			tcp_tick(NULL);
+			if (chk_timeout(timer))
+				break;
+		}
+		if (!sock_resolved(socket)) {
+			printf("Host %s not resolved\n", server_hosts[i]);
+			continue;
+		}
+		
+		
+		
+		udp_set_dicmp(socket);	// Set to receive ICMP messages in-stream. 
+		
+		
+msg.flags = 0x0b;

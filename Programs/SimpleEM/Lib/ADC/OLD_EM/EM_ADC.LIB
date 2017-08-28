@@ -1,0 +1,182 @@
+/*** BeginHeader */
+#ifndef __EM_ADC_LIB
+#define __EM_ADC_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_ADC_Tick,EM_ADC_Raw_Tick,
+*/
+#include "../Programs/SimpleEM/Lib/ADC/EM_ADC.H"
+
+int EM_ADC_Tick						(int state, int * trigger);
+int EM_ADC_Raw_Tick(void);
+/*** EndHeader */
+
+int EM_ADC_Trig_Tick					(int *trigger);
+int EM_ADC_Avr_Tick					(void);
+int EM_ADC_Raw_Acq_Ch_Handler		(int ch);
+int EM_ADC_Status_Range_Handler	(int ch);
+int EM_ADC_Avr_Acq_Ch_Handler		(int ch);
+int EM_ADC_Avr_Status_Handler		(void);
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Raw_Tick(void)
+{
+int i;
+
+//<FLAGS>
+Elem_ADC_SYS.Raw_Idx++;
+if(Elem_ADC_SYS.Raw_Idx>=EM_ADC_ACQ_MAX) 				Elem_ADC_SYS.Raw_Idx=0;
+if(Elem_ADC_SYS.Avs_Counter_Idx<Elem_ADC.Avs_Max)	Elem_ADC_SYS.Avs_Counter_Idx++;
+EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Raw_Idx]=0; 		//status
+//</FLAGS>
+
+//<Range status handler>
+EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Raw_Idx]=0;
+EM_ADC_TotalAcc[EM_SENSOR_MAX]=0;
+EM_ADC_FloatAcc[EM_SENSOR_MAX]=0;
+for(i=0;i<EM_SENSOR_MAX;i++) EM_ADC_Status_Range_Handler(i); //first must be upgraded status of the measurements
+//</Range status handler>
+//<ADC acquisition handler>
+for(i=0;i<EM_SENSOR_MAX;i++) EM_ADC_Raw_Acq_Ch_Handler(i);
+//</ADC acquisition handler>
+return 1;
+}
+
+_EM_ADC_NODEBUG
+int EM_ADC_Avr_Tick(void)
+{
+int i;
+for(i=0;i<EM_SENSOR_MAX;i++) EM_ADC_Avr_Acq_Ch_Handler(i);
+EM_ADC_Avr_Status_Handler();
+return 1;
+}
+
+_EM_ADC_NODEBUG
+int EM_ADC_Tick(int state, int * trigger)
+{
+int i;
+//ADC raw acquisition is in the main
+if( (state==EM_ST_RUNNING) && (*trigger==1) )
+	{
+   EM_ADC_Trig_Tick(trigger);
+	EM_ADC_Avr_Tick();
+
+   if(Elem_ADC.Avr_Max!=-1)
+		if(Elem_ADC_SYS.Avr_Counter_Idx>=Elem_ADC.Avr_Max-1)
+      	{
+      	Elem.State=EM_ST_ON;
+         }
+   }
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Trig_Tick(int *trigger)
+{
+if(*trigger==1)
+   {
+   *trigger=0;
+   Elem_SYS.Trig_Counter++;if(Elem_SYS.Trig_Counter<0)Elem_SYS.Trig_Counter=0;
+
+   Elem_ADC_SYS.Avr_Idx++;
+	if(Elem_ADC_SYS.Avr_Idx>=EM_ADC_ACQ_MAX)Elem_ADC_SYS.Avr_Idx=0;
+
+   if(Elem_ADC.Avr_Max!=-1)
+   	{
+   	if(Elem_ADC_SYS.Avr_Counter_Idx<Elem_ADC.Avr_Max)
+   		Elem_ADC_SYS.Avr_Counter_Idx++;
+   	}
+   else if(Elem_ADC_SYS.Avr_Counter_Idx<EM_ADC_ACQ_MAX)
+   	Elem_ADC_SYS.Avr_Counter_Idx++;
+//else if(Elem_ADC_SYS.Avr_Max_Act_Idx>=EM_ADC_ACQ_MAX) Elem_ADC_SYS.Avr_Max_Act_Idx;
+//   EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Avr_Idx]=0;  //status
+   }
+
+return (*trigger);
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Raw_Acq_Ch_Handler(int ch)
+{
+int raw_data=0;
+static int raw_data_prev[4]={0,0,0,0};
+static int range_prev[4]={0,0,0,0};
+
+if( range_prev[ch]!=(EM_ADC_Raw_Status_Int_Get(ch)&0x0007) )
+	{
+	range_prev[ch]=(EM_ADC_Raw_Status_Int_Get(ch)&0x0007);
+   Elem_ADC_SYS.Avs_Counter_Idx=0;
+   // EM_ADC_TotalAcc[ch]=0;
+   //	EM_ADC_FloatAcc[ch]=0;
+   EM_ADC_TotalAcc[0]=0;EM_ADC_TotalAcc[1]=0;EM_ADC_TotalAcc[2]=0;EM_ADC_TotalAcc[3]=0;
+	}
+//printf("%d\n",EM_ADC_Raw_Status_Int_Get(ch));
+
+if(BIT(&Elem.Ch_Active,ch)==1)
+	{
+	raw_data=Dev_ADS7870_DGAnaIn(EM_SENSOR_ADDR(ch),1);
+	if(raw_data<=-4096) raw_data=raw_data_prev[ch];
+   }
+else raw_data=0;
+
+EM_ADC_Raw[ch][Elem_ADC_SYS.Raw_Idx]=raw_data;
+
+if(Elem_ADC_SYS.Avs_Counter_Idx>=Elem_ADC.Avs_Max)
+	{
+   EM_ADC_TotalAcc[ch]=EM_ADC_TotalAcc[ch]+raw_data-EM_ADC_Raw[ch][EM_ADC_Idx_Rot(Elem_ADC_SYS.Raw_Idx-Elem_ADC_SYS.Avs_Counter_Idx)];
+   EM_ADC_FloatAcc[ch]=((float)EM_ADC_TotalAcc[ch])/Elem_ADC_SYS.Avs_Counter_Idx;
+//	printf("%d\n",Elem_ADC_SYS.Avs_Counter_Idx);
+   }
+else
+	{
+	EM_ADC_TotalAcc[ch]=EM_ADC_TotalAcc[ch]+raw_data;
+   EM_ADC_FloatAcc[ch]=((float)EM_ADC_TotalAcc[ch])/(Elem_ADC_SYS.Avs_Counter_Idx+1);
+//   printf("%d\n",Elem_ADC_SYS.Avs_Counter_Idx);
+   }
+
+//EM_ADC_FloatAcc[ch]=((float)EM_ADC_TotalAcc[ch])/Elem_ADC_SYS.Avs_Counter;
+//printf("%d\n",Elem_ADC_SYS.Avs_Max_Act_Idx);
+
+raw_data_prev[ch]=raw_data;
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Status_Range_Handler(int ch)
+{
+long int status=0;
+status=0;
+//No overrange status in here
+//if((EM_ADC_Raw[ch][Elem_ADC_SYS.Raw_Idx]==EM_ADC_OVERRANGE) || (EM_ADC_Raw[ch][Elem_ADC_SYS.Raw_Idx]==0xFFFF)) status=0x01<<3;
+
+status=(int)((status|Elem_Sen.ShadowRange[ch]))&0x7;
+status=(int)(status<<(EM_SENSOR_MAX*ch));
+
+EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Raw_Idx]|=(int)status;
+EM_ADC_TotalAcc[EM_SENSOR_MAX]=(int)EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Raw_Idx];
+EM_ADC_FloatAcc[EM_SENSOR_MAX]=(float)EM_ADC_TotalAcc[EM_SENSOR_MAX];
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Avr_Acq_Ch_Handler(int ch)
+{
+EM_ADC_VectTab_Avr[Elem_ADC_SYS.Avr_Idx][ch]=EM_ADC_FloatAcc[ch];
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ADC_NODEBUG
+int EM_ADC_Avr_Status_Handler(void)
+{
+EM_ADC_VectTab_Avr[Elem_ADC_SYS.Avr_Idx][EM_SENSOR_MAX]=EM_ADC_FloatAcc[EM_SENSOR_MAX];
+
+return 1;
+}
+//------------------------------------------------------------------------------
+/*** BeginHeader */
+#endif
+/*** EndHeader */

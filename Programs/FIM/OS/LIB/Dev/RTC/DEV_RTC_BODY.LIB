@@ -1,0 +1,77 @@
+/*** BeginHeader */
+#ifndef __DEV_RTC_BODY_LIB
+#define __DEV_RTC_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_RTC_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+RTC_Print,RTC_Time_Print,RTC_Read,RTC_isCorrect,RTC_Write
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int RTC_Print(char *buf, unsigned long time);
+int RTC_Time_Print(char *buf, unsigned long time);
+unsigned long int RTC_Read(void);
+int RTC_Write(unsigned long int time);
+int RTC_isCorrect(void);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//_________________________________<CONFIGLOCAL>________________________________
+//Seconds between RFC868 epoch (1900) and Rabbit epoch (1980)
+//#define EPOCH_DIFF	2524521600UL
+#define LOC_SNTP_NOWADAYS_TIME 938160000UL
+//_________________________________</CONFIGLOCAL>_______________________________
+
+_RTC_NODEBUG
+int RTC_Print(char *buf, unsigned long time)
+{
+	struct tm t;
+	mktm(&t, time);
+	sprintf(buf,"%02d/%02d/%04d %02d:%02d:%02d",
+		            t.tm_mon, t.tm_mday, 1900+t.tm_year, t.tm_hour, t.tm_min, t.tm_sec);
+return strlen(buf);
+}
+
+_RTC_NODEBUG
+int RTC_Time_Print(char *buf, unsigned long time)
+{
+	struct tm t;
+	mktm(&t, time);
+	sprintf(buf,"%02d:%02d:%02d",
+		            t.tm_hour, t.tm_min, t.tm_sec);
+
+return strlen(buf);
+}
+
+
+_RTC_NODEBUG
+unsigned long int RTC_Read(void)
+{
+return read_rtc();
+}
+
+_RTC_NODEBUG
+int RTC_Write(unsigned long int time)
+{
+write_rtc(time);
+return 1;
+}
+
+_RTC_NODEBUG
+int RTC_isCorrect(void)
+{
+if(read_rtc()>=LOC_SNTP_NOWADAYS_TIME) return 1;
+else return 0;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

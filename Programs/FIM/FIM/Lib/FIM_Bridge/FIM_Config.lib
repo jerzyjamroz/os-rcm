@@ -1,0 +1,18 @@
+/*** BeginHeader */
+#ifndef __FIM_CONFIG_LIB
+#define __FIM_CONFIG_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+#define FIM_DEFAULT_PASSWORD 1234
+#define FIM_DEFAULT_WATCHDOG 60
+#define FIM_FIFO_LEN 512
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

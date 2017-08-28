@@ -1,0 +1,86 @@
+/*** BeginHeader */
+#ifndef __DEV_INT_LIB
+#define __DEV_INT_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Int_Init,
+Int_Isr_Event_Tick,Int_En,
+int Int_En,
+*/
+
+#include "/Dev/INT/DEV_INT.H"
+
+#define Int_Dis() WrPortI(I1CR,&I1CRShadow,0x00)
+//#define Int_En() WrPortI(I1CR,&I1CRShadow,0x13)
+
+void Int_Init(void *isr, int edge);
+int Int_Isr_Event_Tick(void);
+//cofunc int Int_Tick(int ms, int edge);
+int Int_En(int edge);
+
+/*** EndHeader */
+
+struct _Int{
+int Status;
+unsigned long int Timer;
+};
+
+struct _Int Dev_Int={
+0,
+0,
+};
+
+_INT_DEBUG
+int Int_En(int edge)
+{
+edge=edge<<4;
+WrPortI(I1CR,&I1CRShadow,0x03|edge);
+return 0;
+}
+
+_INT_DEBUG
+void Int_Init(void *isr, int edge)
+{
+//   #GLOBAL_INIT
+//   {
+		BitWrPortI(PEDDR, &PEDDRShadow,0,5);	// set port PE5 as an input
+		SetVectExtern4000(1,isr);
+//		WrPortI(I1CR, &I1CRShadow, 0x11);		// enable external INT1 on PE5, falling edge, priority 1
+		Int_En(edge);
+//		Interrupt.Status=0;    //interrupt enable - everything ok
+//   }
+}
+
+
+_INT_DEBUG
+int Int_Isr_Event_Tick(void)
+{
+Dev_Int.Status=1;
+Dev_Int.Timer=MS_TIMER;
+//Int_Dis();
+}
+
+
+/*
+_INT_DEBUG
+cofunc int Int_Tick(int ms, int edge)
+{
+static unsigned long int timer=0;
+
+if(Dev_Int.Status==1)
+	{
+	waitfor(labs(MS_TIMER-Dev_Int.Timer)>ms);
+   Dev_Int.Status=0;
+   Int_En(edge);
+   return 1;
+   }
+
+return 0;
+}
+*/
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

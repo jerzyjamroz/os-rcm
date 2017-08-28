@@ -1,0 +1,43 @@
+/*** BeginHeader */
+#ifndef __CONFIG_SYS_LIB
+#define __CONFIG_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+
+*/
+
+#define Conf_MDivider 2
+#define Conf_IONmodel 0
+
+#define SFlash_Vars_Page 20
+enum{
+ID_Prt_Trsh,
+ID_Prt_Delta,
+ID_Prt_T,
+ID_I2P_Tab_Ch0,
+ID_I2P_Tab_Ch1,
+ID_I2P_Tab_Ch2,
+ID_I2P_Tab_Ch3,
+ID_I2P_Tab_Ch4,
+ID_I2P_Tab_Ch5,
+ID_I2P_Tab_Ch6,
+ID_I2P_Tab_Ch7,
+ID_BrCh_Timestamp0,
+ID_BrCh_Timestamp1,
+ID_BrCh_Timestamp2,
+ID_BrCh_Timestamp3,
+ID_BrCh_Timestamp4,
+ID_BrCh_Timestamp5,
+ID_BrCh_Timestamp6,
+ID_BrCh_Timestamp7,
+}SFlash_Vars;
+
+/*** EndHeader */
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

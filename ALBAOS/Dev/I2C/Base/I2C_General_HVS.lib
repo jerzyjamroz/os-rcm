@@ -1,0 +1,20 @@
+/*** BeginHeader */
+#ifndef __GENERAL_I2C_HVS_LIB
+#define __GENERAL_I2C_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+struct{
+int error;
+
+int Error_Expander1;
+int Error_Expander2;
+//int Error_Expander3;
+}I2C;
+/*** EndHeader */
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

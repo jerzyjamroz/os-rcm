@@ -1,0 +1,129 @@
+/*** BeginHeader */
+#ifndef __EM_API_LIB
+#define __EM_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_Range_Conv,
+EM_Att_Handler,
+EM_Elem_Default,
+EM_Elem_Init,
+EM_Mem_Dump,
+EM_Idx_Wrapper,
+*/
+#include "../Programs/SimpleEM/Lib/EM/EM.H"
+
+#use "EM.LIB"
+#use "EM_CALC_API.LIB"
+#use "EM_EVT_API.LIB"
+
+int EM_Range_Conv(char * str);
+int EM_Att_Handler(struct _SYSOrd *ord);
+int EM_Elem_Default(void);
+int EM_Elem_Init(void);
+int EM_Mem_Dump(char *buf);
+int EM_Idx_Wrapper(int idx,int max);
+/*** EndHeader */
+
+_EM_NODEBUG
+int EM_Range_Conv(char * str)
+{
+if			(0==strcmp(str,&EM_SEN_TXT_Range[EM_100p][0]))
+	{
+   return EM_100p;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_1n][0]))
+	{
+   return EM_1n;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_10n][0]))
+	{
+   return EM_10n;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_100n][0]))
+	{
+   return EM_100n;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_1u][0]))
+	{
+   return EM_1u;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_10u][0]))
+	{
+   return EM_10u;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_100u][0]))
+	{
+   return EM_100u;
+   }
+else if	(0==strcmp(str,&EM_SEN_TXT_Range[EM_1m][0]))
+	{
+   return EM_1m;
+   }
+else return -1;
+
+return -1;
+}
+
+_EM_NODEBUG
+int EM_Att_Handler(struct _SYSOrd *ord)
+{
+if((Elem.State!=EM_ST_IDLE)&&(ord->Ref[ord->Id].Att=='\c'))
+	return (-SYSOrd_ERR_OPERATION);
+
+return 1;
+}
+
+_EM_NODEBUG
+int EM_Elem_Default(void)
+{
+Elem=Elem_Default;
+Elem_ADC=Elem_ADC_Default;
+Elem_Sen=Elem_Sen_Default;
+
+return 1;
+}
+
+_EM_NODEBUG
+int EM_Elem_Init(void)
+{
+//chk = getcrc((char*)&Elem + sizeof(Elem._crc),sizeof(Elem)-sizeof(Elem._crc),0 );
+/*
+if(EM___CRC != Elem._crc) Elem=Elem_Default;
+if(EM___CRC != Elem_ADC._crc) Elem_ADC=Elem_ADC_Default;
+if(EM___CRC != Elem_Sen._crc) Elem_Sen=Elem_Sen_Default;
+*/
+
+if(EM___CRC != Elem._crc) EM_Elem_Default();
+if(EM___CRC != Elem_ADC._crc)EM_Elem_Default();
+if(EM___CRC != Elem_Sen._crc)EM_Elem_Default();
+
+return 1;
+}
+
+_EM_NODEBUG
+int EM_Mem_Dump(char *buf)
+{
+char *p;
+
+p=buf;
+memcpy(p+0,(char*)El_Gl.Main,sizeof(*El_Gl.Main));
+p+=sizeof(*El_Gl.Main);
+memcpy(p,(char*)El_Gl.ADC,sizeof(*El_Gl.ADC));
+p+=sizeof(*El_Gl.ADC);
+memcpy(p,(char*)El_Gl.Sen,sizeof(*El_Gl.Sen));
+//idx=sprintf(buf,"%s %s %s",);
+return (sizeof(*El_Gl.Main)+sizeof(*El_Gl.ADC)+sizeof(*El_Gl.Sen));
+}
+
+_EM_NODEBUG
+int EM_Idx_Wrapper(int idx,int max)
+{
+if(idx<max) return idx;
+if(idx<0) return 0;
+return (idx%max);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,35 @@
+/*** BeginHeader */
+#ifndef __DEV_UDP_MOUNT_LIB
+#define __DEV_UDP_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_UDP_BODY.LIB"
+
+//<UDP_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_UDP_Driver                   //START
+//</HEADER>
+//<INIT>
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_UDP_PortX_Pin_Set(port,pin_no)	 		UDP_PortX_Pin_Set(port,pin_no)
+#define Dev_UDP_PortX_Pin_Res(port,pin_no)	 		UDP_PortX_Pin_Res(port,pin_no)
+#define Dev_UDP_PortX_Pin_Read(port,pin_no)	 	UDP_PortX_Pin_Read(port,pin_no)
+#define Dev_UDP_PortX_Config(port,UDP_conf)			UDP_PortX_Config(port,UDP_conf)
+//</BODY>
+//------------------------------------------------------------------------------
+//</UDP_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

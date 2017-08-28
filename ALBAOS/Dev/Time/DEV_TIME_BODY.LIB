@@ -1,0 +1,80 @@
+/*** BeginHeader */
+#ifndef __DEV_TIME_BODY_LIB
+#define __DEV_TIME_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_TIME_HEADER.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+Time_SNTP2RTC1900_Update_hdl
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int Time_SNTP2RTC1900_Update_hdl(char * ip_address);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+_TIME_NODEBUG
+int Time_SNTP2RTC1900_Update_hdl(char * ip_address)
+{
+unsigned long int time;
+
+if( (time=SYS_SNTP_FastGet( SYS_Eth_IP2Num(ip_address) ) ) > 0)
+	{
+   SYS_RTC_UTC1900_Write(time);
+   updateTimers();
+   return 1;
+   }
+
+return 0;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+
+
+
+/*
+_TIME_NODEBUG
+int Time_Update_hdl(char * sntp_server)
+{
+static char sntp_host_buf[SYS_DNS_MAX_LEN+1];
+static unsigned long int sntp_server_ip;
+unsigned long int time;
+
+#GLOBAL_INIT{
+sntp_server_ip=0;
+sntp_host_buf[0]=0;
+}
+
+if(sntp_server_ip==0)
+	{
+	sntp_server_ip=SYS_Eth_Resolve(sntp_server);
+   if(sntp_server_ip!=0) strcpy(sntp_host_buf,sntp_server);
+   }
+else if (strcmp(sntp_host_buf,sntp_server)!=0)
+	{
+	sntp_server_ip=SYS_Eth_Resolve(sntp_server);
+   if(sntp_server_ip!=0) strcpy(sntp_host_buf,sntp_server);
+   }
+
+if( (time=SYS_SNTP_FastGet(sntp_server_ip) ) > 0)
+	{
+   write_rtc(time);
+   updateTimers();
+   return 1;
+   }
+
+return 0;
+}
+*/

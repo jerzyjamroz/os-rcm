@@ -1,0 +1,139 @@
+/* START LIBRARY DESCRIPTION *********************************************
+DESCRIPTION:
+This library provides an external data/address system for the strobe pin PE0,
+IB0CR 0x0000–0x1FFF
+END DESCRIPTION **********************************************************/
+
+	//strukture "ll_Gather * g"
+   //---------------------------------------------------------------
+	// Datagram has come in.  It is in the Ethernet receive buffer.  No need to
+	// copy it anywhere - we just transmit it straight back to the sender.
+	// The relevant information comes in the following fields (not all of which
+	// we use here) (see LIB\tcpip\net.lib for structure):
+	//  g->data1  ->  IP and UDP headers (root)
+	//  g->len1   ->  IP and UDP header length
+	//  g->data2  ->  UDP datagram data (xmem) - first buffer
+	//  g->len2   ->  UDP datagram data length - first buffer
+	//  g->data3  ->  UDP datagram data (xmem) - second buffer **
+	//  g->len3   ->  UDP datagram data length - second buffer
+	//  udi->remip  -> sender's IP address
+	//  udi->remport  ->  sender's UDP port number
+	//  udi->flags  -> flags.
+
+   // The 'event' parameter determines the type of event.  As of DC 7.30, this is either
+	//  UDP_DH_INDATA : incoming datagram
+	//  UDP_DH_ICMPMSG : incoming ICMP message.
+
+
+/*** BeginHeader */
+#ifndef __DEV_UDP_BODY_LIB
+#define __DEV_UDP_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_UDP_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+UDP_Init, UDP_XWrite, UDP_Write, UDP_Handler
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int UDP_Init();
+root int UDP_XWrite(far char *fBuf, int len, longword remip, word remport);
+root int UDP_Write(char *buf, int len, longword remip, word remport);
+int UDP_Handler(int event, udp_Socket * udpSock, ll_Gather * udpGath, _udp_datagram_info * udpInfo);
+//root int UDP_Read(int address);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//_________________________________<CONFIGLOCAL>________________________________
+//_________________________________</CONFIGLOCAL>_______________________________
+/* START FUNCTION DESCRIPTION ********************************************
+END DESCRIPTION **********************************************************/
+
+//<LOCAL_VARS>
+static udp_Socket UDP_Sock;
+//</LOCAL_VARS>
+
+//<UDP_Handler>
+int UDP_Handler(int event, udp_Socket * udpSock, ll_Gather * udpGath, _udp_datagram_info * udpInfo)
+//<UDP_Preffered_Handler_Body>
+{
+	if (event == UDP_DH_ICMPMSG) {
+		return 1;	// Just ignore incoming ICMP errors.
+	}
+
+	return 1;
+}
+//</UDP_Preffered_Handler_Body>
+//</UDP_Handler>
+
+int UDP_Init(void)
+{
+	if(!udp_extopen(&UDP_Sock, IF_ANY, DEV_UDP_LOCAL_PORT, -1L, 0, UDP_Handler, 0, 0)) {
+//		printf("udp_extopen failed!\n");
+		//Nice to implement an ERROR DIODE
+		exit(0);
+	}
+
+return 1;
+}
+
+root int UDP_XWrite(far char *fBuf, int len, longword remip, word remport)
+{
+return udp_xsendto(&UDP_Sock, (long) fBuf, len, remip, remport);
+}
+
+root int UDP_Write(char *buf, int len, longword remip, word remport)
+{
+return udp_sendto(&UDP_Sock, buf, len, remip, remport);
+}
+
+/*
+root int UDP_Sender_Read(int address)
+{
+
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+
+//<USEFUL>
+/*
+int echo_handler(int event, udp_Socket * s, ll_Gather * g,
+						_udp_datagram_info * udi)
+{
+
+	if (event == UDP_DH_ICMPMSG) {
+		return 1;	// Just ignore incoming ICMP errors.
+	}
+
+
+   printf("Got UDP  len1=%2u len2=%4u len3=%4u remip=%08lX remport=%5u len=%u\n",
+   	g->len1, g->len2, g->len3, udi->remip, udi->remport, udi->len);
+
+	if (!g->len3)
+   	// No second buffer.  This is easy - just use udp_xsendto directly
+		udp_xsendto(s, (long)g->data2, g->len2, udi->remip, udi->remport);
+   else {
+   	// Awkward: got 2 areas, so copy them into a contiguous root buffer and send.
+		xmem2root(pktbuf, (long)g->data2, g->len2);
+      xmem2root(pktbuf + g->len2, (long)g->data3, g->len3);
+		udp_sendto(s, pktbuf, g->len2+g->len3, udi->remip, udi->remport);
+   }
+
+	// Return 1 to indicate that all processing has been done.  No copy to
+	// normal udp socket receive buffer.
+	return 1;
+}
+*/
+//</USEFUL>

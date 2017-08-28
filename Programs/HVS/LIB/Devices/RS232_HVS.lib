@@ -1,0 +1,42 @@
+/* START LIBRARY DESCRIPTION *********************************************
+DESCRIPTION: RS232 Serial port D driver
+END DESCRIPTION **********************************************************/
+
+/*** BeginHeader */
+#ifndef __RS232_HVS_LIB
+#define __RS232_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Serial_Init_D
+*/
+#define DINBUFSIZE  255 //initialize the buffer size for RxD
+#define DOUTBUFSIZE 255 //initialize the buffer size for TxD
+#define HVS_BAUD 9600L //define the speed of RS232
+
+_DEVICE_HVS_NODEBUG void Serial_Init_D();
+//void Serial_Test();
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG 
+void Serial_Init_D()
+{
+	serDopen(HVS_BAUD);  //set up the rs232 via portD
+	serDwrFlush();       //crear output buffer of the portD
+	serDrdFlush();       //crear input buffer of the portD
+}
+
+/*
+void Serial_Test()
+{
+char nIn1;
+      	for(nIn1='a';nIn1<='z';nIn1++)
+         	{
+            serDputc(nIn1);
+//            printf("%c\n",nIn1);
+            }
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

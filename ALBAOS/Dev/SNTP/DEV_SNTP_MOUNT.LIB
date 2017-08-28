@@ -1,0 +1,33 @@
+/*** BeginHeader */
+#ifndef __DEV_SNTP_MOUNT_LIB
+#define __DEV_SNTP_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_SNTP_BODY.LIB"
+
+//<SNTP_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_SNTP_Driver                 //START
+//</HEADER>
+//<INIT>
+#define DEV_SNTP_DRIVER_INIT__						SNTP_Init();
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_SNTP_FastGet(sntp_serv)					SNTP_Time_FastGet(sntp_serv)
+#define Dev_SNTP_Cells_IP_dft							SNTP_Cells_IP_dft
+//</BODY>
+//------------------------------------------------------------------------------
+//</SNTP_DRIVER>
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

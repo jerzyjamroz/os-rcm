@@ -1,0 +1,683 @@
+/*** BeginHeader */
+#ifndef __EM_ORD_QUERY_API_LIB
+#define __EM_ORD_QUERY_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EM_QHELP_Func,
+
+EM_QOFFSETCORR_Func,
+EM_QGAINCORR_Func,
+
+EM_QFILTER_Func,
+EM_QRANGE_Func,
+EM_QOFFSET_Func,
+EM_QINV_Func,
+
+EM_QAVSAMPLES_Func,
+EM_QSRATE_Func,
+EM_QTRIGMODE_Func,
+EM_QPOINTS_Func,
+EM_QTRIGPERIODE_Func,
+EM_QMEAS_Func,
+EM_QIINST_Func,
+
+EM_QDATA_Func,
+EM_QLDATA_Func,
+EM_QAVDATA_Func,
+EM_QRAWDATA_Func,
+EM_QSTATUS_Func,
+EM_QMODE_Func,
+EM_QSTATE_Func,
+EM_QENABLE_Func,
+EM_QFIM_Func,
+
+EM_QVINST_Func,
+EM_QVMEAS_Func,
+
+EM_QRAWINST_Func,
+EM_QRAWMEAS_Func,
+
+EM_QDEVMAC_Func,
+EM_QDEVIP_Func,
+EM_QDEVSNO_Func,
+EM_QSENTEST_Func,
+
+EM_QMEMDUMP_Func,
+
+EM_QAMPMODE_Func,
+EM_QGAIN1_Func,
+EM_QGAIN2_Func,
+
+EM_QEVTMODE_Func,
+EM_QEVTCLIENT_Func,
+
+EM_QTRIGPOL_Func,
+
+EM_QAUTORANGEMIN_Func,
+EM_QAUTORANGEMAX_Func,
+EM_QAUTORANGE_Func,
+
+EM_QTRIGDELAY_Func,
+*/
+//#include "../Programs/SimpleEM/Lib/ORD/EM_ORD.H"
+#include "../Programs/SimpleEM/Lib/ORD/EM_ORD_QUERY.H"
+/*** EndHeader */
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QHELP_Func			(struct _SYSOrd *ord)
+{
+int i;
+
+ord->Idx=0;
+ord->Idx+=sprintf(&ord->Output[ord->Idx],"<?QUERY>");
+
+for(i=0;EMOrdRef_Query[i].Id!=SYSNULL_INT;i++)
+	ord->Idx+=sprintf(&ord->Output[ord->Idx],EMOrdRef_Query[EM_QHELP].Ans,EMOrdRef_Query[i].Syntax);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx],"<SETTING>");
+
+for(i=0; EMOrdRef_Setting[i].Id!=SYSNULL_INT;i++)
+	ord->Idx+=sprintf(&ord->Output[ord->Idx],EMOrdRef_Setting[EM_HELP].Ans,EMOrdRef_Setting[i].Syntax);
+
+//printf("%s",retBuf);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QOFFSETCORR_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(Elem.Offset_Corr[ch][ord->Arg]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QOFFSETCORR_Func       (struct _SYSOrd *ord)
+{
+int status;
+
+if ( (status=EM_ORD_API_Range_Det(ord))<0) return status;
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_QOFFSETCORR_Func_Txt);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QGAINCORR_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(Elem.Gain_Corr[ch][ord->Arg]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QGAINCORR_Func       (struct _SYSOrd *ord)
+{
+int status;
+
+if ( (status=EM_ORD_API_Range_Det(ord))<0) return status;
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_QGAINCORR_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QFILTER_Func_Txt(struct _SYSOrd *ord,int ch,void *arg)
+{
+float fc;
+
+fc=EM_SEN_retBandwidth(ch);
+
+if(fc<=0)
+	{
+   ord->Idx+=sprintf(&ord->Output[ord->Idx]," %d NO",ch+1,fc);     //EXCEPTION
+   return 1;
+   }
+
+EM_ORD_ANS_CH_1ARG(fc);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QFILTER_Func		(  struct _SYSOrd *ord )
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QFILTER_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QRANGE_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+int div[3];
+
+SYS_Float2Prefix(10/(Elem_Sen.ShadowGain[ch][0]*Elem_Sen.ShadowGain[ch][1]),div);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,ch+1,div[0],(char)div[1]);
+//ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,ch+1,&EM_SEN_TXT_Range[EM_SEN_ShadowRange[ch]][0]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QRANGE_Func	(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QRANGE_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QOFFSET_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(Elem_Sen.ShadowDAC[ch]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QOFFSET_Func		(  struct _SYSOrd *ord )
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QOFFSET_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QINV_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+if(Elem_Sen.ShadowINV[ch]==1) EM_ORD_ANS_CH_1ARG(SYSYES);
+else EM_ORD_ANS_CH_1ARG(SYSNO);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QINV_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QINV_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QAVSAMPLES_Func	(struct _SYSOrd *ord)         //DONE
+{
+EM_ORD_ANS_BASIC(EM_ADC_Avs_Max_Get());
+return 1;
+}
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+_EM_ORD_NODEBUG
+int EM_QSRATE_Func		(struct _SYSOrd *ord)        //DONE
+{
+EM_ORD_ANS_BASIC(Elem.Srate);
+return 1;
+}
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QTRIGMODE_Func	(  struct _SYSOrd *ord )
+{
+EM_ORD_ANS_BASIC(&Elem_SYS.Trig_Mode_Txt[Elem.Trig_Mode][0]);
+return 1;
+}
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QPOINTS_Func		(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(EM_ADC_Avr_Buf_Max_Get());
+return 1;
+}
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QTRIGPERIODE_Func(  struct _SYSOrd *ord )
+{
+EM_ORD_ANS_BASIC(Elem.Trig_Periode);
+return 1;
+}
+//??????????????????????????????????????????????????????????????????????????????
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QMEAS_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+//ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,ch+1,EM_Calc_Ich(ch,EM_ADC_MEAS_Get(ch)));
+EM_ORD_ANS_CH_1ARG(EM_ADC_I_Actual_Get);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QMEAS_Func			(struct _SYSOrd *ord)
+{
+EM_ORD_API_MultiCh_Handler(ord,EM_QMEAS_Func_Txt);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %04X",EM_ADC_I_Status_Actual_Get);
+return 1;
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QIINST_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+float raw_inst[4+1];
+raw_inst[4]=(float)EM_ADC_Raw_Status_Get;
+raw_inst[ch]=(float)EM_ADC_Raw_Inst_Get;
+
+EM_ORD_ANS_CH_1ARG(EM_ADC_I_Vect_Get(raw_inst));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QIINST_Func			(struct _SYSOrd *ord)
+{
+EM_ORD_API_MultiCh_Handler(ord,EM_QIINST_Func_Txt);
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %04X",EM_ADC_I_Status_Actual_Get);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QDATA_Func_Txt	(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_ADC_DATA_Get(ch,ord->Arg));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QDATA_Func			(struct _SYSOrd *ord)
+{
+int arg;
+int params;
+
+if(EM_ADC_isAvrBuf()<0) return (-SYSOrd_ERR_BUF);
+EM_ORD_API_retConfirm_Handler(ord);
+
+arg=-1;
+
+params=sscanf(&ord->Input[ord->Idx]," %d",&arg);
+if(arg<0) return (-SYSOrd_ERR_SYNTAX);
+if(params!=1) return (-SYSOrd_ERR_SYNTAX);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %d",arg);
+ord->Arg=arg;
+
+if(Elem_SYS.Trig_Counter>EM_ADC_ACQ_MAX)
+	{
+	if((Elem_SYS.Trig_Counter-EM_ADC_ACQ_MAX)>arg)
+		return (-SYSOrd_ERR_BUF);
+	}
+else if(Elem_SYS.Trig_Counter<arg)
+	{
+   return (-SYSOrd_ERR_BUF);
+   }
+
+ord->Arg=arg;
+
+EM_ORD_API_MultiCh_Handler(ord,EM_QDATA_Func_Txt);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %04X",EM_ADC_DATA_Status_Get(ord->Arg));
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QLDATA_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_ADC_LDATA_Get(ch));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QLDATA_Func		(  struct _SYSOrd *ord )
+{
+if(EM_ADC_isAvrBuf()<0) return (-SYSOrd_ERR_BUF);
+
+EM_ORD_API_retConfirm_Handler(ord);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %d",Elem_SYS.Trig_Counter);
+
+EM_ORD_API_MultiCh_Handler(ord,EM_QLDATA_Func_Txt);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx]," %04X",EM_ADC_LDATA_Status_Get());
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QAVDATA_Func     (  struct _SYSOrd *ord )
+{
+int i,j;
+int ch;
+int params;
+
+if(EM_ADC_isAvrBuf()<0) return (-SYSOrd_ERR_BUF);
+
+EM_ORD_API_retConfirm_Handler(ord);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ch);
+else params=0;
+
+if(params==0) return (-SYSOrd_ERR_SYNTAX);
+else if ((ch<1) || (ch>4)) return (-SYSOrd_ERR_SYNTAX);
+
+EM_ADC_AVDATA_All_UDP_Send(ord,ch-1,EM_PROCESSING_BUF_LEN-100);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QRAWDATA_Func    (struct _SYSOrd *ord)  //DONE
+{
+int i,j;
+int ch=0;
+int params=0;
+EM_ORD_API_retConfirm_Handler(ord);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ch);
+else params=0;
+
+if(params==0) return (-SYSOrd_ERR_SYNTAX);
+else if ((ch<1) || (ch>4)) return (-SYSOrd_ERR_SYNTAX);
+
+EM_ADC_RAWDATA_All_Get(ord,ch-1,EM_PROCESSING_BUF_LEN-100);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QSTATUS_Func		(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(EM_ADC_I_Status_Actual_Get);
+return 1;
+}
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QMODE_Func			(  struct _SYSOrd *ord )
+{
+EM_ORD_API_retConfirm_Handler(ord);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx],"%s","<NOT IMPLEMENTED>");
+
+return 1;
+}
+//??????????????????????????????????????????????????????????????????????????????
+_EM_ORD_NODEBUG
+int EM_QSTATE_Func      (struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(&Elem_SYS.State_Txt[Elem.State][0]);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QENABLE_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+if(BIT(&Elem.Ch_Active,ch)==1)EM_ORD_ANS_CH_1ARG(SYSYES);
+else EM_ORD_ANS_CH_1ARG(SYSNO);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QENABLE_Func		(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QENABLE_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QFIM_Func      (struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(DEV_ID_FIMWARE);
+return 1;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QVINST_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_Calc_Vabs((float)EM_ADC_Raw_Inst_Get));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QVINST_Func		(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QVINST_Func_Txt);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QVMEAS_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_Calc_Vabs(EM_ADC_FloatAcc[ch]));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QVMEAS_Func		(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QVMEAS_Func_Txt);
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QRAWINST_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_ADC_Raw_Inst_Get);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QRAWINST_Func		(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QRAWINST_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QRAWMEAS_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_ADC_FloatAcc[ch]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QRAWMEAS_Func		(struct _SYSOrd *ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QRAWMEAS_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QDEVMAC_Func		(struct _SYSOrd *ord)
+{
+SYS_MAC(&ord->Output[100],':');
+EM_ORD_ANS_BASIC(&ord->Output[100]);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QDEVIP_Func		(struct _SYSOrd *ord)
+{
+SYS_IP(&ord->Output[100]);
+EM_ORD_ANS_BASIC(&ord->Output[100]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QDEVSNO_Func           (struct _SYSOrd *ord)
+{
+SYS_DEV_SNO_READ(&ord->Output[100],DEV_SNO_LEN);
+ord->Output[100+DEV_SNO_LEN]=0;
+sprintf(&ord->Output[150],"%s-%s",DEV_SNO,&ord->Output[100]);
+
+EM_ORD_ANS_BASIC(&ord->Output[150]);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QSENTEST_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(EM_SEN_Check(ch));
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QSENTEST_Func          (struct _SYSOrd * ord)
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QSENTEST_Func_Txt);
+}
+
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QMEMDUMP_Func          (struct _SYSOrd * ord)
+{
+int i;
+int len;
+
+EM_ORD_API_retConfirm_Handler(ord);
+
+len=EM_Mem_Dump(&ord->Output[500]);
+
+len=len/sizeof(int);
+for(i=0;i<len;i++)
+	{
+	EM_ORD_ANS_1ARG(*((int*)&ord->Output[500+i*sizeof(int)]));
+   }
+
+//ord->Idx--;
+ord->Output[ord->Idx]=0;
+return 1;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QAMPMODE_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(&Elem_SYS.Range_Mode_Txt[Elem.Range_Mode[ch]][0]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QAMPMODE_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QAMPMODE_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QGAIN1_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+char txt[16];
+
+SYS_Float2EngStr(txt,Elem_Sen.ShadowGain[ch][0]);
+
+EM_ORD_ANS_CH_1ARG(txt);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QGAIN1_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QGAIN1_Func_Txt);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QGAIN2_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+char txt[16];
+
+SYS_Float2EngStr(txt,Elem_Sen.ShadowGain[ch][1]);
+
+EM_ORD_ANS_CH_1ARG(txt);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QGAIN2_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QGAIN2_Func_Txt);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QEVTMODE_Func    (struct _SYSOrd *ord)           //DONE
+{
+EM_ORD_ANS_BASIC(Elem.Event_Mode);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QEVTCLIENT_Func  (struct _SYSOrd *ord)           //DONE
+{
+inet_ntoa(&ord->Output[100],Elem.Event_Client[0]);
+
+EM_ORD_API_retConfirm_Handler(ord);
+
+ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,&ord->Output[100],Elem.Event_Client[1]);
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QTESTSPIREAD_Func(struct _SYSOrd *ord)           //DONE
+{
+char byte;
+byte=0xAA;
+Dev_SPI_Read(&byte,1);
+
+EM_ORD_ANS_BASIC(byte);
+return 1;
+}
+
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QTRIGPOL_Func(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(EM_INT_EDGE_TXT[Elem.Int_Edge]);
+return 1;
+}
+//------------------------------------------------------------------------------
+/*
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMIN_Func(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(Elem.Range_Auto_St_Min_Max[1]);
+return 1;
+}
+*/
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMIN_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(Elem.Range_Auto_St_Min_Max[ch][1]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMIN_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QAUTORANGEMIN_Func_Txt);
+}
+//------------------------------------------------------------------------------
+/*
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMAX_Func(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(Elem.Range_Auto_St_Min_Max[2]);
+return 1;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMAX_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+EM_ORD_ANS_CH_1ARG(Elem.Range_Auto_St_Min_Max[ch][2]);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QAUTORANGEMAX_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QAUTORANGEMAX_Func_Txt);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+/*
+_EM_ORD_NODEBUG
+int EM_QAUTORANGE_Func(struct _SYSOrd *ord)
+{
+EM_ORD_ANS_BASIC(EM_RANGE_AUTO_TXT[Elem.Range_Auto_St_Min_Max[0]]);
+return 1;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_QAUTORANGE_Func_Txt(struct _SYSOrd *ord,int ch, void *arg)
+{
+if(Elem.Range_Auto_St_Min_Max[ch][0]==1) EM_ORD_ANS_CH_1ARG(SYSYES);
+else EM_ORD_ANS_CH_1ARG(SYSNO);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_QAUTORANGE_Func		(struct _SYSOrd *ord)           //DONE
+{
+return EM_ORD_API_MultiCh_Handler(ord,EM_QAUTORANGE_Func_Txt);
+}
+//------------------------------------------------------------------------------
+
+_EM_ORD_NODEBUG
+int EM_QTRIGDELAY_Func		(struct _SYSOrd *ord)        //DONE
+{
+EM_ORD_ANS_BASIC(Elem.Trig_Delay);
+return 1;
+}
+//------------------------------------------------------------------------------
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

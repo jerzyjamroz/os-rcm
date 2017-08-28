@@ -1,0 +1,25 @@
+/*** BeginHeader */
+#ifndef __DEV_DALLOC_HEADER_LIB
+#define __DEV_DALLOC_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef DALLOC_DEBUG
+#define _DALLOC_NODEBUG
+#else
+#define _DALLOC_NODEBUG nodebug
+#endif
+
+//_________________________________<CONFIG>_____________________________________
+//****************************<SETTINGS>****************************************
+
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

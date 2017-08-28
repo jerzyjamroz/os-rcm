@@ -1,0 +1,74 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//<Mount_Dev_Eth_Driver>
+#ifdef Mount_Dev_Eth_Driver
+
+	#warnt "Dev_Eth: ACTIVE"
+	#use "DEV_ETH_MOUNT.LIB"
+
+	//------------------------------------------------------------------------------
+	//<INIT>
+   #define _SYS_MOUNT_DEV_Eth_DRIVER_INIT_ 				Dev_Eth_Init__
+	//</INIT>
+   //<DAEMON>
+   #define _SYS_MOUNT_DEV_Eth_DAEMON_ 						Dev_Eth_isConn_Daemon__
+   //</DAEMON>
+	//------------------------------------------------------------------------------
+	//<BODY>
+   #define SYS_Dev_Eth_isConn()                       Dev_Eth_isConn()
+	//</BODY>
+	//------------------------------------------------------------------------------
+#else
+   #ifdef Sim_Mount_Dev_Eth_Driver
+
+		#warnt "Simulator Dev_Eth: ACTIVE"
+		//<INIT>
+      #define _SYS_MOUNT_DEV_Eth_DRIVER_INIT_
+		//</INIT>
+      //<DAEMON>
+   	#define _SYS_MOUNT_DEV_Eth_DAEMON_
+   	//</DAEMON>
+		//------------------------------------------------------------------------------
+		//<BODY>
+      int SYS_Dev_Eth_isConn(void){return -1;}
+		//</BODY>
+		//------------------------------------------------------------------------------
+   #endif
+#endif
+//</Mount_Dev_Eth_Driver>
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

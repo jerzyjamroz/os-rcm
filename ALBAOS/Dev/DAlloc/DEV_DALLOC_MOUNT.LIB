@@ -1,0 +1,34 @@
+/*** BeginHeader */
+#ifndef __DEV_DALLOC_MOUNT_LIB
+#define __DEV_DALLOC_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_DALLOC_BODY.LIB"
+
+//<DALLOC_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+//</HEADER>
+//<INIT>
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_DAlloc_Release(addr,len) 						DAlloc_Release(addr,len)
+#define Dev_DAlloc_Xalloc(len)								DAlloc_Xalloc(len)
+#define Dev_DAlloc_Xmem2Root(dest,src,len)				DAlloc_Xmem2Root(dest,src,len)
+#define Dev_DAlloc_Root2Xmem(dest,src,len)				DAlloc_Root2Xmem(dest,src,len)
+//</BODY>
+//------------------------------------------------------------------------------
+//</DALLOC_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

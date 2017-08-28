@@ -1,0 +1,37 @@
+struct SYSXML{
+	int ID;
+   char StrArg[5][16];
+   char Header[5][16];
+};
+const struct SYSXML SYSXML_NULL =
+{-1,
+"","","","","",
+"","","","",""
+};
+
+
+
+
+//******************************************************************************
+#ifdef PROG_XML_Driver
+
+#define SYS_XML_hexParse(buf,arg,header)			PROG_XML_hexParse(buf,arg,header)
+#define SYS_XML_strParse(buf,arg,header)			PROG_XML_strParse(buf,arg,header)
+#define SYS_XML_decParse(buf,arg,header)			PROG_XML_decParse(buf,arg,header)
+#define SYS_XML_funcParse(buf,arg,header)	 		PROG_XML_funcParse(buf,arg,header)
+
+#define SYS_XML_HeaderCount(buf,header,no)	 	PROG_XML_HeaderCount(buf,header,no)
+#define SYS_XML_BeginHeader(buf,header)		 	PROG_XML_BeginHeader(buf,header)
+#define SYS_XML_EndHeader(x,y,z)				 		PROG_XML_EndHeader(x,y,z)
+#else
+//??????????????????????????????????????????????????????????????????????????????
+
+#endif
+
+
+
+
+//char textBuf[512]; 
+
+//SYS_XML_funcParse(textBuf,XML_Test,"TEST_FUNC");
+//printf("%s",textBuf);

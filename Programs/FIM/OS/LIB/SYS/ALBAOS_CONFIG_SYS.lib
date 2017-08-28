@@ -1,0 +1,27 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_CONFIG_SYS_LIB
+#define __ALBAOS_CONFIG_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader */
+const char OS[]="1.01.10";
+
+#ifdef ALBAOS_DEBUG
+#define _ALBAOS_NODEBUG
+#else
+#define _ALBAOS_NODEBUG nodebug
+#endif
+
+/*
+#ifdef ALBAOS_MOUNT_DEV
+#define _ALBAOS_MOUNT_DEV TRUE
+#else
+#define _ALBAOS_MOUNT_DEV FALSE
+#endif
+*/
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,73 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//<Mount_Dev_RTC_Driver>
+#ifdef Mount_Dev_RTC_Driver
+
+	#warnt "Dev_RTC: ACTIVE"
+
+	#use "DEV_RTC_MOUNT.LIB"
+
+	//------------------------------------------------------------------------------
+	//<INIT>
+	//</INIT>
+	//------------------------------------------------------------------------------
+	//<BODY>
+   #define SYS_RTC_Read()	 				Dev_RTC_Read()
+   #define SYS_RTC_Write(time)		 	Dev_RTC_Write(time)
+   #define SYS_RTC_isCorrect()			Dev_RTC_isCorrect()
+   #define SYS_RTC_Print(buf,time)		Dev_RTC_Print(buf,time)
+	//</BODY>
+	//------------------------------------------------------------------------------
+#else
+   #ifdef Sim_Mount_Dev_RTC_Driver
+
+		#warnt "Simulator Dev_RTC: ACTIVE"
+		//<INIT>
+		//</INIT>
+		//------------------------------------------------------------------------------
+		//<BODY>
+      unsigned long int SYS_RTC_Read(void){return -1;}
+      int SYS_RTC_Write(unsigned long int time){return -1;}
+      int SYS_RTC_isCorrect(void){return -1;}
+	  int SYS_RTC_Print(char *buf,unsigned long time){return -1;}
+		//</BODY>
+		//------------------------------------------------------------------------------
+   #endif
+#endif
+//</Mount_Dev_RTC_Driver>
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

@@ -1,0 +1,81 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_SYS_LIB
+#define __ALBAOS_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SYS_MAC,SYS_RabbitProductID,SYSOrd_TabLen,SYS_Void,
+SYS_ConstWrite,SYS_ProductFirmware,SYS_ALBAOSver
+*/
+int SYS_MAC(char *buf, char separator);
+int SYS_RabbitProductID(void);
+int SYSOrd_TabLen(struct SYSOrd * ord);
+int SYS_ConstWrite(int * constant,int value);
+int SYS_ProductFirmware(char *buf);
+int SYS_ALBAOSver(char *buf);
+nodebug void SYS_Void(void){}
+/*** EndHeader */
+
+
+_ALBAOS_NODEBUG
+int SYSOrd_TabLen(struct SYSOrd * ord)
+{
+int i;
+
+for(i=0;ord[i].ID>0;i++)
+   {
+   }
+
+return i;
+}
+
+
+_ALBAOS_NODEBUG
+int SYS_ProductFirmware(char *buf)
+{
+strcpy(buf,Firmware);
+return strlen(Firmware);
+}
+
+_ALBAOS_NODEBUG
+int SYS_ALBAOSver(char *buf)
+{
+strcpy(buf,ALBAOS_Ver);
+return strlen(ALBAOS_Ver);
+}
+
+_ALBAOS_NODEBUG
+int SYS_MAC(char *buf, char separator)
+{
+
+if(separator==0)
+	{
+	sprintf(buf,"%02X%02X%02X%02X%02X%02X",
+	SysIDBlock.macAddr[0], SysIDBlock.macAddr[1], SysIDBlock.macAddr[2],
+	SysIDBlock.macAddr[3], SysIDBlock.macAddr[4], SysIDBlock.macAddr[5]);
+   }
+else
+	{
+	sprintf(buf,"%02X%c%02X%c%02X%c%02X%c%02X%c%02X",
+	SysIDBlock.macAddr[0],separator, SysIDBlock.macAddr[1],separator, SysIDBlock.macAddr[2],separator,
+	SysIDBlock.macAddr[3],separator, SysIDBlock.macAddr[4],separator, SysIDBlock.macAddr[5]);
+   }
+
+return strlen(buf);
+}
+
+_ALBAOS_NODEBUG
+int SYS_RabbitProductID(void)
+{
+return SysIDBlock.productID;
+}
+
+_ALBAOS_NODEBUG
+int SYS_ConstWrite(int * constant,int value)
+{
+return (*constant)=value;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

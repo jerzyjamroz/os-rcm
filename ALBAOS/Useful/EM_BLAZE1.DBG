@@ -1,0 +1,6 @@
+Watch0=bufek[0];:GLOBAL
+Watch1=bufek[1];:GLOBAL
+Watch2=bufek[2];:GLOBAL
+cbWatch0=bufek[2]
+cbWatch1=bufek[1]
+cbWatch2=bufek[0]

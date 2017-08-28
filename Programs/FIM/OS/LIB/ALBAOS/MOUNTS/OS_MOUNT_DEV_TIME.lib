@@ -1,0 +1,75 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//<Mount_Dev_Time_Driver>
+#ifdef Mount_Dev_Time_Driver
+
+	#warnt "Dev_Time: ACTIVE"
+
+	#ifndef Mount_Dev_SNTP_Driver
+   	#warnt "Dev_Time_Msg: The SNTP driver is off."
+   #endif
+
+	#use "DEV_TIME_MOUNT.LIB"
+
+	//------------------------------------------------------------------------------
+	//<INIT>
+	//</INIT>
+	//------------------------------------------------------------------------------
+	//<BODY>
+	#define SYS_Time_Update_hdl(sntp_serv) 		Dev_Time_Update_hdl(sntp_serv)
+	//</BODY>
+	//------------------------------------------------------------------------------
+#else
+   #ifdef Sim_Mount_Dev_Time_Driver
+
+		#warnt "Simulator Dev_Time: ACTIVE"
+
+		#ifndef Mount_Dev_SNTP_Driver
+   		#warnt "SimDev_Time_Msg: The SNTP simulator driver is off."
+   	#endif
+		//<INIT>
+		//</INIT>
+		//------------------------------------------------------------------------------
+		//<BODY>
+		unsigned long int SYS_Time_Update_hdl(char * sntp_serv){return -1;}
+		//</BODY>
+		//------------------------------------------------------------------------------
+   #endif
+#endif
+//</Mount_Dev_Time_Driver>
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

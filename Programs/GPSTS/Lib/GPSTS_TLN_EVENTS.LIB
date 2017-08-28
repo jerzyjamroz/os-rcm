@@ -1,0 +1,128 @@
+/*** BeginHeader */
+#ifndef __GPSTS_TLN_EVENTS_LIB
+#define __GPSTS_TLN_EVENTS_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+GPSTS_Tln_Event_hdl
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int GPSTS_Tln_Event_hdl(int *status_vector);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+enum{
+GPS_EVEN_WARN_PPS =0 ,
+GPS_EVEN_WARN_SYNC,
+GPS_EVEN_END
+}EVENts;
+
+const char GPSTS_TLN_EVENT_END[]= {
+":END"
+};
+
+char * const GPSTS_TLN_EVENT[] = {
+":EVENt:WARNing:PPS",
+":EVENt:WARNing:SYNCh"
+};
+
+
+_GPSTS_NODEBUG
+char * GPSTS_Tln_Event(int id)
+{
+if(id>=GPS_EVEN_END) return SYSNULL.PCHAR;
+return GPSTS_TLN_EVENT[id];
+}
+
+_GPSTS_NODEBUG
+int GPSTS_Tln_Event_hdl(int *status_vector)
+{
+static int stat_vect;
+
+#GLOBAL_INIT
+{
+stat_vect=0xFFFF;
+}
+
+if(SYS_Tln_isActive()!=FALSE)
+{
+//PPS?
+	if(SYS_Bit_Cmp(&stat_vect,status_vector,GPS_StatVectBit_PPS)!=0)
+	{
+		if(BIT(status_vector,GPS_StatVectBit_PPS)==1) SYS_Tln_Write(GPSTS_TLN_EVENT_END);
+
+   	SYS_Tln_Write(GPSTS_Tln_Event(GPS_EVEN_WARN_PPS));
+   	SYS_Tln_Write(SYSCRNL);
+   	SYS_Bit_Cpy(&stat_vect,BIT(status_vector,GPS_StatVectBit_PPS),GPS_StatVectBit_PPS);
+	}
+
+//SYNCH?
+	if(SYS_Bit_Cmp(&stat_vect,status_vector,GPS_StatVectBit_SYNCH)!=0)
+	{
+		if(BIT(status_vector,GPS_StatVectBit_SYNCH)==1) SYS_Tln_Write(GPSTS_TLN_EVENT_END);
+
+   	SYS_Tln_Write(GPSTS_Tln_Event(GPS_EVEN_WARN_SYNC));
+   	SYS_Tln_Write(SYSCRNL);
+   	SYS_Bit_Cpy(&stat_vect,BIT(status_vector,GPS_StatVectBit_SYNCH),GPS_StatVectBit_SYNCH);
+	}
+}
+else stat_vect=0xFFFF;
+
+return 0;
+}
+
+/*
+int GPSTS_Tln_Event_hdl(int id, int flag)
+{
+if(Dev_Tln_isActive()==FALSE) return -1;
+
+	if(flag==0)
+		{
+		SYS_Tln_Write(GPSTS_Tln_Event(id));
+      SYS_Tln_Write(SYSCRNL);
+		}
+	else
+		{
+   	SYS_Tln_Write(GPSTS_TLN_EVENTEND);
+   	SYS_Tln_Write(GPSTS_Tln_Event(id));
+      SYS_Tln_Write(SYSCRNL);
+   	}
+
+return 0;
+}
+
+cofunc void GPSTS_Tln_Event_cf[2](int id,int *fl, int *fl_ref)
+{
+*fl=*fl_ref;
+
+while( (*fl_ref>0) || (*fl_ref!=*fl) )
+	{
+   *fl=*flag;
+	GPSTS_Tln_Event_hdl(id,*fl_ref);
+	waitfor( (DelayMs(GPS_EVENT_TIMER)) || (*fl_ref!=*fl) );
+	}
+
+}
+*/
+
+/*
+cofunc void GPSTS_Tln_Event_cf1[2](int id, int flag)
+{
+int fl;
+fl=flag;
+
+GPSTS_Tln_Event_hdl(id,flag);
+waitfor( (DelayMs(GPS_EVENT_TIMER)) || (flag!=fl) );
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

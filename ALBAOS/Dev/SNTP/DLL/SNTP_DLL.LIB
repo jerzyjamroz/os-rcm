@@ -1,0 +1,150 @@
+/*  SNTP.LIB V0.8   Copywright 2002 Hans Van Ingelgom
+ *
+ *  This library provides a very very simple SNTP (Simple Network
+ *  Time Protocol, RFC1769) interface.
+ *
+ *  sntp_gettime() returns the time, measured in seconds since
+ *  Jan 01, 1980, 00:00 GMT. To do so, it sends an empty NTP request
+ *  to the server and retreives the time from the reply. THIS MEANS
+ *  THERE IS NO ROUDTRIP DELAY CALCULATION! (read the RFC if you wish
+ *  to implement this feature).
+ *
+ *  This software is freeware. You can use it in your own programs,
+ *  as long as this copywright notice is not changed. No warranties
+ *  implied. If you make changes to the code, please send them to
+ *  hvingel@vub.ac.be along with a short description of your changes.
+ *
+ */
+
+/*** BeginHeader sntp_gettime ***********************************/
+unsigned long sntp_gettime(longword sntpserverip, unsigned int timeout);
+/*** EndHeader ***********************************************/
+
+struct ntp_timestamp
+{
+	long sec;
+	long sec_fraction;   // not used in our implementation
+};
+
+struct ntp_message
+{
+	char flags;
+	char stratum;
+	char poll;
+	char precision;
+
+	long root_delay;
+	long root_dispersion;
+	long reference_identifier;
+	struct ntp_timestamp reference_timestamp;
+	struct ntp_timestamp originate_timestamp;
+	struct ntp_timestamp receive_timestamp;
+	struct ntp_timestamp transmit_timestamp;
+};
+
+//
+// Internal function called by sntp_gettime. Can be reused in a funtion that calculates
+// Round-trip delay.
+//
+_SNTP_NODEBUG
+int sntp_query(longword sntpserverip, unsigned int timeout, struct ntp_message *msg)
+{
+	unsigned long t_out;
+	static udp_Socket sock;
+	int n;
+
+// Open socket.
+	t_out = MS_TIMER + timeout;  // bail out at this time.
+
+	if(udp_open(&sock, 123, sntpserverip, 123, NULL) == 0)
+	{
+#ifdef SNTP_DEBUG
+		printf("cannot open socket!\n");
+#endif
+		return 0;
+	}
+
+// Write message
+	for(;;)
+	{
+		tcp_tick(NULL);
+
+		if((n=udp_send(&sock, (char*) msg, sizeof(struct ntp_message))) > 0)
+			break;
+		if(MS_TIMER > t_out)
+		{
+			sock_close(&sock);
+			return 0;
+		}
+	}
+
+#ifdef SNTP_DEBUG
+	printf("NTP msg (%d bytes) sent.\n", n);
+#endif
+
+// Wait for answer.
+	for(;;)
+	{
+		tcp_tick(NULL);
+		if(MS_TIMER > t_out)
+		{
+			sock_close(&sock);
+			return 0;
+		}
+		n = udp_recv(&sock, msg, sizeof(struct ntp_message));
+		if(n>=0)
+		{
+			if(n==sizeof(struct ntp_message))
+			{
+#ifdef SNTP_DEBUG
+				printf("Got reply!\n");
+#endif
+				break;
+			}
+			else
+			{
+#ifdef SNTP_DEBUG
+				printf("got incomplete message (size: %d).\n", n);
+#endif
+				sock_close(&sock);
+				return 0;
+			}
+		}
+	}
+
+	sock_close(&sock);
+	return 1;
+}
+
+/* START FUNCTION DESCRIPTION ********************************************
+sntp_gettime                    <SNTP.LIB>
+
+SYNTAX: unsigned long sntp_gettime(longword sntpserverip, unsigned int timeout);
+
+PARAMETER1:		IP address of NTP server.
+PARAMETER2:		timeout in milliseconds. (up to 65 seconds)
+
+DESCRIPTION:   Connects to the NTP-server and gets the time.
+
+RETURN VALUE:	0 - error
+				  !0 - time in seconds since 00:00 Jan 1, 1980 (GMT)
+
+END DESCRIPTION **********************************************************/
+
+_SNTP_NODEBUG
+unsigned long sntp_gettime(longword sntpserverip, unsigned int timeout)
+{
+	struct ntp_message msg;
+
+
+
+	memset(&msg, 0, sizeof(struct ntp_message));
+	msg.flags = 0x0b;
+	if(sntp_query(sntpserverip, timeout, &msg))
+//		return ntp2rtc(&(msg.transmit_timestamp));
+      return ntohl(msg.transmit_timestamp.sec);
+	else return 0;
+}
+
+
+

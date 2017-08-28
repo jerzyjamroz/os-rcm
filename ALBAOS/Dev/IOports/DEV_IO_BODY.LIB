@@ -1,0 +1,315 @@
+/*** BeginHeader */
+#ifndef __DEV_IO_BODY_LIB
+#define __DEV_IO_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_IO_HEADER.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+IO_PortX_Pin_Set,IO_PortX_Pin_Res,IO_PortX_Pin_Read,IO_PortX_Config
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int IO_PortX_Pin_Set(int port,char pin_no);
+int IO_PortX_Pin_Res(int port,char pin_no);
+int IO_PortX_Pin_Read(int port,char pin_no);
+int IO_PortX_Config(int port,int io_conf);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+/* Driving port E procedures
+WrPortI(PEDDR, &PEDDRShadow,  0x00);
+WrPortI(PEDCR, &PEDCRShadow,  0x00);
+WrPortI(PEFR, &PEFRShadow,  0x00);
+*/
+
+//_________________________________<CONFIGLOCAL>________________________________
+
+//_________________________________</CONFIGLOCAL>_______________________________
+
+_IO_NODEBUG
+int IO_PortX_Config(int port,int io_conf)
+{
+//1- output, 0-input
+switch (port)
+{
+
+  case IOPORTA:
+//  WrPortI(PADDR, 	&PBDDRShadow, io_conf);
+//  WrPortI(PADR,  	&PBDRShadow,  io_conf);
+  return -1;
+  break;
+
+  case IOPORTB:
+   // Set port B pins PB0, PB2-7 lines to be outputs, PB1 as an input.
+   WrPortI(PBDDR, 	&PBDDRShadow, io_conf);
+   // Set all of the outputs high. ~low
+   WrPortI(PBDR,  	&PBDRShadow,  ~io_conf);
+   return RdPortI(PBDDR);
+  break;
+
+  case IOPORTC:
+   WrPortI(PCDDR, 	&PBDDRShadow, io_conf);
+   WrPortI(PCDR,  	&PBDRShadow,  ~io_conf);
+   return RdPortI(PCDDR);
+  break;
+
+  case IOPORTD:
+   WrPortI(PDDDR, 	&PBDDRShadow, io_conf);
+   WrPortI(PDDR,  	&PBDRShadow,  ~io_conf);
+   return RdPortI(PDDDR);
+  break;
+
+  case IOPORTE:
+  	//to switch off the alternative functions
+//	WrPortI(PEDCR, &PEDCRShadow,  0x00);
+//	WrPortI(PEFR, &PEFRShadow,  0x00);
+	WrPortI(PEDCR, &PEDCRShadow,  ~io_conf);
+	WrPortI(PEFR, 	&PEFRShadow,  	~io_conf);
+   ///to switch off the alternative functions
+   WrPortI(PEDDR, &PBDDRShadow, 	io_conf);
+   WrPortI(PEDR,  &PBDRShadow,  	~io_conf);
+   return RdPortI(PEDDR);
+  break;
+
+  default: return -1;
+}
+
+return -1;
+}
+
+_IO_NODEBUG
+int IO_PortX_Config_Pin_Out(int port,int pin_no)
+{
+//1- output, 0-input
+switch (port)
+{
+
+  case IOPORTA:
+//  WrPortI(PADDR, 	&PBDDRShadow, io_conf);
+//  WrPortI(PADR,  	&PBDRShadow,  io_conf);
+  return -1;
+  break;
+
+  case IOPORTB:
+   // Set port B pins PB0, PB2-7 lines to be outputs, PB1 as an input.
+   BitWrPortI(PBDDR, 	&PBDDRShadow, 1, pin_no);
+   // Set all of the outputs high.   ~low
+   BitWrPortI(PBDR,  	&PBDRShadow,  0, pin_no);
+   return RdPortI(PBDDR);
+  break;
+
+  case IOPORTC:
+   BitWrPortI(PCDDR, 	&PBDDRShadow, 1, pin_no);
+   BitWrPortI(PCDR,  	&PBDRShadow,  0, pin_no);
+   return RdPortI(PCDDR);
+  break;
+
+  case IOPORTD:
+   BitWrPortI(PDDDR, 	&PBDDRShadow, 1, pin_no);
+   BitWrPortI(PDDR,  	&PBDRShadow,  0, pin_no);
+   return RdPortI(PDDDR);
+  break;
+
+  case IOPORTE:
+  //to switch off the alternative functions
+   BitWrPortI(PEDCR, 	&PEDCRShadow,   	0, pin_no);
+	BitWrPortI(PEFR, 		&PEFRShadow,    	0, pin_no);
+  ///to switch off the alternative functions
+   BitWrPortI(PEDDR, 	&PBDDRShadow, 		1, pin_no);
+   BitWrPortI(PEDR,  	&PBDRShadow,  		0, pin_no);
+   return RdPortI(PEDDR);
+  break;
+
+
+  default: return -1;
+}
+
+return -1;
+}
+
+_IO_NODEBUG
+int IO_PortX_Config_Pin_In(int port,int pin_no)
+{
+//1- output, 0-input
+switch (port)
+{
+
+  case IOPORTA:
+//  WrPortI(PADDR, 	&PBDDRShadow, io_conf);
+//  WrPortI(PADR,  	&PBDRShadow,  io_conf);
+  return -1;
+  break;
+
+  case IOPORTB:
+   // Set port B pins PB0, PB2-7 lines to be outputs, PB1 as an input.
+   BitWrPortI(PBDDR, 	&PBDDRShadow, 0, pin_no);
+   // Set all of the outputs high.   ~low
+   BitWrPortI(PBDR,  	&PBDRShadow,  1, pin_no);
+   return RdPortI(PBDR);
+  break;
+
+  case IOPORTC:
+   BitWrPortI(PCDDR, 	&PBDDRShadow, 0, pin_no);
+   BitWrPortI(PCDR,  	&PBDRShadow,  1, pin_no);
+   return RdPortI(PCDDR);
+  break;
+
+  case IOPORTD:
+   BitWrPortI(PDDDR, 	&PBDDRShadow, 0, pin_no);
+   BitWrPortI(PDDR,  	&PBDRShadow,  1, pin_no);
+   return RdPortI(PDDDR);
+  break;
+
+  case IOPORTE:
+  //to switch off the alternative functions
+   BitWrPortI(PEDCR, 	&PEDCRShadow,   	0, pin_no);
+	BitWrPortI(PEFR, 		&PEFRShadow,    	0, pin_no);
+  ///to switch off the alternative functions
+   BitWrPortI(PEDDR, 	&PBDDRShadow, 		0, pin_no);
+   BitWrPortI(PEDR,  	&PBDRShadow,  		1, pin_no);
+   return RdPortI(PEDDR);
+  break;
+
+
+  default: return -1;
+}
+
+return -1;
+}
+
+_IO_NODEBUG
+int IO_PortX_Pin_Set(int port,char pin_no)
+{
+
+switch (port)
+	{
+	case IOPORTA:
+//    if(BitRdPortI(PADDR,pin_no)!=1) IO_PortX_Conf_OutputPin(IOPORTA,pin_no);
+//	 BitWrPortI(PADR, &PADRShadow, 1, pin_no);
+    return -1;
+	break;
+
+	case IOPORTB:
+    if(BitRdPortI(PBDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTB,pin_no);
+	 BitWrPortI(PBDR, &PBDRShadow, 1, pin_no);
+    return RdPortI(PBDR);
+ 	break;
+
+	case IOPORTC:
+    if(BitRdPortI(PCDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTC,pin_no);
+	 BitWrPortI(PCDR, &PCDRShadow, 1, pin_no);
+    return RdPortI(PCDR);
+ 	break;
+
+	case IOPORTD:
+    if(BitRdPortI(PDDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTD,pin_no);
+	 BitWrPortI(PDDR, &PDDRShadow, 1, pin_no);
+    return RdPortI(PDDR);
+ 	break;
+
+	case IOPORTE:
+    if( (BitRdPortI(PEDDR,pin_no)!=1) || (BitRdPortI(PEDCR,pin_no)!=0) || (BitRdPortI(PEFR,pin_no)!=0) )
+    	IO_PortX_Config_Pin_Out(IOPORTE,pin_no);
+	 BitWrPortI(PEDR, &PEDRShadow, 1, pin_no);
+    return RdPortI(PEDR);
+ 	break;
+
+  default: return -1;
+}
+
+return -1;
+}
+
+
+_IO_NODEBUG
+int IO_PortX_Pin_Res(int port,char pin_no)
+{
+
+switch (port)
+	{
+	case IOPORTA:
+//    if(BitRdPortI(PADDR,pin_no)!=1) IO_PortX_Conf_OutputPin(IOPORTA,pin_no);
+//	 BitWrPortI(PADR, &PADRShadow, 1, pin_no);
+    return -1;
+	break;
+
+	case IOPORTB:
+    if(BitRdPortI(PBDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTB,pin_no);
+	 BitWrPortI(PBDR, &PBDRShadow, 0, pin_no);
+    return RdPortI(PBDR);
+ 	break;
+
+	case IOPORTC:
+    if(BitRdPortI(PCDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTC,pin_no);
+	 BitWrPortI(PCDR, &PCDRShadow, 0, pin_no);
+    return RdPortI(PCDR);
+ 	break;
+
+	case IOPORTD:
+    if(BitRdPortI(PDDDR,pin_no)!=1) IO_PortX_Config_Pin_Out(IOPORTD,pin_no);
+	 BitWrPortI(PDDR, &PDDRShadow, 0, pin_no);
+    return RdPortI(PDDR);
+ 	break;
+
+	case IOPORTE:
+    if( (BitRdPortI(PEDDR,pin_no)!=1) || (BitRdPortI(PEDCR,pin_no)!=0) || (BitRdPortI(PEFR,pin_no)!=0) )
+    	IO_PortX_Config_Pin_Out(IOPORTE,pin_no);
+	 BitWrPortI(PEDR, &PEDRShadow, 0, pin_no);
+    return RdPortI(PEDR);
+ 	break;
+
+  default: return -1;
+}
+
+return -1;
+}
+
+
+_IO_NODEBUG
+int IO_PortX_Pin_Read(int port,char pin_no)
+{
+switch (port)
+	{
+	case IOPORTA:
+//    if(BitRdPortI(PADDR,pin_no)!=0) IO_PortX_Conf_Pin_In(IOPORTA,pin_no);
+//    return BitRdPortI(PADR, pin_no);
+    return -1;
+	break;
+
+	case IOPORTB:
+    if(BitRdPortI(PBDDR,pin_no)!=0) IO_PortX_Config_Pin_In(IOPORTB,pin_no);
+    return BitRdPortI(PBDR, pin_no);
+ 	break;
+
+	case IOPORTC:
+     if(BitRdPortI(PCDDR,pin_no)!=0) IO_PortX_Config_Pin_In(IOPORTC,pin_no);
+     return BitRdPortI(PCDR, pin_no);
+ 	break;
+
+	case IOPORTD:
+    if(BitRdPortI(PDDDR,pin_no)!=0) IO_PortX_Config_Pin_In(IOPORTD,pin_no);
+    return BitRdPortI(PDDR, pin_no);
+ 	break;
+
+	case IOPORTE:
+    if( (BitRdPortI(PEDDR,pin_no)!=0) || (BitRdPortI(PEDCR,pin_no)!=0) || (BitRdPortI(PEFR,pin_no)!=0) ) IO_PortX_Config_Pin_In(IOPORTE,pin_no);
+    return BitRdPortI(PEDR, pin_no);
+ 	break;
+
+  default: return -1;
+}
+
+return -1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,256 @@
+/*** BeginHeader */
+#ifndef __GENERAL_LIB
+#define __GENERAL_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+General_Delay_Ms,General_Delay_Us, General_Convert_Num2Str, General_Invert_Bool,General_Toggle_Char,
+General_Convert_Float2StringDot2,General_Convert_UInt2String_Shift3,General_Convert_Int2String,
+General_Convert_Float2StrSc_Dot0,General_Detect_Char,
+General_Convert_Int2String4,General_Convert_Int2String3,General_Float_Compare,General_Bit_Copy,
+Gn_Abs_Lint,Gn_nFIFO_Push
+*/
+#ifdef GENERAL_HVS_DEBUG
+#define _GENERAL_HVS_NODEBUG
+#else
+#define _GENERAL_HVS_NODEBUG nodebug
+#endif
+
+#define ON 1
+#define OFF 0
+#define bit(x) (1<<(x))
+#define YES 1
+#define NO 0
+
+_GENERAL_HVS_NODEBUG void General_Delay_Ms(int iDelay);
+_GENERAL_HVS_NODEBUG void General_Delay_Us(int iDelay);
+_GENERAL_HVS_NODEBUG char General_Invert_Bool(char bool);
+
+_GENERAL_HVS_NODEBUG char* General_Convert_Float2StringScientific_Dot2(float flt);
+_GENERAL_HVS_NODEBUG char General_Toggle_BitOfChar(char data,unsigned int bitNo);
+_GENERAL_HVS_NODEBUG char General_Toggle_Char(char data);
+_GENERAL_HVS_NODEBUG char* General_Convert_Float2StringDot2(float flt);
+_GENERAL_HVS_NODEBUG char* General_Convert_UInt2String_Shift3(unsigned int integer);
+_GENERAL_HVS_NODEBUG char* General_Convert_Int2String(int dec);
+_GENERAL_HVS_NODEBUG char* General_Convert_Float2StrSc_Dot0(float flt);
+//void General_Display_Array(int* array,int max_row,int max_col);
+_GENERAL_HVS_NODEBUG char General_Detect_Char(char sign,char *buf,int len);
+_GENERAL_HVS_NODEBUG char* General_Convert_Int2String4(int dec);
+_GENERAL_HVS_NODEBUG char* General_Convert_Int2String3(int dec);
+_GENERAL_HVS_NODEBUG int General_Float_Compare(float arg1, float arg2);
+_GENERAL_HVS_NODEBUG char* Gn_Convert_Flt2StrDot0(float flt);
+_GENERAL_HVS_NODEBUG unsigned long int Gn_Abs_Lint(long int arg);
+_GENERAL_HVS_NODEBUG void General_Bit_Copy (unsigned char *target, int target_bit, unsigned char value, int bit_to_copy);
+int Gn_nFIFO_Push(int *tab, int arg, int max);
+
+struct
+{
+char Buffer[50];
+}General;
+/*** EndHeader */
+
+
+_GENERAL_HVS_NODEBUG
+void General_Delay_Ms(int iDelay)
+{	unsigned long ul0;
+	ul0 = MS_TIMER;				// get current timer value
+	while ( MS_TIMER < ul0 + (unsigned long) iDelay );
+}
+
+//it works only for Rabbit 4000 - RCM4200
+_GENERAL_HVS_NODEBUG
+void General_Delay_Us( int iDelay )
+{	int i;
+	iDelay=(int)(iDelay*1.15);
+	for ( i=0; i<iDelay; i++ );
+}
+
+_GENERAL_HVS_NODEBUG
+void General_Bit_Copy (unsigned char *target, int target_bit, unsigned char value,
+	 int bit_to_copy)
+{
+   if (value & bit(bit_to_copy))   //1<<x
+   {
+	   *target |= bit(target_bit);
+   }
+   else
+   {
+   	*target &= ~bit(target_bit);
+   }
+}
+
+_GENERAL_HVS_NODEBUG
+char General_Invert_Bool(char bool)
+{
+	if (bool==0) return 1;
+   else return 0;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Float2StringDot2(float flt)
+{
+int strLen;
+
+	if (flt>99) flt=99; //protection - for any case
+
+	strLen=sprintf(General.Buffer, "%.2f", flt);
+
+ 	if(strLen==4)
+   	{
+      General.Buffer[5]=0;
+      General.Buffer[4]=General.Buffer[3];
+      General.Buffer[3]=General.Buffer[2];
+      General.Buffer[2]=General.Buffer[1];
+      General.Buffer[1]=General.Buffer[0];
+      General.Buffer[0]=' ';
+      }
+
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Float2StringScientific_Dot2(float flt)
+{
+	sprintf(General.Buffer, "%.2e", flt);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Float2StrSc_Dot0(float flt)
+{
+	sprintf(General.Buffer, "%.0e", flt);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Int2String(int dec)
+{
+	sprintf(General.Buffer, "%d", dec);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Int2String3(int dec)
+{
+	sprintf(General.Buffer, "%3d", dec);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_Int2String4(int dec)
+{
+	sprintf(General.Buffer, "%4d", dec);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_UInt2String(unsigned int integer)
+{
+	sprintf(General.Buffer, "%u", integer);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char* General_Convert_UInt2String_Shift3(unsigned int integer)
+{
+	sprintf(General.Buffer, "%3u", integer);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+char General_Toggle_Boolean(char bool)
+{
+	if(bool!=0) return 0;
+   else return 1;
+}
+
+_GENERAL_HVS_NODEBUG
+char General_Toggle_BitOfChar(char data,unsigned int bitNo)
+{
+if(((data>>bitNo)&0x01)==0x01) res(&data,bitNo);
+else set(&data,bitNo);
+return data;
+}
+
+_GENERAL_HVS_NODEBUG
+char General_Toggle_Char(char data)
+{
+if(data!=0) data=0;
+else data=0xFF;
+
+return data;
+}
+
+/*
+void General_Display_Array(int* array,int max_row,int max_col)
+{
+int i;
+int j;
+printf("\n");
+for(i=0;i<max_row;i++)
+	{
+   printf("%2d ||",i);
+   for(j=0;j<max_col;j++) printf("%5d ",*(array+max_col*i+j));
+   printf("\n");
+	}
+}
+*/
+
+_GENERAL_HVS_NODEBUG
+char General_Detect_Char(char sign,char *buf,int len)
+{
+char i;
+
+for(i=0;i<len;i++) if(buf[i]==sign) break;
+
+if(i==len) return 0;
+return i;
+}
+
+int General_Float_Compare(float arg1, float arg2)
+{
+char buf1[20];
+char buf2[20];
+
+
+sprintf(buf1,"%.0e",arg1);
+sprintf(buf2,"%.0e",arg2);
+
+return strncmpi(buf1,buf2,5);
+}
+
+_GENERAL_HVS_NODEBUG
+char* Gn_Convert_Flt2StrDot0(float flt)
+{
+int strLen;
+
+	if (flt>99) flt=99;
+	strLen=sprintf(General.Buffer, "%.0e", flt);
+   return General.Buffer;
+}
+
+_GENERAL_HVS_NODEBUG
+unsigned long int Gn_Abs_Lint(long int arg)
+{
+if(arg<0) return (arg*(-1));
+else return arg;
+}
+
+_GENERAL_HVS_NODEBUG
+int Gn_nFIFO_Push(int *tab, int arg, int max)
+{
+int i;
+
+for(i=max-1;i>0;i--)
+	{
+   tab[i]=tab[i-1];
+   }
+//tab[max-1]=0;
+tab[0]=arg;
+
+return max;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

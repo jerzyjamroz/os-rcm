@@ -1,0 +1,24 @@
+/*** BeginHeader */
+#ifndef __DEV_RTC_MOUNT_LIB
+#define __DEV_RTC_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_RTC_BODY.LIB"
+
+#define Dev_RTC_Driver
+
+#define Dev_RTC_Read() 					RTC_Read()
+#define Dev_RTC_Write(time) 			RTC_Write(time)
+#define Dev_RTC_isCorrect()			RTC_isCorrect()
+#define Dev_RTC_Print(buf,time) 		RTC_Print(buf,time)
+
+#define Dev_RTC_UTC1900_Write(utc)	RTC_UTC1900_Write(utc)
+#define Dev_RTC_UTC1900_Read() 		RTC_UTC1900_Read()
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

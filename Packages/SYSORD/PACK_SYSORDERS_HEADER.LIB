@@ -1,0 +1,58 @@
+/*** BeginHeader */
+#ifndef __PACK_SYSORDERS_HEADER_LIB
+#define __PACK_SYSORDERS_HEADER_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+*/
+
+#ifdef PACK_SYSORDERS_DEBUG
+#define _PACK_SYSORDERS_DEBUG_NODEBUG
+#else
+#define _PACK_SYSORDERS_DEBUG_NODEBUG nodebug
+#endif
+
+//<SYSTEM_STRING_VARIABLE>
+//SYSTEM VARIABLES 2 SOLUTION - OBSTACLE
+struct SYSVarOrd{
+	int No;
+	int ID;
+	long int Param;
+   int ParamLen;
+};
+//#define SYSVarOrd_ID_END -1
+
+struct SYSVarOrd_REF{
+struct SYSVarOrd SYSVarOrdRef;
+char **Tree;
+int *Param;
+char ** Unit;
+int Attribute;
+};
+
+enum{
+SYS_At_NULL=-1,
+SYS_At_Request=1,
+SYS_At_Event,
+SYS_At_Hidden,
+}SYS_Attribute;
+//const struct SYSVarOrd_REF SYSVarOrd_REF_NULL = {-1,SYSVarOrd_ID_END,-1,-1,SYS_PNULL_2D,SYS_PIntNULL,SYS_PNULL_2D,SYS_At_NULL};
+const struct SYSVarOrd_REF SYSVarOrd_REF_NULL = {SYSNULL_INT,SYSNULL_INT,SYSNULL_INT,SYSNULL_INT,SYSNULL_PCHAR2D,SYSNULL_PINT,SYSNULL_PCHAR2D,SYS_At_NULL};
+
+//</SYSTEM_STRING_VARIABLE>
+
+//_____________________________<FUNCTIONS>______________________________________
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,451 @@
+/*** BeginHeader */
+#ifndef __INTERLOCK_HVS_LIB
+#define __INTERLOCK_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Interlock_Set_Int_Dis, Interlock_Get_Int_Dis_Sense, Interlock_Get_Int_Sense, Interlock_Set_Int_En,
+Interlock_Handler, Interlock_Set_Out, Interlock_Handler_Int_Dis_Sense, Interlock_Handler_Int_Sense,
+Interlock_Init, Interlock_Handler_Manual_Interlock,
+*/
+
+#define Interlock_Disabled_Channels (Interlock.Int_Dis_Sense|Interlock.Status_Relays)
+#define Int_SUM (Interlock.Int_Dis_Sense+Interlock.Int_Sense+Ret_Int)
+#define Int_Timer_RefreshLED 5000
+#define RED_LED_OFF 0xFF
+#define RED_LED_FORBIDDEN 0x0F
+
+_GENERAL_HVS_NODEBUG void Interlock_Set_Int_Dis(int channels);
+_GENERAL_HVS_NODEBUG void Interlock_Set_Int_En(int bool);
+_GENERAL_HVS_NODEBUG cofunc int Interlock_Handler(void);
+_GENERAL_HVS_NODEBUG int Interlock_Handler_Int_Dis_Sense(void);
+_GENERAL_HVS_NODEBUG int Interlock_Handler_Int_Sense(void);
+_GENERAL_HVS_NODEBUG int Interlock_Handler_Relays(void);
+_GENERAL_HVS_NODEBUG void Interlock_Init();
+_GENERAL_HVS_NODEBUG cofunc void Interlock_Handler_Manual_Interlock(void);
+
+struct{
+int Int_Sense;
+char Int_Dis_Sense;
+
+int Status_Manual_Interlock;  //bool
+char Red_LED;  			//contains which LED is on, which one is interlocked
+
+char Status_Relays;   //actual relay configuration
+}Interlock;
+
+/*** EndHeader */
+
+//***START: will be private
+_GENERAL_HVS_NODEBUG char Interlock_Get_Int_Dis_Sense();
+_GENERAL_HVS_NODEBUG int Interlock_Get_Int_Sense();
+//***END: will be private
+
+//***START- private values
+_GENERAL_HVS_NODEBUG void Interlock_Set_Out(char out);
+//***END- private values
+
+_GENERAL_HVS_NODEBUG
+void Interlock_Init()
+{
+	#GLOBAL_INIT
+   {
+	Interlock_Set_Int_En(0);
+	Interlock.Status_Relays=0x00;
+	Interlock.Int_Sense=0xFFFF;
+	Interlock.Int_Dis_Sense=0xFF;
+	Interlock.Red_LED=RED_LED_OFF;
+	}
+}
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void Interlock_Disable(unsigned char channels)
+DESCRIPTION: disables the chosen HV input via Relay, it works as JP1, JP2,
+JP3, JP4, JP5, JP6, JP7, JP8. The signals handling it are Int_Dis_1, Int_Dis_2,
+Int_Dis_3, Int_Dis_4, Int_Dis_5, Int_Dis_6, Int_Dis_7, Int_Dis_8.
+PARAMETER: channels which have to be disabled; 0-0xFF
+RETURN VALUE: void - it only disables the chosen HV channels
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+void Interlock_Set_Int_Dis(int channels)
+{
+	WrPortI(PADR,&PADRShadow,channels);
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void Interlock_Set_Int_En(int bool)
+DESCRIPTION: swithes on or off the main interlock relay- it can control the HV supply
+PARAMETER: on of off
+RETURN VALUE: void- it swithes on off the HV
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+void Interlock_Set_Int_En(int bool)
+{
+	Interlock.Status_Manual_Interlock=bool;
+	BitWrPortI(PEDR, &PEDRShadow, bool, 1);
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: unsigned int Interlock_Get_Int_Sense()
+DESCRIPTION: it returns 9 bits, fist byte means the actual sets of the interlock
+the 9-th bit means the Int_Sense_C
+PARAMETER: void
+RETURN VALUE: 9bits inside int
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+int Interlock_Get_Int_Sense(void)
+{
+   unsigned char data1, data2, data3;
+   unsigned char buffer1,buffer2;
+
+   data1=data2=data3=buffer1=buffer2=0;
+
+	I2CRead(PORT_EXP2_ADDRESS,0x00,&data1,1);
+   I2CRead(PORT_EXP2_ADDRESS,0x01,&data2,1);
+   I2CRead(PORT_EXP3_ADDRESS,0x00,&data3,1);
+
+   buffer1=0;
+   buffer2=0;
+
+   General_Bit_Copy(&buffer1,0,data3,1);
+   General_Bit_Copy(&buffer1,1,data2,7);
+   General_Bit_Copy(&buffer1,2,data3,3);
+   General_Bit_Copy(&buffer1,3,data2,3);
+   General_Bit_Copy(&buffer1,4,data3,5);
+   General_Bit_Copy(&buffer1,5,data2,5);
+   General_Bit_Copy(&buffer1,6,data3,7);
+   General_Bit_Copy(&buffer1,7,data2,1);
+   General_Bit_Copy(&buffer2,0,data1,5);
+
+   return ((buffer2<<8)|buffer1);
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void Interlock_Set_LedVisualisation(char disabledChannels, char redChannel)
+DESCRIPTION: it visualises the actual disabled channels and the channel which has been
+interlocked
+PARAMETER: char disabledChannels, char redChannel
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+void Interlock_Set_LedVisualisation(char disabledChannels, char redChannel)
+{
+
+if (redChannel==0) LED_Red_Sys(0);
+else if (disabledChannels&0x01) LED_Orange_Sys(0);
+else LED_Green_Sys(0);
+
+if (redChannel==1) LED_Red_Sys(1);
+else if (disabledChannels&0x02) LED_Orange_Sys(1);
+else LED_Green_Sys(1);
+
+if (HVS.No_Of_Outputs>2)
+{
+if (redChannel==2) LED_Red_Sys(2);
+else if (disabledChannels&0x04) LED_Orange_Sys(2);
+else LED_Green_Sys(2);
+}
+
+if (HVS.No_Of_Outputs>3)
+{
+if (redChannel==3) LED_Red_Sys(3);
+else if (disabledChannels&0x08) LED_Orange_Sys(3);
+else LED_Green_Sys(3);
+}
+
+if (HVS.No_Of_Outputs>4)
+{
+if (redChannel==4) LED_Red_Sys(4);
+else if (disabledChannels&0x10) LED_Orange_Sys(4);
+else LED_Green_Sys(4);
+}
+
+if (HVS.No_Of_Outputs>5)
+{
+if (redChannel==5) LED_Red_Sys(5);
+else if (disabledChannels&0x20) LED_Orange_Sys(5);
+else LED_Green_Sys(5);
+}
+
+if (HVS.No_Of_Outputs>6)
+{
+if (redChannel==6) LED_Red_Sys(6);
+else if (disabledChannels&0x40) LED_Orange_Sys(6);
+else LED_Green_Sys(6);
+}
+
+if (HVS.No_Of_Outputs>7)
+{
+if (redChannel==7) LED_Red_Sys(7);
+else if (disabledChannels&0x80) LED_Orange_Sys(7);
+else LED_Green_Sys(7);
+}
+
+if (HVS.No_Of_Outputs==2)
+	{
+	LED_Black_Sys(2);LED_Black_Sys(3);LED_Black_Sys(4);LED_Black_Sys(5);LED_Black_Sys(6);LED_Black_Sys(7);
+   }
+else if (HVS.No_Of_Outputs==3)
+	{
+   LED_Black_Sys(3);LED_Black_Sys(4);LED_Black_Sys(5);LED_Black_Sys(6);LED_Black_Sys(7);
+   }
+else if (HVS.No_Of_Outputs==4)
+	{
+   LED_Black_Sys(4);LED_Black_Sys(5);LED_Black_Sys(6);LED_Black_Sys(7);
+   }
+else if (HVS.No_Of_Outputs==5)
+	{
+	LED_Black_Sys(5);LED_Black_Sys(6);LED_Black_Sys(7);
+   }
+else if (HVS.No_Of_Outputs==6)
+	{
+	LED_Black_Sys(6);LED_Black_Sys(7);
+   }
+else if (HVS.No_Of_Outputs==7)
+	{
+	LED_Black_Sys(7);
+   }
+
+
+LED_All_Sys_Apply();
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void Interlock_Set_Out(char out)
+DESCRIPTION: sets diode (channel) which has been interlocked
+PARAMETER: char out
+RETURN VALUE:
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+void Interlock_Set_Out(char out)
+{
+Interlock.Red_LED=out;
+//Sys_Flag.Interlock_On=1;
+
+switch(out)
+	{
+    case 0:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,0);
+    break;
+
+    case 1:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,1);
+    break;
+
+    case 2:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,2);
+    break;
+
+    case 3:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,3);
+    break;
+
+    case 4:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,4);
+    break;
+
+    case 5:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,5);
+    break;
+
+    case 6:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,6);
+    break;
+
+    case 7:
+	 Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,7);
+    break;
+
+    default:
+    Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,0xFF);
+
+   }
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: cofunc void Interlock_Handler_Int_Dis_Sense(void)
+DESCRIPTION: checks continuasly the jumper positions which disable the interlock of a chosen channel
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+int Interlock_Handler_Int_Dis_Sense(void)
+{
+Interlock.Int_Dis_Sense=Interlock_Get_Int_Dis_Sense();
+
+return 1;
+}
+/*************************************************************************/
+
+_GENERAL_HVS_NODEBUG
+int Interlock_Handler_Int_Sense(void)
+{
+Interlock.Int_Sense=Interlock_Get_Int_Sense();
+
+return 1;
+}
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: cofunc void Interlock_Handler_Relays(void)
+DESCRIPTION: sets the relays and status flags
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+int Interlock_Handler_Relays(void)
+{
+Interlock_Set_Int_Dis(Ret_Int);
+
+return 1;
+}
+/*************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: cofunc void Interlock_Handler(void)
+DESCRIPTION: main cofunction which handles all carries connected with the interlock
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+cofunc int Interlock_Handler(void)
+{
+static int Activity;
+static unsigned long int refresh_counter;
+
+#GLOBAL_INIT{
+Activity=0;
+refresh_counter=0;
+}
+
+if(Interlock.Int_Sense==0x1FF)
+	{
+	LED_HVController(0);
+	Interlock_Set_LedVisualisation(Interlock_Disabled_Channels,8);
+   Interlock.Red_LED=RED_LED_OFF;
+	}
+
+waitfor( ( (refresh_counter!=Sys_Arg.Refresh_Counter) || (DelayMs(Int_Timer_RefreshLED) ) || (Activity!=Int_SUM) ) && (Interlock.Status_Manual_Interlock!=1) );
+Activity=Int_SUM;
+refresh_counter=Sys_Arg.Refresh_Counter;
+
+
+if(Interlock.Int_Sense==0x0100)
+	{
+   Interlock_Set_Out(0xFF);
+   LED_HVController(1);
+//   Interlock.Red_LED=RED_LED_FORBIDDEN;
+   Interlock_Set_Out(0);
+   return -1;
+   }
+else if(Interlock.Int_Sense==0x0000)
+	{
+   Interlock_Set_Out(0xFF);
+   LED_HVController(0);
+   Interlock.Red_LED=RED_LED_OFF;
+   return 0;
+   }
+else if(Interlock.Int_Sense!=0x1FF)
+   {
+	LED_HVController(1);
+   Interlock.Red_LED=RED_LED_FORBIDDEN;
+   }
+
+
+	if ((Interlock.Int_Sense&0x0100)==0)
+	   {
+	   if (Interlock.Int_Sense&0x0001) Interlock_Set_Out(0);
+	   else if (Interlock.Int_Sense&0x0002) Interlock_Set_Out(1);
+	   else if (Interlock.Int_Sense&0x0004) Interlock_Set_Out(2);
+	   else if (Interlock.Int_Sense&0x0008) Interlock_Set_Out(3);
+	   else if (Interlock.Int_Sense&0x0010) Interlock_Set_Out(4);
+	   else if (Interlock.Int_Sense&0x0020) Interlock_Set_Out(5);
+	   else if (Interlock.Int_Sense&0x0040) Interlock_Set_Out(6);
+	   else if (Interlock.Int_Sense&0x0080) Interlock_Set_Out(7);
+      else
+      	{
+      	Interlock.Red_LED=RED_LED_OFF;
+         if(System_Flag.MainRedInt>0) LED_HVController(0);
+         }
+	   }
+   else
+	   {
+	   if ((Interlock.Int_Sense&0x0001)==0) Interlock_Set_Out(0);
+	   else if ((Interlock.Int_Sense&0x0002)==0) Interlock_Set_Out(1);
+	   else if ((Interlock.Int_Sense&0x0004)==0) Interlock_Set_Out(2);
+	   else if ((Interlock.Int_Sense&0x0008)==0) Interlock_Set_Out(3);
+	   else if ((Interlock.Int_Sense&0x0010)==0) Interlock_Set_Out(4);
+	   else if ((Interlock.Int_Sense&0x0020)==0) Interlock_Set_Out(5);
+	   else if ((Interlock.Int_Sense&0x0040)==0) Interlock_Set_Out(6);
+	   else if ((Interlock.Int_Sense&0x0080)==0) Interlock_Set_Out(7);
+      else
+      	{
+      	Interlock.Red_LED=RED_LED_OFF;
+         if(System_Flag.MainRedInt>0) LED_HVController(0);
+         }
+	   }
+
+}
+/*************************************************************************/
+
+_GENERAL_HVS_NODEBUG
+cofunc void Interlock_Handler_Manual_Interlock(void)
+{
+waitfor(Interlock.Status_Manual_Interlock==1);
+
+while(Interlock.Status_Manual_Interlock==1)
+ {
+ LED_Alarm(ON);
+
+ LED_Black_All();
+ waitfor(DelayMs(300));
+ LED_Orange_Outputs(HVS.No_Of_Outputs);
+ waitfor(DelayMs(300));
+ }
+
+}
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: unsigned char Interlock_Get_Int_Dis_Sense()
+DESCRIPTION: it returns 8 bits which inform where are the jumpers used
+PARAMETER: void
+RETURN VALUE: unsigned char - actual interlock jumper configuration
+END DESCRIPTION **********************************************************/
+_GENERAL_HVS_NODEBUG
+unsigned char Interlock_Get_Int_Dis_Sense()
+{
+   unsigned char buffer;
+   unsigned char data1, data2;
+
+   I2CRead(PORT_EXP2_ADDRESS,0x01,&data1,1);
+   I2CRead(PORT_EXP3_ADDRESS,0x00,&data2,1);
+
+   buffer=0;
+
+   General_Bit_Copy(&buffer,0,data2,0);
+   General_Bit_Copy(&buffer,1,data1,6);
+   General_Bit_Copy(&buffer,2,data2,2);
+   General_Bit_Copy(&buffer,3,data1,2);
+   General_Bit_Copy(&buffer,4,data2,4);
+   General_Bit_Copy(&buffer,5,data1,4);
+   General_Bit_Copy(&buffer,6,data2,6);
+   General_Bit_Copy(&buffer,7,data1,0);
+
+   return buffer;
+}
+/*************************************************************************/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

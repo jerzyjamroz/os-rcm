@@ -1,0 +1,183 @@
+/*** BeginHeader */
+#ifndef __VIRTUAL_LCD_LIB
+#define __VIRTUAL_LCD_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Virtual_LCD_Locate, Virtual_LCD_Clear,Virtual_LCD_Write_Char,
+Virtual_LCD_Make_Real,
+Virtual_HLCD_Locate, Virtual_HLCD_Clear,Virtual_HLCD_Write_Char,
+Virtual_HLCD_Make_Real,
+*/
+_DEVICE_HVS_NODEBUG void Virtual_LCD_Locate(char row,char column);
+_DEVICE_HVS_NODEBUG void Virtual_LCD_Clear(void);
+//void Virtual_LCD_Print(void);
+_DEVICE_HVS_NODEBUG void Virtual_LCD_Write_Char(char chr);
+_DEVICE_HVS_NODEBUG void Virtual_LCD_Make_Real(void);
+
+_DEVICE_HVS_NODEBUG void Virtual_HLCD_Locate(char row,char column);
+_DEVICE_HVS_NODEBUG void Virtual_HLCD_Clear(void);
+//void Virtual_HLCD_Print(void);
+_DEVICE_HVS_NODEBUG void Virtual_HLCD_Write_Char(char chr);
+_DEVICE_HVS_NODEBUG void Virtual_HLCD_Make_Real(void);
+
+struct{
+   char Screen[4][16];
+   char Row;
+   char Column;
+}Virtual_LCD;
+
+struct{
+   char Screen[4][16];
+   char Row;
+   char Column;
+}Virtual_HLCD;
+
+/*** EndHeader */
+
+
+//***************************************VIRTUAL LCD****************************
+_DEVICE_HVS_NODEBUG
+void Virtual_LCD_Locate(char row,char column)
+{
+Virtual_LCD.Row=row-1;
+Virtual_LCD.Column=column-1;
+}
+
+_DEVICE_HVS_NODEBUG
+void Virtual_LCD_Clear(void)
+{
+char i,j;
+
+for(i=0;i<4;i++)
+	for(j=0;j<16;j++) Virtual_LCD.Screen[i][j]=' ';
+
+Virtual_LCD_Locate(1,1);
+}
+
+_DEVICE_HVS_NODEBUG
+void Virtual_LCD_Write_Char(char chr)
+{
+if(Virtual_LCD.Row>3) Virtual_LCD.Row=3;
+
+if(Virtual_LCD.Column>15) Virtual_LCD.Column=15;
+
+Virtual_LCD.Screen[Virtual_LCD.Row][Virtual_LCD.Column]=chr;
+
+Virtual_LCD.Column++;
+}
+
+/*
+void Virtual_LCD_Print(void)
+{
+char i,j;
+printf("\n");
+printf("|----------------|");
+printf("\n");
+for(i=0;i<4;i++)
+	{
+   printf("|");
+	for(j=0;j<16;j++) printf("%c",Virtual_LCD.Screen[i][j]);
+   printf("|\n");
+   }
+printf("|----------------|");
+printf("\n");
+}
+ */
+_DEVICE_HVS_NODEBUG
+void Virtual_LCD_Make_Real(void)
+{
+char i;
+
+LCD_Locate(1,1);
+for(i=0;i<16;i++) LCD_Write_Char(Virtual_LCD.Screen[0][i]);
+LCD_Locate(2,1);
+for(i=0;i<16;i++) LCD_Write_Char(Virtual_LCD.Screen[1][i]);
+LCD_Locate(3,1);
+for(i=0;i<16;i++) LCD_Write_Char(Virtual_LCD.Screen[2][i]);
+LCD_Locate(4,1);
+for(i=0;i<16;i++) LCD_Write_Char(Virtual_LCD.Screen[3][i]);
+
+//Virtual_LCD_Print();
+}
+//***************************************VIRTUAL LCD****************************
+
+//***************************************VIRTUAL HLCD****************************
+_DEVICE_HVS_NODEBUG
+void Virtual_HLCD_Locate(char row,char column)
+{
+Virtual_HLCD.Row=row-1;
+Virtual_HLCD.Column=column-1;
+}
+
+_DEVICE_HVS_NODEBUG
+void Virtual_HLCD_Clear(void)
+{
+char i,j;
+
+for(i=0;i<4;i++)
+	for(j=0;j<16;j++) Virtual_HLCD.Screen[i][j]=' ';
+
+Virtual_HLCD_Locate(1,1);
+}
+
+_DEVICE_HVS_NODEBUG
+void Virtual_HLCD_Write_Char(char chr)
+{
+if(Virtual_HLCD.Row>3) Virtual_HLCD.Row=3;
+
+if(Virtual_HLCD.Column>15) Virtual_HLCD.Column=15;
+
+Virtual_HLCD.Screen[Virtual_HLCD.Row][Virtual_HLCD.Column]=chr;
+
+Virtual_HLCD.Column++;
+}
+
+ /*
+void Virtual_HLCD_Print(void)
+{
+char i,j;
+printf("\n");
+printf("|----------------|");
+printf("\n");
+for(i=0;i<4;i++)
+	{
+   printf("|");
+	for(j=0;j<16;j++) printf("%c",Virtual_HLCD.Screen[i][j]);
+   printf("|\n");
+   }
+printf("|----------------|");
+printf("\n");
+}
+*/
+_DEVICE_HVS_NODEBUG
+void Virtual_HLCD_Write_Real_Char(unsigned char chr)
+{
+WrPortI ( PBDR,&PBDRShadow, (chr&0xF0)|ADC_Pin);
+LCD_Submit_Data();
+General_Delay_Us(2);
+WrPortI ( PBDR,&PBDRShadow, ((chr&0x0F)<<4)|ADC_Pin);
+LCD_Submit_Data();
+General_Delay_Us(LCD_Write_Time);
+}
+
+_DEVICE_HVS_NODEBUG 
+void Virtual_HLCD_Make_Real(void)
+{
+char i;
+
+LCD_Locate(1,1);
+for(i=0;i<16;i++) Virtual_HLCD_Write_Real_Char(Virtual_HLCD.Screen[0][i]);
+LCD_Locate(2,1);
+for(i=0;i<16;i++) Virtual_HLCD_Write_Real_Char(Virtual_HLCD.Screen[1][i]);
+LCD_Locate(3,1);
+for(i=0;i<16;i++) Virtual_HLCD_Write_Real_Char(Virtual_HLCD.Screen[2][i]);
+LCD_Locate(4,1);
+for(i=0;i<16;i++) Virtual_HLCD_Write_Real_Char(Virtual_HLCD.Screen[3][i]);
+}
+
+//***************************************VIRTUAL HLCD****************************
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

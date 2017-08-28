@@ -1,0 +1,153 @@
+
+/*** BeginHeader */
+#ifndef __TELNET_PATTERN_HVS_LIB
+#define __TELNET_PATTERN_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+#define Telnet_Orders_No (sizeof(Telnet_Pattern)/sizeof(Telnet_Pattern[0]))
+
+char * const Tln_Txt_SessionClosed={
+"Connection closed\n\r"
+};
+
+char * const Telnet_Connection_Established={
+"Connection Established.\n\r"
+};
+
+char * const TN_Text_Input={
+">>"
+};
+
+char * const TN_Text_Output={
+"<<"
+};
+
+char * const Telnet_Text_Ready={
+"Ready:\n\r>>"
+};
+
+char * const Telnet_Text_SyntaxError={
+"Syntax error.\n\r"
+};
+
+
+char * const Telnet_Text_Line12={
+"------------\r\n"
+};
+
+char * const Telnet_Text_Line9={
+"---------\r\n"
+};
+
+char * const Telnet_Alba_Logo[]={
+"          *\n\r",
+"         ***\n\r",
+"        *****\n\r",
+"       ******\n\r",
+"      *****\n\r",
+"     ****   ****\n\r",
+"    **        ***\n\r",
+"   *            **\n\r",
+" A     L     B     A\n\r",
+"High Voltage Splitter\n\r",
+};
+
+//const char Telnet_Pattern[Telnet_Orders_No][40]={
+char * const Telnet_Pattern[] = {
+"help",
+"exit",
+"mode=set,<no>",
+"mode=get",
+"acquisition_time_get",
+"voltage=get,ch,<ch_no>",
+"voltage=get,buffer1,<ch_no>",
+"voltage=get,buffer2,<ch_no>",
+"voltage=get_all",
+"current=get,ch,<ch_no>",
+"current=get,buffer1,<ch_no>",
+"current=get,buffer2,<ch_no>",
+"current=get_all",
+"pressure=get,ch,<ch_no>",
+"pressure=get,buffer1,<ch_no>",
+"pressure=get,buffer2,<ch_no>",
+"pressure=get_all",
+"ion_pump=set,<ch_no>,<model>",
+"ion_pump=get,<ch_no>",
+"ion_pump=show",
+"ion_pump=get_all",
+"mean_preprocess=set,divider,<div_no>",
+"mean_preprocess=get,divider",
+"mean_preprocess=help",
+"eps=open",
+"eps=disable",
+"eps=enable",
+"eps=status",
+"eps_mask=get",
+"eps_mask=set,<mask_no>,<1/0 mask_str>",
+"interlock=status",
+"interlock=generate,on",
+"interlock=generate,off",
+"interlock=en/dis,<ch_no>",
+"config=get,software_version",
+"config=get,serial_number",
+"config=get,mac",
+"config=save",
+"config=load",
+"config=load_default",
+"config=set,outputs,<amount>",
+"config=get,outputs_no",
+"Pth_warning=set,<ch_no>,<xe-x>",
+"Pth_warning=get,<ch_no>",
+"Pth_warning=mode_set,<mode_bool>",
+"Pth_warning=mode_get",
+"Pth_warning=get_all",
+"Pth_eps=set,<ch_no>,<xe-x>",
+"Pth_eps=get,<ch_no>",
+"Pth_eps=mode_set,<mode>",
+"Pth_eps=mode_get",
+"Pth_eps=get_all",
+"cal_data_get=<ch_no>",
+"cal_data_set=<ch_no>,<dataNo>,<rawData>",
+"cal_data_get=status",
+"cal_data=save",
+"cal_data=load",
+"activity",
+"raw_data=read,<ch_no>",
+"password=<old>,<new>",
+"alarm=status,get",
+"alarm=period_set,<secs>",
+"alarm=period_get",
+"alarm=eps,get",
+"alarm=warning,get",
+"alarm=interlock,get",
+"alarm=alert,enable/disable",
+"telnet_timer=set,<long_seconds>",
+"telnet_timer=get",
+"telnet_timer=disable",
+"slope=get",
+"slope=reset",
+"slope=clean_flash",
+"slope=status",
+"slope=params",
+"slope=threshold,<int>",
+"slope=delta,<int>",
+"slope=time,<int>",
+"pressure_table=status",
+"pressure_table=set_link,<chNo>,<linkNo>",
+"pressure_table=set,<tabNo>,<elNo>,<flt>",
+"pressure_table=get,<tabNo>",
+"pressure_table=store",
+};
+
+/*** EndHeader */
+
+
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

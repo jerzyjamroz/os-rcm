@@ -1,0 +1,421 @@
+/*** BeginHeader */
+#ifndef __EM_SENSOR_EXT_LIB
+#define __EM_SENSOR_EXT_LIB
+/*** EndHeader */
+
+/*
+-----------------------------------------------------------------------------------------
+Post filter   |Transimpedance|Polarity      		|Voltage gain|Pre filter  |Offset +/-1mV|
+-----------------------------------------------------------------------------------------
+PE1_0=1Hz     |PE1_3=10k     |PE1_7=inv polarity|PE2_0=100   |PE2_4=3.5kHz|DAC1=(0,4095)|
+PE1_1=10Hz    |PE1_4=1M      |        				|PE2_1=50    |PE2_5=100Hz |             |
+PE1_2=100Hz   |PE1_5=100M    |        				|PE2_2=10    |PE2_6=10Hz  |             |
+All off=3.2kHz|PE1_6=1G      |        				|PE2_3=1     |PE2_7=1Hz   |             |
+              |ALLOFF=10G    |            		|				 |AllOff=0.5Hz|             |
+-----------------------------------------------------------------------------------------
+*/
+
+/*** BeginHeader
+EM_SEN_EXT_TransGain,
+EM_SEN_EXT_VoltGain,
+EM_SEN_EXT_Range,
+EM_SEN_EXT_getRange,
+EM_SEN_EXT_Filter,
+EM_SEN_retBandwidth,
+
+EM_SEN_EXT_NCS_Set,
+EM_SEN_EXT_NCS_Res,
+*/
+
+int EM_SEN_EXT_TransGain	(int sen_id,char *gain);
+int EM_SEN_EXT_VoltGain		(int sen_id,char *gain);
+int EM_SEN_EXT_Range			(int sen_id,int range);
+int EM_SEN_EXT_getRange		(int ch);
+int EM_SEN_EXT_Filter		(int sen_id,float bandwidth);
+float EM_SEN_retBandwidth	(int ch);
+int EM_SEN_EXT_NCS_Set		(int sen_id,int ncs_no);
+int EM_SEN_EXT_NCS_Res		(void);
+
+/*** EndHeader */
+
+/*
+EM_SEN_Trans_Imp
+  case 1:       //PE1_3=10k
+  case 2:       //PE1_4=1M
+  case 3:       //PE1_5=100M
+  case 4:       //PE1_6=1G
+  case 0:       //ALLOFF=10G
+
+EM_SEN_Gain
+  case 1:       //PE2_0=100
+  case 2:       //PE2_1=50
+  case 3:       //PE2_2=10
+  case 4:       //PE2_3=1
+  case 0:       //PE2_0=00
+*/
+
+/*
+char *EM_SEN_TXT_Range[]={
+"100p",     //0    0,3
+"1n",       //1    0,4
+"10n",      //2    4,4
+"100n",     //3    3,4
+"1u",       //4    2,3
+"10u",      //5    2,4
+"100u",     //6    1,3
+"1m",       //7    1,4
+};
+*/
+//------------------------------------------------------------------------------
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_TransGain(int sen_id,char *gain)
+{
+if			(0==strcmp(gain,"10k"))
+	{
+   EM_SEN_Trans_Imp	(sen_id,1);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 1;
+   }
+else if	(0==strcmp(gain,"1M"))
+	{
+   EM_SEN_Trans_Imp	(sen_id,2);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 2;
+   }
+else if	(0==strcmp(gain,"100M"))
+	{
+   EM_SEN_Trans_Imp	(sen_id,3);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 3;
+   }
+else if	(0==strcmp(gain,"1G"))
+	{
+   EM_SEN_Trans_Imp	(sen_id,4);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 4;
+   }
+else if	(0==strcmp(gain,"10G"))
+	{
+   EM_SEN_Trans_Imp	(sen_id,0);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 0;
+   }
+
+return -1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_VoltGain(int sen_id,char *gain)
+{
+if			(0==strcmp(gain,"oo"))
+	{
+   EM_SEN_Gain	(sen_id,0);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 1;
+   }
+else if	(0==strcmp(gain,"1"))
+	{
+   EM_SEN_Gain	(sen_id,4);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 2;
+   }
+else if	(0==strcmp(gain,"10"))
+	{
+   EM_SEN_Gain	(sen_id,3);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 3;
+   }
+else if	(0==strcmp(gain,"50"))
+	{
+   EM_SEN_Gain	(sen_id,2);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 4;
+   }
+else if	(0==strcmp(gain,"100"))
+	{
+   EM_SEN_Gain	(sen_id,1);
+   Elem_Sen.ShadowRange[sen_id]=0;
+   return 0;
+   }
+
+return -1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_HB_Range(int sen_id,	int range)
+{
+ switch (range)
+ {
+   case EM_100p:
+   	EM_SEN_EXT_TransGain		(sen_id,"1G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"100");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100p;
+   break;
+   case EM_1n:
+   	EM_SEN_EXT_TransGain		(sen_id,"1G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1n;
+   break;
+   case EM_10n:
+   	EM_SEN_EXT_TransGain		(sen_id,"1G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+	   Elem_Sen.ShadowRange[sen_id]=EM_10n;
+   break;
+   case EM_100n:
+   	EM_SEN_EXT_TransGain		(sen_id,"100M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100n;
+   break;
+   case EM_1u:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1u;
+   break;
+   case EM_10u:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_10u;
+   break;
+   case EM_100u:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100u;
+   break;
+   case EM_1m:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1m;
+   break;
+   default:
+   	return -1;
+ }
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_SHB_Range(int sen_id,	int range)
+{
+ switch (range)
+ {
+   case EM_100p:
+   	EM_SEN_EXT_TransGain		(sen_id,"1G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"100");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100p;
+   break;
+   case EM_1n:
+   	EM_SEN_EXT_TransGain		(sen_id,"100M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"100");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1n;
+   break;
+   case EM_10n:
+   	EM_SEN_EXT_TransGain		(sen_id,"100M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+	   Elem_Sen.ShadowRange[sen_id]=EM_10n;
+   break;
+   case EM_100n:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"100");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100n;
+   break;
+   case EM_1u:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1u;
+   break;
+   case EM_10u:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"100");
+   	Elem_Sen.ShadowRange[sen_id]=EM_10u;
+   break;
+   case EM_100u:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100u;
+   break;
+   case EM_1m:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1m;
+   break;
+   default:
+   	return -1;
+ }
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_LN_Range(int sen_id,	int range)
+{
+ switch (range)
+ {
+   case EM_100p:
+   	EM_SEN_EXT_TransGain		(sen_id,"10G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100p;
+   break;
+   case EM_1n:
+   	EM_SEN_EXT_TransGain		(sen_id,"10G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1n;
+   break;
+   case EM_10n:
+   	EM_SEN_EXT_TransGain		(sen_id,"1G");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+	   Elem_Sen.ShadowRange[sen_id]=EM_10n;
+   break;
+   case EM_100n:
+   	EM_SEN_EXT_TransGain		(sen_id,"100M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100n;
+   break;
+   case EM_1u:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1u;
+   break;
+   case EM_10u:
+   	EM_SEN_EXT_TransGain		(sen_id,"1M");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_10u;
+   break;
+   case EM_100u:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"10");
+   	Elem_Sen.ShadowRange[sen_id]=EM_100u;
+   break;
+   case EM_1m:
+   	EM_SEN_EXT_TransGain		(sen_id,"10k");
+   	EM_SEN_EXT_VoltGain		(sen_id,"1");
+   	Elem_Sen.ShadowRange[sen_id]=EM_1m;
+   break;
+   default:
+   	return -1;
+ }
+
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_Range(int sen_id,	int range)
+{
+if (Elem.Range_Mode[sen_id]==EM_RANGE_LN)
+	EM_SEN_EXT_LN_Range(sen_id,range);
+else if(Elem.Range_Mode[sen_id]==EM_RANGE_HB)
+	EM_SEN_EXT_HB_Range(sen_id,range);
+else if(Elem.Range_Mode[sen_id]==EM_RANGE_SHB)
+   EM_SEN_EXT_SHB_Range(sen_id,range);
+else return -1;
+
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_getRange(int ch)
+{
+int range;
+char txt[16];
+int div[3];
+
+SYS_Float2Prefix(10/(Elem_Sen.ShadowGain[ch][0]*Elem_Sen.ShadowGain[ch][1]),div);
+sprintf(txt,"%d%cA",div[0],(char)div[1]);
+range=EM_Range_Conv(txt);
+
+return range;
+}
+
+/* EM_SEN_Filter_Post
+  case 1:       //PE1_0=1Hz
+  case 2:       //PE1_1=10Hz
+  case 3:       //PE1_2=100Hz
+  case 0:       //All off=3.2kHz
+*/
+/* EM_SEN_Filter_Pre
+  case 1:       //PE2_4=3.5kHz
+  case 2:       //PE2_5=100Hz
+  case 3:       //PE2_6=10Hz
+  case 4:       //PE2_7=1Hz
+  case 0:       //AllOff=0.5Hz
+*/
+//1,0       0.5Hz
+//1,4       1Hz
+//2,3       10Hz
+//3,2       100Hz
+//0,1       3.2kHz
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_Filter(int sen_id,	float bandwidth)
+{
+int fc;
+
+fc=(int)(bandwidth*10);
+
+switch (fc)
+	{
+  	case (5):
+  		EM_SEN_Filter_Post	(sen_id,1);           //1,0
+  		EM_SEN_Filter_Pre		(sen_id,0);
+  	break;
+  	case (1*10):
+  		EM_SEN_Filter_Post	(sen_id,1);           //1,4
+  		EM_SEN_Filter_Pre		(sen_id,4);
+  	break;
+  	case (10*10):
+  		EM_SEN_Filter_Post	(sen_id,2);           //2,3
+  		EM_SEN_Filter_Pre		(sen_id,3);
+  	break;
+  	case (100*10):
+  		EM_SEN_Filter_Post	(sen_id,3);           //3,2
+  		EM_SEN_Filter_Pre		(sen_id,2);
+  	break;
+  	case (0*10):
+  		EM_SEN_Filter_Post	(sen_id,0);           //0,1
+  		EM_SEN_Filter_Pre  	(sen_id,1);
+  	break;
+  	default: return -1;
+	}
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+float EM_SEN_retBandwidth(int ch)
+{
+float fc;
+
+if(Elem_Sen.ShadowBandwidth[ch][0]>=Elem_Sen.ShadowBandwidth[ch][1])
+	fc=Elem_Sen.ShadowBandwidth[ch][1];
+else fc=Elem_Sen.ShadowBandwidth[ch][0];
+
+if(fc>1000)
+	{
+   fc=-1;
+   }
+
+return fc;
+}
+
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_NCS_Set(int sen_id,int ncs_no)
+{
+_EM_SEN_ID_PROT
+
+if (sen_id>3) return -1;
+if (ncs_no>3) return -1;
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(ncs_no,sen_id));
+
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EXT_NCS_Res(void)
+{
+Dev_DEC4X16_Res();
+return 1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

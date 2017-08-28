@@ -1,0 +1,32 @@
+/*** BeginHeader */
+#ifndef __DEV_TIME_MOUNT_LIB
+#define __DEV_TIME_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_TIME_BODY.LIB"
+
+//<TIME_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_Time_Driver                   //START
+//</HEADER>
+//<INIT>
+//</INIT>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_Time_Update_hdl(sntp_serv)			Time_Update_hdl(sntp_serv);
+//</BODY>
+//------------------------------------------------------------------------------
+//</TIME_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

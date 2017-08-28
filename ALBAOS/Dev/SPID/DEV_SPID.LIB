@@ -1,0 +1,76 @@
+/*** BeginHeader */
+#ifndef __DEV_SPID_BODY_LIB
+#define __DEV_SPID_BODY_LIB
+/*** EndHeader */
+
+/*************************************************************************
+	Samples\SPI\spi_test.c
+
+	ZWorld, 2001
+
+	test out SPI driver with an NS ADC0831 chip. Uses serial channel D for
+	the SPI data.
+
+//	XXX acts as the CS line on the ADC
+	PE3 is the serial D clock line(SCLK)
+
+	PC0 is the data output(MOSI)
+	PC1 is the data input(MISO)
+************************************************************************/
+
+/*** BeginHeader
+SPID_Init,
+*/
+#include "/Dev/SPID/DEV_SPID.H"
+//_____________________________<FUNCTIONS>______________________________________
+int SPID_Init(void);
+//int SPID_CLK_Inv(int int1);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//RCM4200
+_SPID_NODEBUG
+int SPID_Init(void)
+{
+SPIinit();
+
+//<PCO=TXD>
+BitWrPortI(PCDDR,&PCDDRShadow, 1,0);    //0=input,1=output
+BitWrPortI(PCDCR,&PCDCRShadow, 0,0);    //0=low/high,1=open drain
+BitWrPortI(PCFR, &PCFRShadow,  1,0);    //0=normal;1=alternative
+//</PCO=TXD>
+
+//<PC1=RXD>
+BitWrPortI(PCDDR,&PCDDRShadow, 0,1);
+BitWrPortI(PCFR, &PCFRShadow,  1,1);
+//</PC1=RXD>
+
+//<PE3=CLKD>
+BitWrPortI(PEDDR,&PEDDRShadow, 1,3);
+BitWrPortI(PEDCR,&PEDCRShadow, 0,3);
+BitWrPortI(PEFR, &PEFRShadow,  1,3);
+//==========
+BitWrPortI(PEALR,&PEALRShadow, 1,6);
+BitWrPortI(PEALR,&PEALRShadow, 1,7);
+//polarity configuration
+//by default
+//BitWrPortI(SDER, &SDERShadow, 0, 5);             //shold be 0 -clock polarity
+//BitWrPortI(SDER, &SDERShadow, 0, 4);             //idle polarity
+//</PE3=CLKD>
+
+return 1;
+}
+
+/*
+_SPID_NODEBUG
+int SPID_CLK_Inv(int int1)
+{
+BitWrPortI(SDER,&SDERShadow,0,5);
+BitWrPortI(SDER,&SDERShadow,int1,4);
+return 1;
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

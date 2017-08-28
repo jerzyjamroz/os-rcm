@@ -1,0 +1,232 @@
+/*** BeginHeader */
+#ifndef __RCM4200_HVS_LIB
+#define __RCM4200_HVS_LIB
+#if (_BOARD_TYPE_ < RCM4200 || _BOARD_TYPE_ > (RCM4200+0x00FF))
+	#fatal "RCM42xx.LIB only supports RCM42xx series boards."
+#endif
+#use RCM4xxx.LIB
+#use "i2c_devices_HVS.lib"
+
+#ifdef DEVICE_HVS_DEBUG
+#define _DEVICE_HVS_NODEBUG
+#else
+#define _DEVICE_HVS_NODEBUG nodebug
+#endif
+/*** EndHeader */
+
+/* START LIBRARY DESCRIPTION *********************************************
+RCM42xx.LIB
+
+DESCRIPTION:	This is a sample library only.
+
+					Use with RCM42xx series controllers and prototyping boards.
+					Add or modify functions to suit your applications.
+
+					RCM4200 Standard Setup:
+						8-Bit Flash (512KB)
+						8-Bit Fast SRAM (512KB)
+						8-Bit SRAM (512KB)
+						12-Bit, 8-Channel ADC (ADS7870)
+						100BASE-T Ethernet (ASIX)
+
+					RCM4210 Standard Setup:
+						8-Bit Flash (512KB)
+						8-Bit SRAM (512KB)
+						100BASE-T Ethernet (ASIX)
+
+REVISION HISTORY:
+20-Sep-2006 tbc   Updated brdInit(), added check for ADC_ONBOARD.
+06-Sep-2006 tbc	Created RCM42XX.LIB from RCM40XX.LIB.
+
+END DESCRIPTION **********************************************************/
+
+/*** BeginHeader */
+//////////
+// required for A/D conversion operations
+//	make changes below to match your application
+//////////
+// define Serial Flash chip select as TXDD+
+#define SF_SPI_CSPORT NAPCR
+#define SF_SPI_CSSHADOW NAPCRShadow
+#define SF_SPI_CSDD 0x00
+#define SF_SPI_CSPIN 5
+#define SF_SPI_CSINVERTED
+#define SF_SERPORT SCDR
+#define SF_ALTCLOCK			// use PE7 instead of PD2 for clock
+#define DEVELOPMENT_BOARD  // Indicate development board LIB being used
+#ifdef ADC_ONBOARD
+	#use "ADC_ADS7870.LIB"
+#endif
+#define PORT_EXP1_ADDRESS 0xE8
+#define PORT_EXP2_ADDRESS 0xEA
+#define PORT_EXP3_ADDRESS 0xEC
+#define WRITE_TIME 1 //number of milliseconds to wait between write operations
+
+/*** EndHeader */
+
+/*** BeginHeader __brdinitflag */
+extern int __brdinitflag;
+/*** EndHeader */
+int __brdinitflag;				//Board init function flag
+
+/*** BeginHeader brdInit_HVS */
+nodebug void brdInit_HVS();
+/*** EndHeader */
+
+/* START FUNCTION DESCRIPTION ********************************************
+brdInit_HVS						<RCM4200_HVS.LIB>
+
+SYNTAX:			void brdInit_HVS (void);
+
+DESCRIPTION:	This function initializes all the hardware of the High Voltage
+					Splitter.
+
+PARAMETER:    	None
+
+RETURN VALUE:	None
+
+Pin   Port  Non-ADC Function              I/O      I/O State
+====  ====  ===========================   ======   ============================
+8     PA0   Interlock_Disable 1				Output   Low
+9     PA1   Interlock_Disable 2           Output   Low
+10    PA2   Interlock_Disable 3           Output   Low
+11    PA3   Interlock_Disable 4           Output   Low
+12    PA4   Interlock_Disable 5	         Output   Low
+13    PA5   Interlock_Disable 6           Output   Low
+14    PA6   Interlock_Disable 7	         Output   Low
+15    PA7   Interlock_Disable 8           Output   Low
+
+16    PB0   ADC SCLK                      Output   High
+17    PB1   LCD_DB4						      Output   Low
+18    PB2   LCD_DB5                       Output   Low
+19    PB3   LCD_DB6                       Output   Low
+20    PB4   LCD_DB7                       Output   Low
+21    PB5   LCD_E                         Output   Low
+22    PB6   LCD_RS	                     Output   Low
+23    PB7   LCD_RW	                     Output   Low
+
+24    PC0   TXD - RS232                   Output   High
+25    PC1   RXD - RS232                   Input    Not set
+26    PC2   TXC - Serial Flash SDI        Output   High
+27    PC3   RXC - Serial Flash SDO        Input    Not set
+28    PC4   TXB - ADC SDI                 Output   High
+29    PC5   RXB - ADC SDO                 Input    Not set
+30    PC6   TXA - Programming port        Output   High when not driven
+31    PC7   RXA - Programming port        Input    Not set
+
+40    PD0   Not Used (*)                  Output   High
+41    PD1   Not Used (*)                  Output   High
+42    PD2   Not Used (*)                  Output   High
+43    PD3   Not Used (*)                  Output   High
+44    PD4   Not Used (*)                  Output   High
+45    PD5   Not Used (*)                  Output   High
+46    PD6   Not Used (*)                  Output   High
+47    PD7   Not used (*)                  Output   High
+
+(*) Port D is not available if ADC functionality is present
+
+32    PE0   ADC Busy Signal               Input   	Not set
+33    PE1   Interlock Enable              Output   Low
+34    PE2   Ethernet Enable 					Output   Low
+35    PE3   SCL		                     Bidir    Not set
+36    PE4   SDA									Bidir    Not set
+37    PE5   Button Interrupt In           Input    Not set
+38    PE6   EPS Alarm							Output 	Low
+39    PE7   Serial Flash Clock				Output   Low
+
+	The following only initializes on boards with ADC capability.
+
+Pin   Port  ADC Function                  I/O      I/O State
+====  ====  ===========================   ======   ============================
+16    PB0   SCLK                          Output   Serial clock
+28    PC4   SDI                           Output   Serial data to ADC chip
+29    PC5   SDO                           Input    Serial data from ADC chip
+32    PE0   BUSY                          Input    Busy signal from ADC chip
+40    LN0   ADC_IN0                       Input    Analog
+41    LN1   ADC_IN1                       Input    Analog
+42    LN2   ADC_IN2                       Input    Analog
+43    LN3   ADC_IN3                       Input    Analog
+44    LN4   ADC_IN4                       Input    Analog
+45    LN5   ADC_IN5                       Input    Analog
+46    LN6   ADC_IN6                       Input    Analog
+47    LN7   ADC_IN7 (Resistor R3 req)     Input    Analog
+
+END DESCRIPTION **********************************************************/
+
+_SYSTEM_HVS_NODEBUG
+void brdInit_HVS()
+{
+	#GLOBAL_INIT {__brdinitflag  = FALSE;}
+	__brdinitflag = TRUE;
+
+	/////////////////////////////////////////////////////////////////////////
+	// Configure Port A
+   /////////////////////////////////////////////////////////////////////////
+	WrPortI(PADR, &PADRShadow, 0x00);		//set to output all low
+	WrPortI(SPCR, &SPCRShadow, 0x84);		//sets all bits to output
+//   PortA_Val = 0x00; // Initial value of Port A.
+   /////////////////////////////////////////////////////////////////////////
+	// Configure Port B
+   /////////////////////////////////////////////////////////////////////////
+   WrPortI(PBDR,  &PBDRShadow,  0x01);
+   WrPortI(PBDDR, &PBDDRShadow, 0xFF);
+//   PortB_Val = 0x01; // Initial value of Port B.
+
+
+   /////////////////////////////////////////////////////////////////////////
+   // Configure Port C
+   /////////////////////////////////////////////////////////////////////////
+	WrPortI(PCFR,  &PCFRShadow,  (PCFRShadow  & 0xC5));
+	WrPortI(PCDCR, &PCDCRShadow, (PCDCRShadow & 0xC0));
+	WrPortI(PCDR,  &PCDRShadow,  (PCDRShadow  & 0xF5));
+	WrPortI(PCDDR, &PCDDRShadow, (PCDDRShadow & 0xC0) | 0x35);
+
+   /////////////////////////////////////////////////////////////////////////
+	// Configure Port D
+   /////////////////////////////////////////////////////////////////////////
+	WrPortI(PDCR,  &PDCRShadow,  0x00);	// clear all bits to pclk/2
+	WrPortI(PDFR,  &PDFRShadow,  0x00);	// No special functions
+	WrPortI(PDDCR, &PDDCRShadow, 0x00);	// clear all bits to drive high and low
+	WrPortI(PDDR,  &PDDRShadow,  0xFF);	// set all bits high
+	WrPortI(PDDDR, &PDDDRShadow, 0xFF);	// set all bits to output
+
+   /////////////////////////////////////////////////////////////////////////
+	// Configure Port E
+   // This pin will be setup in anaInConfig() below if not polling the ADC
+   // PE0   BUSY                          Input    Busy signal from ADC chip
+   // Ethernet driver will set up PE2, Serial Flash driver will set up PE7
+   /////////////////////////////////////////////////////////////////////////
+	WrPortI(PECR,  &PECRShadow,  0x00);	// clear all bits to pclk/2
+	WrPortI(PEFR,  &PEFRShadow,  0x00);	// No special functions
+	WrPortI(PEDCR, &PEDCRShadow, 0x18);	// SDA and SCL open drain
+	WrPortI(PEDR,  &PEDRShadow,  0x00);	// set all bits output low
+	WrPortI(PEDDR, &PEDDRShadow, 0xC6);	// set bits to output
+
+//   PortE_Val = 0x00; // Initial value of Port E.
+   // PENDING TO CONFIGURE EXTERNAL INTERRUPTION IN PORT PE5
+
+
+
+	//---------------------------------------------------------------------
+	// set global power save control self-timed chip select
+	//---------------------------------------------------------------------
+
+	//	WrPortI(GPSCR, &GPSCRShadow, GPSCRShadow|0xe0);		//set to 109 nsec
+
+	#ifdef ADC_ONBOARD
+		// clear table and read all calibration constants
+		memset(_adcCalibS, 0, sizeof(_adcCalibS));
+		memset(_adcCalibD, 0, sizeof(_adcCalibD));
+		memset(_adcCalibM, 0, sizeof(_adcCalibM));
+		anaInEERd(ALLCHAN, SINGLE, 0);
+		anaInEERd(ALLCHAN, DIFF, 0);
+		anaInEERd(ALLCHAN, mAMP, 0);
+
+		// setup sclk
+		anaInConfig(0x18, 0x81, ADC_SCLKBAUD);		//reset adc device and sclk baud
+	#endif
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

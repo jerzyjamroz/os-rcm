@@ -1,0 +1,159 @@
+/*** BeginHeader */
+//NOTE:
+//It must be declared only once just before main() function!!!
+#ifndef __ALBAOS_MOUNT_SYS_LIB
+#define __ALBAOS_MOUNT_SYS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ALBAOS_INIT,ALBAOS_DAEMONS,
+*/
+void ALBAOS_INIT(void);
+void ALBAOS_DAEMONS(void);
+
+#warnt "******<MOUNTING_SYSTEM>******"
+//<Mount_Global_Defines>
+//#define MAX_TCP_SOCKET_BUFFERS 3
+#define MAX_UDP_SOCKET_BUFFERS 1
+
+//****************************<SETTINGS>****************************************
+#ifndef TCPCONFIG
+			#define TCPCONFIG 7
+	      #define _PRIMARY_STATIC_IP  "10.10.6.100"
+	      #define _PRIMARY_NETMASK    "255.255.255.0"
+	      #define MY_GATEWAY          "10.10.6.1"
+	      #define MY_NAMESERVER       "10.10.6.1"
+#endif
+//****************************</SETTINGS>***************************************
+
+//</Mount_Global_Defines>
+
+//*********************************************************************************
+//<Mount_Dev_ALBAOS_Driver>
+#use "ALBAOS_CONFIG_SYS.lib"
+#use "ALBAOS_ENVIRONMENT.LIB"
+#use "ALBAOS_SYS.LIB"
+#use "ALBAOS_LIBRARIES.LIB"
+//</Mount_Dev_ALBAOS_Driver>
+//*********************************************************************************
+//2 modes
+//#define Mount_Dev_XXX_Driver
+//#define Sim_Mount_Dev_XXX_Driver
+
+//<DEV_TLN>
+#use "OS_MOUNT_DEV_ETH.lib"
+//</DEV_TLN>
+//<DEV_TLN>
+#use "OS_MOUNT_DEV_TLN.lib"
+//</DEV_TLN>
+//<DEV_SERD>
+#use "OS_MOUNT_DEV_SERD.lib"
+//</DEV_SERD>
+//******************************************************************************
+//<DEV_SFLASH>
+#use "OS_MOUNT_DEV_SFLASH.lib"
+//</DEV_SFLASH>
+//******************************************************************************
+//<DEV_SNTP>
+#use "OS_MOUNT_DEV_SNTP.LIB"
+//</DEV_SNTP>
+//******************************************************************************
+//<DEV_RTC>
+#use "OS_MOUNT_DEV_RTC.lib"
+//</DEV_RTC>
+//******************************************************************************
+//<DEV_TIME>
+#use "OS_MOUNT_DEV_TIME.lib"
+//</DEV_TIME>
+//******************************************************************************
+//<DEV_IO>
+#use "OS_MOUNT_DEV_IO.lib"
+//</DEV_IO>
+//******************************************************************************
+
+#ifndef _SYS_MOUNT_DEV_SFlash_DRIVER_INIT_
+	#define _SYS_MOUNT_DEV_SFlash_DRIVER_INIT_
+#endif
+
+#ifndef _SYS_MOUNT_DEV_Tln_DRIVER_INIT_
+	#define _SYS_MOUNT_DEV_Tln_DRIVER_INIT_
+#endif
+
+#ifndef _SYS_MOUNT_DEV_SerD_DRIVER_INIT_
+	#define _SYS_MOUNT_DEV_SerD_DRIVER_INIT_
+#endif
+
+#ifndef _SYS_MOUNT_DEV_SNTP_DRIVER_INIT_
+	#define _SYS_MOUNT_DEV_SNTP_DRIVER_INIT_
+#endif
+
+#ifndef _SYS_MOUNT_DEV_Eth_DRIVER_INIT_
+	#define _SYS_MOUNT_DEV_Eth_DRIVER_INIT_
+#endif
+
+static struct{
+int isSockInit;
+}SYS_ENV;
+
+_ALBAOS_LIB_NODEBUG
+void ALBAOS_INIT(void)
+{
+#GLOBAL_INIT{
+SYS_ENV.isSockInit=-1;
+}
+
+_SYS_MOUNT_DEV_SFlash_DRIVER_INIT_
+_SYS_MOUNT_DEV_Eth_DRIVER_INIT_
+_SYS_MOUNT_DEV_Tln_DRIVER_INIT_
+_SYS_MOUNT_DEV_SerD_DRIVER_INIT_
+_SYS_MOUNT_DEV_SNTP_DRIVER_INIT_
+}
+
+
+#ifndef _SYS_MOUNT_DEV_Tln_DAEMON_
+	#define _SYS_MOUNT_DEV_Tln_DAEMON_
+#endif
+
+#ifndef _SYS_MOUNT_DEV_Eth_DAEMON_
+	#define _SYS_MOUNT_DEV_Eth_DAEMON_
+#endif
+
+_ALBAOS_LIB_NODEBUG
+void ALBAOS_DAEMONS(void)
+{
+_SYS_MOUNT_DEV_Eth_DAEMON_
+_SYS_MOUNT_DEV_Tln_DAEMON_
+}
+
+#warnt "******</MOUNTING_SYSTEM>******"
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

@@ -1,0 +1,26 @@
+/*** BeginHeader */
+#ifndef __QLAMBDA_HVS_LIB
+#define __QLAMBDA_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+QLambda_Set,
+
+*/
+_DEVICE_HVS_NODEBUG void QLambda_Set (char bool);
+
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG 
+void QLambda_Set (char bool)
+{
+	if(bool==1) SET(&PortExp2_Val0,0);
+   else RES(&PortExp2_Val0,0);
+
+   I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,549 @@
+/*** BeginHeader */
+#ifndef __FIM_SCPI_PROT_EXE_LIB
+#define __FIM_SCPI_PROT_EXE_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SCPI_Ord_Exe
+*/
+#ifdef SCPIprot_EXE_DEBUG
+#define _SCPIprot_EXE_NODEBUG
+#else
+#define _SCPIprot_EXE_NODEBUG nodebug
+#endif
+
+
+#use "FIM_SCPI_PROT_BODY.LIB"
+
+_SCPIprot_EXE_NODEBUG int SCPI_Ord_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd);
+
+/*** EndHeader */
+
+_SCPIprot_EXE_NODEBUG
+struct SYSOrd LOC_retComOrd(struct SYSOrd tlnOrd, int comOrdID)
+{
+struct SYSOrd comOrd;
+
+if(comOrdID<0) return SYSOrd_NULL;
+comOrd=tlnOrd;
+comOrd.ID=comOrdID;
+return comOrd;
+}
+
+_SCPIprot_EXE_NODEBUG
+void LOC_2Tln_Ack(int tlnOrdID)
+{
+int j;
+
+SYS_Tln_Write(SYS_ACKNW);
+for(j=0;SCPI_REF[tlnOrdID].Tree[j][0]!=0;j++)
+   {
+   SYS_Tln_Write(":");
+   SYS_Tln_Write(&SCPI_REF[tlnOrdID].Tree[j][0]);
+   }
+SYS_Tln_Write(SYSCRNL);
+}
+
+//------------------------------------------------------------------------------
+//Start System
+_SCPIprot_EXE_NODEBUG
+int SYSTem_HEADers_Q_Exe(struct SYSOrd tlnOrd)                      	       //OK
+{
+int i,j;
+char buf[16];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+for(i=SCPI_FirstID+1; i<SCPI_LastID; i++)
+{
+
+switch (SCPI_REF[i].ID)
+{
+  case SCPI_Tln2Dev_BeginIndex :
+  SYS_Tln_Write("<COMMANDS>");SYS_Tln_Write(SYSCRNL);
+  break;
+  case SCPI_Tln2Dev_EndIndex :
+  SYS_Tln_Write("</COMMANDS>");SYS_Tln_Write(SYSCRNL);
+  break;
+
+  case SCPI_Dev2Tln_BeginIndex :
+  SYS_Tln_Write("<EVENTS>");SYS_Tln_Write(SYSCRNL);
+  break;
+  case SCPI_Dev2Tln_EndIndex :
+  SYS_Tln_Write("</EVENTS>");SYS_Tln_Write(SYSCRNL);
+  break;
+}
+
+if( (SCPI_REF[i].ID!=HIDDen_CREDits_Q) && (SCPI_REF[i].ID!=HIDDen_SYSTem_RCMid_Q) )
+if(SCPI_REF[i].Tree[0][0]!=0)
+ {
+	for(j=0;SCPI_REF[i].Tree[j][0]!=0;j++)
+   	{
+   	SYS_Tln_Write(":");
+   	SYS_Tln_Write(&SCPI_REF[i].Tree[j][0]);
+   	}
+	SYS_Tln_Write(" / Params=<");
+	if(SCPI_REF[i].Param[0]>0)
+ 	{
+ 	for(j=0;SCPI_REF[i].Param[j]>0;j++)
+		{
+   	sprintf(buf,"%d-dig",SCPI_REF[i].Param[j]);
+      SYS_Tln_Write(buf);
+      if(i==SYSTem_COMM_TELNet_PASSword) SYS_Tln_Write("[dec]");
+      else SYS_Tln_Write("[hex]");
+   	if(SCPI_REF[i].Param[j+1]>0) SYS_Tln_Write(",");
+      else SYS_Tln_Write(">");
+   	}
+ 	}
+	else SYS_Tln_Write("NULL>");
+
+	SYS_Tln_Write(SYSCRNL);
+ }
+}
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_RESet_REMote_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_RESET);
+bufOrd[1] = SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_SNUMber_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_SERGT);
+bufOrd[1] = SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_VERSion_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_FRMGT);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_CONFiguration_SAVE_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_EEPST);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_CONFiguration_LOAD_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_EEPGT);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_CONFiguration_DEFault_Exe(struct SYSOrd tlnOrd)
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_setPassword(FIM_DEFAULT_PASSWORD);
+SYS_Tln_setWatchdog(FIM_DEFAULT_WATCHDOG);
+//??????????????????????????????????????????????????????????????????????????????
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+//Telnet subsystem
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_ACTive_Q_Exe(struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_VERSion_Q_Exe(struct SYSOrd tlnOrd)
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_Write(Firmware);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_PASSword_Exe(struct SYSOrd tlnOrd) //KKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+if ( SYS_Tln_getPassword()==atoi(&tlnOrd.Param[0][0]) )
+	SYS_Tln_setPassword( atoi(&tlnOrd.Param[1][0]) );
+
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_CLOSe_Exe(struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_Close();
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_WDOG_Q_Exe(struct SYSOrd tlnOrd)      //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[32];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+if(SYS_Tln_getWatchdog()!=0) sprintf(buf,"%u[s]",SYS_Tln_getWatchdog());
+else strcpy(buf,"DISabled");
+
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_WDOG_Exe(struct SYSOrd tlnOrd)  //KKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_setWatchdog(SYS_HexStr2Dec(&tlnOrd.Param[0][0]));
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int SYSTem_COMM_TELNet_MAC_Q_Exe(struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[20];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_MAC(buf,':');
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+//Start STATus
+
+_SCPIprot_EXE_NODEBUG
+int STATus_QUEStionable_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_STAGT);
+bufOrd[1]=SYSOrd_NULL;
+//LOC_2Tln_Ack(tlnOrd.ID);
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_QUEStionable_DCHannels_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_DISGT);
+bufOrd[1]=SYSOrd_NULL;
+//LOC_2Tln_Ack(tlnOrd.ID);
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_ALARm_VECTor_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_OVxGT);
+bufOrd[1] = SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_ALARm_FIFO_Q_Exe(struct SYSOrd tlnOrd)      //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+int i;
+char buf[128];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_Write("|POS|SOUR|-TIMESTAMP- |");
+SYS_Tln_Write(SYSCRNL);
+
+if(FIM_FIFO[1].No<0)
+	{
+   SYS_Tln_Write("|ALL|0000|000000000000|");
+	SYS_Tln_Write(SYSCRNL);
+   }
+
+for(i=1;FIM_FIFO[i].No>=0;i++)
+	{
+//   if( (i%32)==0 ) yield;
+	sprintf(buf,"|%03X|%04s|%012s|",FIM_FIFO[i].No,FIM_FIFO[i].AlarmSource,FIM_FIFO[i].Timestamp);
+   SYS_Tln_Write(buf);
+   SYS_Tln_Write(SYSCRNL);
+   }
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_ALARm_NUMBer_Q_Exe(struct SYSOrd tlnOrd)        //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+int i;
+char buf[128];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+for(i=1;FIM_FIFO[i].No>0;i++);
+i--;
+sprintf(buf,"%03X",i);
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+
+if(i>=FIM_FIFO_LEN)
+{
+SCPI_DeParse(buf,WARN_STAT_FIFO_FULL,"");
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+}
+
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_UPDate_FIFO_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd) //KKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_FIFGT);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_ERRors_Q_Exe(struct SYSOrd tlnOrd)      //KKKKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+char buf[1024];
+LOC_2Tln_Ack(tlnOrd.ID);
+
+FIM_ErrTab2Buf(buf);
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+return SYSNULL;
+}
+
+_SCPIprot_EXE_NODEBUG
+int STATus_ERRor_ERASe_Exe(struct SYSOrd tlnOrd)    //KKKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+FIM_Err_TabClear();
+return SYSNULL;
+}
+
+int STATus_OUTPut_Q_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_ALSGT);
+bufOrd[1] = SYSOrd_NULL;
+return 1;
+}
+//------------------------------------------------------------------------------
+//Start CONTrol
+_SCPIprot_EXE_NODEBUG
+int CONTrol_ALARm_PRODuce_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_REMAL);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int CONTrol_ALARm_VECTor_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_OVxST) ;
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+_SCPIprot_EXE_NODEBUG
+int CONTrol_DCHannels_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)//KKKKKKKKKKKKKKKKKKKKKKKKKK
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+bufOrd[0] = LOC_retComOrd(tlnOrd,R2F_DISST);
+bufOrd[1]=SYSOrd_NULL;
+return 1;
+}
+
+//------------------------------------------------------------------------------
+//Start HIDDen
+int HIDDen_CREDits_Q_Exe(struct SYSOrd tlnOrd)
+{
+LOC_2Tln_Ack(tlnOrd.ID);
+
+SYS_Tln_Write("CELLS - ALBA");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("Computing & Control Division");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("Web Page: http://www.cells.es/");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("Project Design:");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("  O. Matilla");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("  J. Jamroz");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("Approval:");
+SYS_Tln_Write(SYSCRNL);
+SYS_Tln_Write("  D. Beltran");
+
+SYS_Tln_Write(SYSCRNL);
+
+SYS_Tln_Write("Final Release: ");
+SYS_Tln_Write(__DATE__);SYS_Tln_Write(" , ");SYS_Tln_Write(__TIME__);
+
+SYS_Tln_Write(SYSCRNL);
+return 1;
+}
+
+int HIDDen_SYSTem_RCMid_Q_Exe(struct SYSOrd tlnOrd)
+{
+char buf[32];
+
+LOC_2Tln_Ack(tlnOrd.ID);
+
+sprintf(buf,"RCM_ID/%d", SYS_RabbitProductID() );
+SYS_Tln_Write(buf);
+SYS_Tln_Write(SYSCRNL);
+}
+
+//------------------------------------------------------------------------------
+//********************EXE METHOD************************************************
+_SCPIprot_EXE_NODEBUG
+int SCPI_Ord_Exe(struct SYSOrd * bufOrd,struct SYSOrd tlnOrd)
+{
+bufOrd[0]=SYSOrd_NULL;
+if (tlnOrd.ID<0) return SYSNULL;
+
+switch (tlnOrd.ID)
+{
+//------------------------------------------------------------------------------
+//Start System
+case SYSTem_HEADers_Q :
+return SYSTem_HEADers_Q_Exe(tlnOrd);
+break;
+
+case SYSTem_RESet_REMote :
+return SYSTem_RESet_REMote_Exe(bufOrd,tlnOrd);
+break;
+case SYSTem_SNUMber_Q :
+return SYSTem_SNUMber_Q_Exe(bufOrd,tlnOrd);
+break;
+case SYSTem_VERSion_Q :
+return SYSTem_VERSion_Q_Exe(bufOrd,tlnOrd);
+break;
+case SYSTem_CONFiguration_SAVE :
+return SYSTem_CONFiguration_SAVE_Exe(bufOrd,tlnOrd);
+break;
+case SYSTem_CONFiguration_LOAD :
+return SYSTem_CONFiguration_LOAD_Exe(bufOrd,tlnOrd);
+break;
+case SYSTem_CONFiguration_DEFault :
+return SYSTem_CONFiguration_DEFault_Exe(tlnOrd);
+break;
+//Telnet subsystem
+case SYSTem_COMM_TELNet_ACTive_Q :
+return SYSTem_COMM_TELNet_ACTive_Q_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_VERSion_Q :
+return SYSTem_COMM_TELNet_VERSion_Q_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_PASSword :
+return SYSTem_COMM_TELNet_PASSword_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_CLOSe :
+return SYSTem_COMM_TELNet_CLOSe_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_WDOG_Q :
+return SYSTem_COMM_TELNet_WDOG_Q_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_WDOG :
+return SYSTem_COMM_TELNet_WDOG_Exe(tlnOrd);
+break;
+case SYSTem_COMM_TELNet_MAC_Q :
+return SYSTem_COMM_TELNet_MAC_Q_Exe(tlnOrd);
+break;
+//Start STATus
+case STATus_QUES_Q :
+return STATus_QUEStionable_Q_Exe(bufOrd,tlnOrd);
+break;
+case STATus_QUES_DCHannels_Q :
+return STATus_QUEStionable_DCHannels_Q_Exe(bufOrd,tlnOrd);
+break;
+case STATus_ALARm_VECTor_Q :
+return STATus_ALARm_VECTor_Q_Exe(bufOrd,tlnOrd);
+break;
+case STATus_ALARm_FIFO_Q :
+return STATus_ALARm_FIFO_Q_Exe(tlnOrd);
+break;
+case STATus_ALARm_NUMBer_Q :
+return STATus_ALARm_NUMBer_Q_Exe(tlnOrd);
+break;
+case STATus_UPDate_FIFO :
+return STATus_UPDate_FIFO_Exe(bufOrd,tlnOrd);
+break;
+case STATus_ERRors_Q :
+return STATus_ERRors_Q_Exe(tlnOrd);
+break;
+case STATus_ERRor_ERASe :
+return STATus_ERRor_ERASe_Exe(tlnOrd);
+break;
+case STATus_OUTPut_Q :
+return STATus_OUTPut_Q_Exe(bufOrd,tlnOrd);
+break;
+//Start CONTrol
+case CONTrol_ALARm_PRODuce :
+return CONTrol_ALARm_PRODuce_Exe(bufOrd,tlnOrd);
+break;
+case CONTrol_ALARm_VECTor :
+return CONTrol_ALARm_VECTor_Exe(bufOrd,tlnOrd);
+break;
+case CONTrol_DCHannels :
+return CONTrol_DCHannels_Exe(bufOrd,tlnOrd);
+break;
+//Start CONTrol
+
+//Start HIDDen
+case HIDDen_CREDits_Q :
+return HIDDen_CREDits_Q_Exe(tlnOrd);
+break;
+case HIDDen_SYSTem_RCMid_Q :
+return HIDDen_SYSTem_RCMid_Q_Exe(tlnOrd);
+break;
+//Stop HIDDen
+
+default: return SYSERROR;
+}
+
+return SYSNULL;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

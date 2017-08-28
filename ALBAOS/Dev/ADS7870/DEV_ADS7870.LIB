@@ -1,0 +1,19 @@
+/*** BeginHeader */
+#ifndef __DEV_ADS7870_BODY_LIB
+#define __DEV_ADS7870_BODY_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#include "/Dev/ADS7870/DEV_ADS7870.H"
+/*** EndHeader */
+//anaIn(ch>>1,DIFF,gain)
+/*
+int ADS7870_Init(void)
+{
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

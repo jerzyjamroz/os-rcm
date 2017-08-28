@@ -1,0 +1,187 @@
+/*** BeginHeader */
+#ifndef __FIM_STATUS_LIB
+#define __FIM_STATUS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+FIMstatus_FIFO_Reset,FIM_Err_Call,FIM_ErrTab2Buf,FIM_Err_TabClear,FIM_Err_ID2No
+*/
+
+#define LOC_FIFO_Len FIM_FIFO_LEN
+
+struct FIMFIFO{
+int No;
+char AlarmSource[6];
+char Timestamp[14];
+};
+struct FIMFIFO FIM_FIFO[LOC_FIFO_Len+1+1];
+int FIMstatus_FIFO_Reset(void);
+//<ERROR HANDLERS>
+int FIM_ErrTab2Buf(char *buf);
+void FIM_Err_TabClear(void);
+int FIM_Err_ID2No(int err_id);
+int FIM_Err_Call(int err_no);
+
+enum{
+Err_Begin,
+
+Err_NoErrs,
+Err_FPGA_NoAckDet,
+Err_RCM_NoAckDet,
+
+Err_RS232_Full,
+Err_RS232_Parity,
+Err_RS232_Frame,
+Err_RS232_Overrun,
+
+Err_EthernetLinkLost,
+Err_FPGA_InternalSyntax,
+Err_RCM_InternalSyntax,
+
+Err_End
+}Err;
+//</ERROR HANDLERS>
+/*** EndHeader */
+//*************************FIFO*************************************************
+_BRIDGE_EXE_NODEBUG
+int FIMstatus_FIFO_Reset(void)
+{
+int i;
+for(i=0;i<LOC_FIFO_Len;i++)
+	{
+   FIM_FIFO[i].No=-1;
+   strcpy(FIM_FIFO[i].AlarmSource,"0000");
+	strcpy(FIM_FIFO[i].Timestamp,"000000000000");
+   }
+return SYSNULL;
+}
+//*************************FIFO*************************************************
+
+//******************************************************************************
+//***BeginErrorHandler
+
+//***BeginConfig
+#define loc_int_sizeof(x) (sizeof(x)>>1)
+int FIM_Err_Table[Err_End+1];
+
+struct FIMErrRef{
+int No;
+int ID;
+};
+
+const struct FIMErrRef FIM_Err_Ref[Err_End+1] =
+{
+Err_Begin					,-1,
+
+Err_NoErrs					,0x00,
+Err_FPGA_NoAckDet			,0x01,
+Err_RCM_NoAckDet			,0x02,
+
+Err_RS232_Full				,0x10,
+Err_RS232_Parity			,0x11,
+Err_RS232_Frame			,0x12,
+Err_RS232_Overrun			,0x13,
+
+Err_EthernetLinkLost		,0x20,
+Err_FPGA_InternalSyntax	,0x50,
+Err_RCM_InternalSyntax	,0x51,
+
+Err_End						,-1
+};
+
+_BRIDGE_EXE_NODEBUG
+void FIM_Err_TabClear(void)
+{
+int i;
+
+for(i=0;i<loc_int_sizeof(FIM_Err_Table);i++)
+	{
+   FIM_Err_Table[i]=0;
+   }
+}
+
+_BRIDGE_EXE_NODEBUG
+int FIM_Err_Push(int err_no)
+{
+#GLOBAL_INIT{
+FIM_Err_TabClear();
+}
+if ( (err_no>Err_End) || (err_no<Err_Begin) ) return -1;
+
+FIM_Err_Table[err_no]++;
+if(FIM_Err_Table[err_no]>32000) FIM_Err_Table[err_no]=32000;
+
+return FIM_Err_Table[err_no];
+}
+
+_BRIDGE_EXE_NODEBUG
+int FIM_Err2Buf(char *buf,int err_no)
+{
+char errCodeStr[10];
+int len;
+
+if ( (err_no>Err_End) || (err_no<Err_Begin) ) return -1;
+
+sprintf(errCodeStr,"%02X",FIM_Err_Ref[err_no].ID);
+len=SCPI_DeParse(buf,ERRor_SYSTem,errCodeStr);
+
+return len;
+}
+
+_BRIDGE_EXE_NODEBUG
+int FIM_Err_Call(int err_no)
+{
+char buf[64];
+#GLOBAL_INIT{
+FIM_Err_TabClear();
+}
+
+if ( (err_no>Err_End) || (err_no<Err_Begin) ) return -1;
+
+FIM_Err2Buf(buf,err_no);
+FIM_Err_Push(err_no);
+SYS_Tln_Write(buf);		//there should be an error table
+SYS_Tln_Write(SYSCRNL);
+
+return SYSOK;
+}
+
+_BRIDGE_EXE_NODEBUG
+int FIM_ErrTab2Buf(char *buf)
+{
+int i,j;
+int idx;
+idx=0;
+
+sprintf(&buf[idx],"|No.|ID |ERR|\r\n");
+for(i=Err_Begin,j=0;i<Err_End;i++)
+	{
+   if(FIM_Err_Ref[i].ID>0)
+   	{
+   	idx=strlen(buf);
+   	sprintf(&buf[idx],"|%03d|%03X|%03d|\r\n",j,FIM_Err_Ref[i].ID,FIM_Err_Table[i]);
+      j++;
+   	}
+   }
+
+return strlen(buf);
+}
+
+_BRIDGE_EXE_NODEBUG
+int FIM_Err_ID2No(int err_id)
+{
+int i;
+
+for(i=Err_Begin+1;i<Err_End;i++)
+	if(err_id==FIM_Err_Ref[i].ID) return i;
+
+return -1;
+}
+//***EndErrorHandler
+//******************************************************************************
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

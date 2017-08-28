@@ -1,0 +1,94 @@
+/*** BeginHeader */
+#ifndef __EM_ADC7608_LIB
+#define __EM_ADC7608_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ADC7608_Init,ADC_Reset_RawData,
+*/
+void ADC7608_Init(void);
+void ADC_Reset_RawData(void);
+
+#define ADC_Var_Data_Buf_Len 1048500
+//#define ADC_Var_Tab_Idx
+
+struct ADC_Struct{
+long Adr_Begin;
+long Adr_End;
+long Mem_Byte_Amount;
+char Buf[3];
+};
+
+struct ADC_Struct ADC_Var={
+0,
+0,
+0,
+0,0,0,
+};
+
+
+#define ADC_Sample_Num (ADC_Var.Mem_Byte_Amount/(EM_SENSOR_MAX*3))
+#define ADC_Sample_Mem_Idx(ch,idx) (idx*12+ch*3)
+
+/*** EndHeader */
+
+#define Int_INT1_PE1_En() WrPortI(I1CR,&I1CRShadow,0x09)
+#define Int_INT1_PE1_Dis() WrPortI(I1CR,&I1CRShadow,0x08)
+
+void Int_INT1_PE1_Init(void *isr)
+{
+//   #GLOBAL_INIT
+//   {
+		//SET PE1 as input
+		BitWrPortI(PEDDR, 	&PBDDRShadow, 		0, 1);
+		BitWrPortI(PEDR,  	&PBDRShadow,  		1, 1);
+		SetVectExtern4000(1,isr);
+		WrPortI(I1CR, &I1CRShadow, 0x09);		// enable external INT1 on PE1, rising edge, priority 1
+		Int_INT1_PE1_En();
+//		Interrupt.Status=0;    //interrupt enable - everything ok
+//   }
+}
+
+
+root interrupt void ADC_Slave_Isr(void)
+{
+ADC_Var.Buf[0]=RdPortI(SPD2R);
+ADC_Var.Buf[1]=RdPortI(SPD1R);
+ADC_Var.Buf[2]=RdPortI(SPD0R);
+
+root2xmem(ADC_Var.Adr_End,ADC_Var.Buf,3);
+
+ADC_Var.Adr_End+=3;
+if(ADC_Var.Adr_End>=ADC_Var.Adr_Begin+ADC_Var_Data_Buf_Len) ADC_Var.Adr_End=ADC_Var.Adr_Begin;
+
+if(ADC_Var.Mem_Byte_Amount<ADC_Var_Data_Buf_Len) ADC_Var.Mem_Byte_Amount+=3;
+}
+
+void ADC_Reset_RawData(void)
+{
+ADC_Var.Adr_End=ADC_Var.Adr_Begin;
+ADC_Var.Mem_Byte_Amount=0;
+}
+
+void ADC7608_Init(void)
+{
+Int_INT1_PE1_Init(ADC_Slave_Isr);
+WrPortI(SPCR,&SPCRShadow,0xE8);
+ADC_Var.Adr_Begin=xalloc(ADC_Var_Data_Buf_Len);
+ADC_Var.Adr_End=ADC_Var.Adr_Begin;
+}
+
+long ADC_Mem_Sample_Read(int ch,int idx)
+{
+char buf[3]=0;
+if (ADC_Sample_Mem_Idx(ch,idx)>ADC_Var.Mem_Byte_Amount) return -1;
+
+if ( (ADC_Var.Adr_End-ADC_Var.Adr_Begin) )
+
+xmem2root(buf,ADC_Var.Adr_End-i*12+ch*3,3);
+}
+
+//_EM_ADC_NODEBUG
+/*** BeginHeader */
+#endif
+/*** EndHeader */

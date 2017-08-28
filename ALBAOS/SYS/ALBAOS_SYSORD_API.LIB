@@ -1,0 +1,97 @@
+/*** BeginHeader */
+#ifndef __ALBAOS_SYSORD_API_LIB
+#define __ALBAOS_SYSORD_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+SYSOrd_Parse,
+SYSOrd_HPROG_Func,
+SYSOrd_Ans,
+SYSOrd_HCREDITS_Func,
+SYSOrd_HUBWRITE_Func,
+*/
+#include "/SYS/ALBAOS_SYSOrd.H"
+
+int SYSOrd_Parse(struct _SYSOrd *);
+int SYSOrd_Ans(struct _SYSOrd_REF * ref,int id,struct _SYSOrd *ord);
+int SYSOrd_HPROG_Func(struct _SYSOrd *ord);
+int SYSOrd_HUBWRITE_Func(struct _SYSOrd * ord);
+/*** EndHeader */
+
+//<MAIN>
+
+_ALBAOS_NODEBUG
+int SYSOrd_Parse(struct _SYSOrd *ord)
+{
+if(ord->Input[0]=='?')ord->Ref=EMOrdRef_Query;
+else if(ord->Input[0]=='#')ord->Ref=SYSOrdRef;
+else ord->Ref=EMOrdRef_Setting;
+
+for(ord->Id=0;ord->Ref[ord->Id].Id!=SYSNULL_INT;ord->Id++)
+   if(strncmp(ord->Ref[ord->Id].Syntax,ord->Input,ord->Ref[ord->Id].Len)==0)
+   	return ord->Ref[ord->Id].Func(ord);
+
+return (-SYSOrd_ERR_SYNTAX);
+}
+//</MAIN>
+
+
+_ALBAOS_NODEBUG
+int SYSOrd_HPROG_Func(struct _SYSOrd *ord)
+{
+int params;
+int result;                                                                                                             // to make one buffer ***********
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,ord->Output,&ord->Output[100]);
+else params=0;
+
+if(params!=2)
+	return (-SYSOrd_ERR_SYNTAX);
+
+result=SYS_Tftp_and_install(ord->Output,&ord->Output[100]);
+return 1;
+}
+
+_ALBAOS_NODEBUG
+int SYSOrd_Ans(struct _SYSOrd_REF * ref,int id,struct _SYSOrd *ord)
+{
+if(ref==SYSOrdRef_Err)
+	ord->Idx=sprintf(ord->Output,ref[id].Ans,ref[id].Syntax);
+else
+	ord->Idx=sprintf(ord->Output,ref[id].Ans,ord->Ref[ord->Id].Syntax);
+
+return 1;
+}
+
+_ALBAOS_NODEBUG
+int SYSOrd_HCREDITS_Func	(struct _SYSOrd * ord)
+{
+int i;
+ord->Idx=0;
+
+for(i=0;SYS_CREDITS[i][0]!=0;i++)
+	ord->Idx+=sprintf(&ord->Output[ord->Idx],ord->Ref[ord->Id].Ans,&SYS_CREDITS[i][0]);
+
+return 1;
+}
+
+_ALBAOS_NODEBUG
+int SYSOrd_HUBWRITE_Func    (struct _SYSOrd * ord)
+{
+int params=0;
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ord->Output[100]);
+else params=0;
+
+if(params!=1) return (-SYSOrd_ERR_SYNTAX);;
+
+SYS_DEV_UB_WRITE(&ord->Output[100]);
+return 1;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

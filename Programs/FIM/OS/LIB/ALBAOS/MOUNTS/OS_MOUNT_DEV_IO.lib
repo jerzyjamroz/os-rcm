@@ -1,0 +1,82 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//******************************************************************************
+//<IO_DRIVER>
+#ifdef Mount_Dev_IO_Driver
+
+	#warnt "Dev_IO: ACTIVE"
+
+	#use "DEV_IO_MOUNT.LIB"
+
+	//<INIT>
+	//</INIT>
+	//<BODY>
+	#define SYSPORTB IOPORTB
+	#define SYSPORTE IOPORTE
+	#define SYS_IO_PortX_Pin_Set(port,pin_no) 	 		Dev_IO_PortX_Pin_Set(port,pin_no)
+	#define SYS_IO_PortX_Pin_Res(port,pin_no)		 		Dev_IO_PortX_Pin_Res(port,pin_no)
+	#define SYS_IO_PortX_Pin_Read(port,pin_no)	 		Dev_IO_PortX_Pin_Read(port,pin_no)
+	#define SYS_IO_PortB_Pin_Set(pin_no)					SYS_IO_PortX_Pin_Set(SYSPORTB,pin_no)
+	#define SYS_IO_PortE_Pin_Set(pin_no)					SYS_IO_PortX_Pin_Set(SYSPORTE,pin_no)
+	#define SYS_IO_PortB_Pin_Res(pin_no)					SYS_IO_PortX_Pin_Res(SYSPORTB,pin_no)
+	#define SYS_IO_PortE_Pin_Res(pin_no)					SYS_IO_PortX_Pin_Res(SYSPORTE,pin_no)
+	#define SYS_IO_PortB_Pin_Read(pin_no)					SYS_IO_PortX_Pin_Read(SYSPORTB,pin_no)
+	#define SYS_IO_PortE_Pin_Read(pin_no)					SYS_IO_PortX_Pin_Read(SYSPORTE,pin_no)
+	//</BODY>
+/*
+#else
+
+	#warnt "Simulator Dev_IO: ACTIVE"
+	//<INIT>
+	//</INIT>
+	//<BODY>
+	int SYS_IO_PortX_Pin_Set(int port,int pin_no){ return -1;}
+	int SYS_IO_PortX_Pin_Res(int port,int pin_no){ return -1;}
+	int SYS_IO_PortX_Pin_Read(int port,int pin_no){ return -1;}
+	int SYS_IO_PortB_Pin_Set(int pin_no){ return -1;}
+	int SYS_IO_PortE_Pin_Set(int pin_no){ return -1;}
+	int SYS_IO_PortB_Pin_Res(int pin_no){ return -1;}
+	int SYS_IO_PortE_Pin_Res(int pin_no){ return -1;}
+	int SYS_IO_PortB_Pin_Read(int pin_no){ return -1;}
+	int SYS_IO_PortE_Pin_Read(int pin_no){ return -1;}
+	//</BODY>
+*/
+#endif
+//</IO_DRIVER>
+//******************************************************************************
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

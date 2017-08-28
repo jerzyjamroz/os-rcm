@@ -1,3 +1,20 @@
+# Rabbit related ignores
+*.swp
+*.HX1
+*.MD1
+*.lnk
+*.BDL
+*.HDL
+*.brk
+*.map
+*.org
+*.rom
+*.bak
+*.HEX
+*.UPL
+*.bmk
+
+
 # Build and Release Folders
 bin/
 bin-debug/

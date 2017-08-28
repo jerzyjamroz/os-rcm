@@ -1,0 +1,120 @@
+/*** BeginHeader */
+#ifndef __DEV_ETH_LIB
+#define __DEV_ETH_LIB
+/*** EndHeader */
+
+
+
+/*** BeginHeader
+Eth_Init, Eth_isLink, Eth_Resolve, Eth_IP2Num,Eth_Daemon
+*/
+#include "/Dev/ETH/DEV_ETH.H"
+//_____________________________<FUNCTIONS>______________________________________
+int Eth_Init(void);
+int Eth_isLink(void);
+unsigned long Eth_Resolve(char * dns);
+longword Eth_IP2Num(char* dotted_ip_string);
+void Eth_Daemon(void);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//#define LOC_Eth_Ping_Timeout 0xffffffffL
+//#define LOC_Eth_Det_Delay_Time 2000
+//</LOC_DEFINES>
+
+_ETH_NODEBUG
+void Eth_Daemon(void)
+{
+static unsigned long int timer;
+static int flag;
+#GLOBAL_INIT{
+flag=-1;
+timer=0;
+}
+
+if( (Eth_isLink()==1) && (flag!=0) && (chk_timeout(timer)>0) )
+   {
+   timer = _SET_TIMEOUT(5000);
+ 	dhcp_release();
+ 	flag=dhcp_acquire();
+//   printf("\nSEC=%u",SEC_TIMER);
+   }
+else if(Eth_isLink()==0) flag=-1;
+
+tcp_tick(NULL);
+}
+
+
+_ETH_NODEBUG
+int Eth_Init(void)
+{
+return sock_init();
+}
+
+_ETH_NODEBUG
+int Eth_isLink(void)
+{
+return pd_havelink(IF_DEFAULT);
+}
+
+_ETH_NODEBUG
+unsigned long Eth_Resolve(char * dns)
+{
+if(Eth_isLink()==0) return 0;
+if(strlen(dns)>DNS_MAX_NAME) return 0;
+return resolve(dns);
+}
+
+_ETH_NODEBUG
+longword Eth_IP2Num(char* dotted_ip_string)
+{
+if(strlen(dotted_ip_string)>ETH_IP4_MAX_LEN) return 0;
+return inet_addr(dotted_ip_string);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+
+
+
+
+ /*
+_ETH_NODEBUG
+int Eth_isConn_hdl(void)
+{
+static unsigned long int ping_who;
+static unsigned long int seq,tmp_seq;
+unsigned long int time_out;
+
+#GLOBAL_INIT{
+ping_who=0;
+seq=0;
+tmp_seq=0;
+}
+
+if( ifconfig( IF_ANY, IFG_ROUTER_DEFAULT, & ping_who, IFS_END )==0 )
+	{
+   tcp_tick(NULL);
+   _ping(ping_who, seq++);
+   time_out =_chk_ping(ping_who, &tmp_seq);
+   if(time_out!=LOC_Eth_Ping_Timeout) return 1;
+   else return -1;
+   }
+
+return -1;
+}
+
+
+_ETH_NODEBUG
+cofunc int Eth_isConn_Daemon(void)
+{
+waitfor(DelayMs(LOC_Eth_Det_Delay_Time));
+Eth.isConn=Eth_isConn_hdl();
+
+return Eth.isConn;
+}
+*/

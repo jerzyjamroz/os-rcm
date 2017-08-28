@@ -1,0 +1,51 @@
+/*** BeginHeader */
+#ifndef __DEV_SNTP_HEADER_LIB
+#define __DEV_SNTP_HEADER_LIB
+/*** EndHeader */
+
+/*
+NOTE: the structure tm is defined as
+	struct tm
+	{
+	   char tm_sec;             // seconds 0-59
+	   char tm_min;             // 0-59
+	   char tm_hour;            // 0-59
+	   char tm_mday;            // 1-31
+	   char tm_mon;             // 1-12
+	   char tm_year;            // 80-147  (1980-2047)
+	   char tm_wday;            // 0-6 0==sunday
+	};
+*/
+
+/*** BeginHeader
+*/
+#ifdef SNTP_DEBUG
+#define _SNTP_NODEBUG
+#else
+#define _SNTP_NODEBUG nodebug
+#endif
+
+//_________________________________<CONFIG>_____________________________________
+const char SNTP_Ver[]="1.00.00";
+const char SNTP_Cells_Serv_dft[] = "gps.cells.es";
+//#ifdef MAX_UDP_SOCKET_BUFFERS
+//#undef MAX_UDP_SOCKET_BUFFERS
+//#define MAX_UDP_SOCKET_BUFFERS  1
+//#endif
+//****************************<SETTINGS>****************************************
+#ifndef TCPCONFIG
+			#define TCPCONFIG 7
+	      #define _PRIMARY_STATIC_IP  "10.10.6.100"
+	      #define _PRIMARY_NETMASK    "255.255.255.0"
+	      #define MY_GATEWAY          "10.10.6.1"
+	      #define MY_NAMESERVER       "10.10.6.1"
+#endif
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

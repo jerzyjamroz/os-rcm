@@ -1,0 +1,98 @@
+/*** BeginHeader */
+#ifndef __DEV_SFlash_BODY_LIB
+#define __DEV_SFlash_BODY_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#use "DEV_SFlash_HEADER.LIB"
+#use "sflash.lib"
+/*** EndHeader */
+
+/*** BeginHeader
+SFlash_Init,SFlash_IntWrite,SFlash_IntRead,SFlash_Str2FlPage,SFlash_FlPage2Str
+*/
+int SFlash_IntWrite(int id, int var);
+int SFlash_IntRead(int id);
+int SFlash_Init(void);
+int SFlash_Str2FlPage(char *str, long int str_page_id);
+int SFlash_FlPage2Str(char *buf, long int str_page_id);
+
+/*** EndHeader */
+
+#define LOC_FLash_IntPage 10
+
+_SFlash_NODEBUG
+int SFlash_Init(void)
+{
+int error;
+
+sfspi_init();
+error=sf_init();
+
+return error;
+}
+
+_SFlash_NODEBUG
+int SFlash_IntWrite(int id, int var)
+{
+int err;
+char buf[10];
+err=sf_pageToRAM(LOC_FLash_IntPage);
+
+sprintf(buf,"%06d",var);
+buf[6]=0;
+
+err+=sf_writeRAM(buf, 7*id, 7);
+err+=sf_RAMToPage(LOC_FLash_IntPage);
+
+return err;
+}
+
+_SFlash_NODEBUG
+int SFlash_IntRead(int id)
+{
+char buf[10];
+
+sf_pageToRAM(LOC_FLash_IntPage);
+sf_readRAM(buf, 7*id, 7);
+buf[6]=0;
+
+return atoi(buf);
+}
+
+//<FLASH_STRINGS>********************************************
+_SFlash_NODEBUG
+int SFlash_Str2FlPage(char *str, long int str_page_id)
+{
+int err;
+int len;
+len=strlen(str);
+
+err=sf_pageToRAM(str_page_id);
+str[len]=0;
+err+=sf_writeRAM(str, 0, len+1);
+err+=sf_RAMToPage(str_page_id);
+
+return err;
+}
+
+_SFlash_NODEBUG
+int SFlash_FlPage2Str(char *buf, long int str_page_id)
+{
+int len;
+
+sf_pageToRAM(str_page_id);
+sf_readRAM(buf, 0, SFlash_Page_Size);
+
+len=SYS_StrlenChars(buf,0xFF);
+if(len>SFlash_Page_Size) len=SFlash_Page_Size;
+buf[len]=0;
+
+return len;
+}
+//</FLASH_STRINGS>********************************************
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

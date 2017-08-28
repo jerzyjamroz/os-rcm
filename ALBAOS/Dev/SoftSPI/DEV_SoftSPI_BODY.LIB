@@ -1,0 +1,95 @@
+/*** BeginHeader */
+#ifndef __DEV_SoftSPI_BODY_LIB
+#define __DEV_SoftSPI_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#ifndef ___AUTO
+	#define ___AUTO
+	#class auto
+#endif
+
+#ifndef ___SoftSPI
+	#define ___SoftSPI
+   #define SoftSPI_CLK
+   #define SoftSPI_MISO
+   #define SoftSPI_MOSI
+   #define SoftSPI_CS
+   #define SoftSPI_CLK_DelayUs 1
+#endif
+
+#use "DEV_SoftSPI_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+SoftSPI_Init,SoftSPI_Write,SoftSPI_Read
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int SoftSPI_Init(int polarity);
+int SoftSPI_Write(char *buf, int len);
+int SoftSPI_Read(char *buf, int len);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//#define LOC_Eth_Ping_Timeout 0xffffffffL
+//#define LOC_Eth_Det_Delay_Time 2000
+
+//</LOC_DEFINES>
+
+/*
+	PB7 acts as the CS line on the ADC
+	PB0 is the serial B clock line(SCLK)
+
+	PC4 is the data output(MOSI)
+	PC5 is the data input(MISO)
+*/
+_SPIB_NODEBUG
+int SPIB_Init(int port, int cs, int clk, int miso, int mosi)
+{
+//<CS config>
+	BitWrPortI(PBDDR, &PBDDRShadow, 1, CSB_NO); //CS
+	// Set all of the outputs high.   ~low
+	BitWrPortI(PBDR,  	&PBDRShadow,  1, CSB_NO); //CS
+//</CS config>
+
+//<SCLK polarity>
+//</SCLK polarity>
+
+//<PORTS OCCUPATED>
+   PORTC_PINS_TAKEN[4]='1'; 		//MOSI/TXB
+   PORTC_PINS_TAKEN[5]='1';      //MISO/RXB
+   PORTB_PINS_TAKEN[0]='1';      //SCLK
+   PORTB_PINS_TAKEN[CSB_NO]='1'; //CS
+//</PORTS OCCUPATED>
+
+return 1;
+}
+
+_SPIB_NODEBUG
+int SPIB_Write(char *buf, int len)
+{
+int CS_Flag;
+BitWrPortI(PBDR,&PBDRShadow,0,CSB_NO);
+CS_Flag=SPIWrite(buf,len);
+BitWrPortI(PBDR,&PBDRShadow,1,CSB_NO);
+return CS_Flag;
+}
+
+_SPIB_NODEBUG
+int SPIB_Read(char *buf, int len)
+{
+int CS_Flag;
+BitWrPortI(PBDR,&PBDRShadow,0,CSB_NO);
+CS_Flag=SPIRead(buf, len);
+BitWrPortI(PBDR,&PBDRShadow,1,CSB_NO);
+return CS_Flag;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

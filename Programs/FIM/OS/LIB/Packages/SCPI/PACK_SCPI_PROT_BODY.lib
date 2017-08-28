@@ -1,0 +1,158 @@
+/*** BeginHeader */
+#ifndef __PACK_SCPI_PROT_BODY_LIB
+#define __PACK_SCPI_PROT_BODY_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader
+SCPI_Parse,SCPI_CmdinStr,
+*/
+#use "PACK_SCPI_PROT_HEADER.LIB"
+
+//*********************FUNCTIONS************************************************
+struct SYSVarOrd SCPI_Parse(char ** buf2dim,char *arg_str, struct SYSVarOrd_REF * sys_var_ord_ref);
+char * SCPI_CmdinStr(char *arg_str,struct SYSVarOrd_REF * sys_var_ord_ref);
+//int SCPI_DeParse(char * buf, int ordID,char * param);
+//************************DEFINES***********************************************
+/*** EndHeader */
+
+_PACK_SCPIprot_NODEBUG
+struct SYSVarOrd SCPI_Parse(char ** buf2dim,char *arg_str, struct SYSVarOrd_REF * sys_var_ord_ref)
+{
+
+struct SYSVarOrd sysvarord;
+int i,j;
+int str_idx;
+int cmd_len,param_len;
+
+//BeginInit vars
+//sysvarord=SYSVarOrd_NULL;
+sysvarord=SYSVarOrd_REF_NULL.SYSVarOrdRef;
+str_idx=0;
+sysvarord.Param=buf2dim;
+//EndInit vars
+if (strlen(arg_str)==0) return SYSVarOrd_NULL;
+
+for(i=0;sys_var_ord_ref[i].SYSVarOrdRef.ID!=SYSVarOrd_Last;i++)
+{
+//*** MAIN FOR------------------------------------------------------------------
+str_idx=0;
+
+for(j=0;sys_var_ord_ref[i].Tree[j][0]!=SYS_2DimChar_NULL[0][0];j++)
+	{
+	cmd_len=strlen(&sys_var_ord_ref[i].Tree[j][0]);
+   if( strncmp(&arg_str[str_idx], &sys_var_ord_ref[i].Tree[j][0], cmd_len)!=0 )
+   	{
+      str_idx+=cmd_len+1;
+      break;
+      }
+   str_idx+=cmd_len+1;
+   }
+
+
+if(sys_var_ord_ref[i].Tree[j][0]==0)
+   {
+   sysvarord=sys_var_ord_ref[i].SYSVarOrdRef;
+
+   for(j=0;sys_var_ord_ref[i].Param[j]>0;j++)
+   	{
+      if(sys_var_ord_ref[i].Param[j+1]>0) param_len=SYS_Detect_CharPos(&arg_str[str_idx],',');  //usefull for a detection of all kinds of arguments
+      else param_len=strlen(&arg_str[str_idx]);
+//		param_len=SYS_HexLenDetect(&arg_str[str_idx]);
+
+//      if(param_len!=sys_var_ord_ref[i].Param[j]) return SYSVarOrd_NULL; //it determines that amount of characters in the arument should be the same as in the pattern
+      if(param_len>sys_var_ord_ref[i].Param[j]) return SYSVarOrd_NULL;
+//      if(param_len>sys_var_ord_ref[i].Param[j]) param_len=sys_var_ord_ref[i].Param[j];
+      if( (param_len==0) || (arg_str[str_idx]=='\n') || (arg_str[str_idx]=='\r') ) return SYSVarOrd_NULL;
+      strncpy(&sysvarord.Param[j][0],&arg_str[str_idx],param_len);
+      sysvarord.Param[j][param_len]=0; //terminator
+      str_idx+=param_len+1;
+      }
+
+   return sysvarord;
+   }
+
+//*** MAIN FOR------------------------------------------------------------------
+}
+
+return SYSVarOrd_NULL;
+}
+
+
+_PACK_SCPIprot_NODEBUG
+char * SCPI_CmdinStr(char *arg_str, struct SYSVarOrd_REF * sys_var_ord_ref)
+{
+int i;
+char * pCmd;
+
+for(i=0;sys_var_ord_ref[i].SYSVarOrdRef.ID!=SYSVarOrd_Last;i++)
+{
+
+if(sys_var_ord_ref[i].Tree[0][0]!=0)
+	{
+   if( (pCmd=strstr(arg_str,&sys_var_ord_ref[i].Tree[0][0]))!=NULL) return pCmd;
+   }
+
+}
+
+return NULL;
+}
+
+
+/*
+int SCPI_Ack(char * buf, int ord_no, struct SYSVarOrd_REF * sys_var_ord_ref)
+{
+int j,i;
+
+SYS_Tln_Write(SYS_ACKNW);
+for(j=0;sys_var_ord_ref[ord_ID].Tree[j][0]!=0;j++)
+   {
+   SYS_Tln_Write(":");
+   SYS_Tln_Write(&sys_var_ord_ref[ord_ID].Tree[j][0]);
+   }
+SYS_Tln_Write(SYSCRNL);
+}
+*/
+
+/*
+_SCPIprot_NODEBUG
+int SCPI_DeParse(char * buf, int ordID,char * param)
+{
+int i;
+int idx;
+int len;
+
+idx=0;
+for(i=0;SCPI_REF[ordID].Tree[i][0]!=0;i++)
+	{
+   if(i!=0)
+   	{
+   	strncpy(&buf[idx],":",1);
+      idx++;
+      }
+   len=strlen(&SCPI_REF[ordID].Tree[i][0]);
+   strncpy(&buf[idx],&SCPI_REF[ordID].Tree[i][0],len );
+   idx+=len;
+   }
+buf[idx]=0;
+
+if(param[0]!=0)
+	{
+   buf[idx]=' ';
+   idx++;
+	len=strlen(param);
+	strncpy(&buf[idx],param,len );
+	idx+=len;
+	buf[idx]=0;
+	}
+
+return idx;
+}
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+
+
+//   param_len=SYS_HexLenDetect(&arg_str[str_idx]);

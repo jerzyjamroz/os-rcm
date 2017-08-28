@@ -1,0 +1,31 @@
+/*** BeginHeader */
+#ifndef __EPS_HVS_LIB
+#define __EPS_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+EPS_Set_Out
+*/
+
+_GENERAL_HVS_NODEBUG
+void EPS_Set_Out(char bool);
+//void EPS_Threshold_Alarm_Handler(void);
+
+
+struct{
+char Threshold_Status;	//flag responsible for the exceeding the eps thresholds
+}EPS;
+
+/*** EndHeader */
+
+_GENERAL_HVS_NODEBUG
+void EPS_Set_Out(char bool)
+{
+	System_Flag.EPS_Status=bool;
+	BitWrPortI(PEDR,&PEDRShadow,bool,6);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

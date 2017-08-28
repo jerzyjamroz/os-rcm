@@ -1,0 +1,82 @@
+/*** BeginHeader */
+#ifndef __PACK_SYSORDERS_BODY_LIB
+#define __PACK_SYSORDERS_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#use "PACK_SYSORDERS_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+SYSOrd_Get,SYSOrd_Release,SYSOrd_Len,SYSVarOrd_REF_No_Get,
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int SYSOrd_Get(struct SYSVarOrd * sys_ord, char * buf, struct SYSVarOrd_REF * sys_var_ord_ref);
+int SYSOrd_Release(struct SYSVarOrd * sys_ord);
+int SYSOrd_Len(struct SYSVarOrd * sys_ord);
+int SYSVarOrd_REF_No_Get(struct SYSVarOrd_REF *ord_ref, int ID);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+
+_PACK_SYSORDERS_DEBUG_NODEBUG
+int SYSOrd_Get(struct SYSVarOrd * sys_ord, char * buf,struct SYSVarOrd_REF * sys_var_ord_ref)
+{
+char *pBuf;
+int len;
+int i;
+
+len=strlen(buf);
+if(len<=0) return 0;
+
+for(i=SYSOrd_Len(sys_ord),pBuf=buf;pBuf!=NULL;pBuf++,pBuf=SCPI_CmdinStr(pBuf,sys_var_ord_ref))
+	{
+	sys_ord[i]=SCPI_Parse(pBuf,sys_var_ord_ref);
+	if(sys_ord[i].ID!=SYSVarOrd_REF_NULL.SYSVarOrdRef.ID) i++;
+	}
+	sys_ord[i]=SYSVarOrd_REF_NULL.SYSVarOrdRef;
+
+return i;
+}
+
+_PACK_SYSORDERS_DEBUG_NODEBUG
+int SYSOrd_Release(struct SYSVarOrd * sys_ord)
+{
+int len;
+
+if(sys_ord->Param!=SYSVarOrd_REF_NULL.SYSVarOrdRef.Param)
+	SYS_DAlloc_Release(sys_ord->Param,sys_ord->ParamLen);
+
+(*sys_ord)=SYSVarOrd_REF_NULL.SYSVarOrdRef;
+
+return sys_ord->ParamLen;
+}
+
+_PACK_SYSORDERS_DEBUG_NODEBUG
+int SYSOrd_Len(struct SYSVarOrd * sys_ord)
+{
+int i;
+
+for(i=0;sys_ord[i].ID!=SYSVarOrd_REF_NULL.SYSVarOrdRef.ID;i++);
+
+return i;
+}
+
+_PACK_SYSORDERS_DEBUG_NODEBUG
+int SYSVarOrd_REF_No_Get(struct SYSVarOrd_REF *ord_ref, int ID)
+{
+int i;
+
+for(i=0;i!=SYSVarOrd_REF_NULL.SYSVarOrdRef.No;i++)
+	if(ord_ref[i].SYSVarOrdRef.ID==ID) return ord_ref[i].SYSVarOrdRef.No;
+
+return SYSVarOrd_REF_NULL.SYSVarOrdRef.No;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

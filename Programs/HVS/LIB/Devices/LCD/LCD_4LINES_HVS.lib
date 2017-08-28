@@ -1,0 +1,215 @@
+/* START LIBRARY DESCRIPTION *********************************************
+DESCRIPTION: All necessary functions for handling the LCD
+END DESCRIPTION **********************************************************/
+
+/*** BeginHeader */
+#ifndef __LCD_HVS_LIB
+#define __LCD_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+LCD_Display_Clear,LCD_Write_Command,LCD_Write_Char,LCD_Init_4bit,
+LCD_Write_Text,LCD_Backlight,LCD_Locate,LCD_2CleanRows,
+LCD_Write_EmptyLine,LCD_FastInit_4bit
+*/
+#use "General.lib"
+#use "Virtual_LCD.lib"
+#define LCD_E(x) BitWrPortI(PBDR,&PBDRShadow,x,1)
+#define LCD_RS(x) BitWrPortI(PBDR,&PBDRShadow,x,2)
+
+//#define LCD_DB7(x) BitWrPortI(PBDR,&PBDRShadow,x,7)
+//#define LCD_DB6(x) BitWrPortI(PBDR,&PBDRShadow,x,6)
+//#define LCD_DB5(x) BitWrPortI(PBDR,&PBDRShadow,x,5)
+//#define LCD_DB4(x) BitWrPortI(PBDR,&PBDRShadow,x,4)
+//ADC_Pin is implemented as the mask of the ADC conversion
+#define ADC_Pin BitRdPortI(PBDR,0)
+#define MAX_Column 16
+#define LCD_Write_Time 60
+#define LCD_Cursor_ON LCD_Write_Command(0x0F)
+#define LCD_Cursor_OFF LCD_Write_Command(0x0C)
+
+_DEVICE_HVS_NODEBUG void LCD_Submit_Data();
+_DEVICE_HVS_NODEBUG void LCD_Submit_Command();
+_DEVICE_HVS_NODEBUG void LCD_Display_Clear();
+_DEVICE_HVS_NODEBUG void LCD_Write_Command(unsigned char cmd);
+_DEVICE_HVS_NODEBUG void LCD_Write_Char(unsigned char chr);
+_DEVICE_HVS_NODEBUG void LCD_Init_4bit();
+_DEVICE_HVS_NODEBUG void LCD_Write_Text(unsigned char txt[]);
+_DEVICE_HVS_NODEBUG void LCD_Backlight(unsigned char val);
+_DEVICE_HVS_NODEBUG void LCD_Locate(short int row,short int column);
+_DEVICE_HVS_NODEBUG void LCD_2CleanRows(char row);
+_DEVICE_HVS_NODEBUG void LCD_RW_Set(char bool);
+_DEVICE_HVS_NODEBUG void LCD_Write_EmptyLine(char line);
+_DEVICE_HVS_NODEBUG void LCD_FastInit_4bit(void);
+
+struct LCDdisplay{
+   char backLight;
+   int Cursor;
+   int Cursor_Position[2];
+}LCD;
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG
+void LCD_Write_EmptyLine(char line)
+{
+LCD_Locate(line,1);
+LCD_Write_Text(Menu_EmptyLine);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_RW_Set(char bool)
+{
+	if(bool==1) set(&PortExp2_Val0,6);
+   else res(&PortExp2_Val0,6);
+
+	I2C.Error_Expander2 =
+	I2CWrite(PORT_EXP2_ADDRESS, 0x02, &PortExp2_Val0, 1); //Initial Value of Port 0
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Submit_Data()
+{
+LCD_E(1);
+LCD_RS(1);
+General_Delay_Us(1);
+LCD_E(0);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Submit_Command()
+{
+LCD_E(1);
+LCD_RS(0);
+General_Delay_Us(1);
+LCD_E(0);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Display_Clear()
+{
+LCD_Write_Command(0x01);
+Virtual_LCD_Clear();					//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+General_Delay_Ms(3);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Write_Command(unsigned char cmd)
+{
+WrPortI (PBDR, &PBDRShadow, (cmd&0xF0)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(2);
+WrPortI (PBDR, &PBDRShadow, ((cmd&0x0F)<<4)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(LCD_Write_Time);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Write_Char(unsigned char chr)
+{
+WrPortI ( PBDR,&PBDRShadow, (chr&0xF0)|ADC_Pin);
+LCD_Submit_Data();
+General_Delay_Us(2);
+WrPortI ( PBDR,&PBDRShadow, ((chr&0x0F)<<4)|ADC_Pin);
+LCD_Submit_Data();
+Virtual_LCD_Write_Char(chr);      //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+General_Delay_Us(LCD_Write_Time);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Write_Text(unsigned char txt[])
+{
+unsigned short int i;
+for (i=0;i<strlen(txt);i++)
+	{
+   LCD_Write_Char(txt[i]);
+   }
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Locate(short int row,short int column)
+{
+//if (column>MAX_Column) column=column-MAX_Column;
+//else if (column<1) column=1;
+
+if (column>MAX_Column) ;
+else if (row==1) LCD_Write_Command(0x80+column-1);
+else if (row==2) LCD_Write_Command(0xC0+column-1);
+else if (row==3) LCD_Write_Command(0x90+column-1);
+else if (row==4) LCD_Write_Command(0xD0+column-1);
+else LCD_Locate(1,1);
+
+Virtual_LCD_Locate(row,column);     //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+}
+
+_DEVICE_HVS_NODEBUG
+void LCD_Init_4bit()
+{
+LCD_RW_Set(0);
+General_Delay_Ms(100);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Ms(6);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(150);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(60);
+WrPortI(PBDR,&PBDRShadow,(0x20)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(60);
+
+LCD_Write_Command(0x28);
+LCD_Write_Command(0x06);
+//LCD_Write_Command(0x0E);
+
+//experiments ***
+LCD_Cursor_OFF;
+//experiments ***
+
+LCD_Write_Command(0x01);
+General_Delay_Ms(2);
+LCD_Write_Command(0x80);
+
+Virtual_LCD_Clear();       //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+}
+_DEVICE_HVS_NODEBUG
+void LCD_Backlight(char bool)
+{
+LCD.backLight=bool;
+BitWrPortI(PBDR,&PBDRShadow,(!LCD.backLight),3);
+}
+_DEVICE_HVS_NODEBUG
+void LCD_2CleanRows(char row)
+{
+LCD_Locate(row,1);
+LCD_Write_Text("                ");
+LCD_Locate(row+1,1);
+LCD_Write_Text("                ");
+}
+
+_DEVICE_HVS_NODEBUG
+void LCD_FastInit_4bit(void)
+{
+LCD_RW_Set(0);
+General_Delay_Ms(100);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Ms(6);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(150);
+WrPortI(PBDR,&PBDRShadow,(0x30)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(60);
+WrPortI(PBDR,&PBDRShadow,(0x20)|ADC_Pin);
+LCD_Submit_Command();
+General_Delay_Us(60);
+
+LCD_Write_Command(0x28);
+LCD_Write_Command(0x06);
+//LCD_Write_Command(0x0E);
+
+//experiments ***
+if ( LCD.Cursor>0 ) LCD_Cursor_ON;
+else LCD_Cursor_OFF;
+//experiments ***
+
+General_Delay_Ms(2);
+LCD_Write_Command(0x80);
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

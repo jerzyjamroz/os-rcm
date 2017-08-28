@@ -1,0 +1,38 @@
+/*** BeginHeader */
+#ifndef __DEV_UDP_HEADER_LIB
+#define __DEV_UDP_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef UDP_DEBUG
+#define _UDP_NODEBUG
+#else
+#define _UDP_NODEBUG nodebug
+#endif
+
+enum{
+UDPPORTA,
+UDPPORTB,
+UDPPORTC,
+UDPPORTD,
+UDPPORTE,
+UDPPORTX_END,
+}UDPPORT;
+
+//#define MAX_UDP_SOCKET_BUFFERS 1        //ETHERNET CONFIG
+//#define DISABLE_TCP     //ETHERNET CONFIG
+//#define LOCAL_PORT	7  //standart echo port     //ETHERNET CONFIG
+
+//_________________________________<CONFIG>_____________________________________
+//****************************<SETTINGS>****************************************
+
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

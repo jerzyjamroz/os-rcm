@@ -1,0 +1,64 @@
+/*** BeginHeader */
+#ifndef __EM_ADC_LIB
+#define __EM_ADC_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ADC_retMEAS,
+*/
+
+#include "../Programs/SimpleEM/Lib/ADC/EM_ADC7608.H"
+float ADC_retMEAS(int ch,int points);
+/*** EndHeader */
+
+float ADC_retMEAS(int ch,int avsamples_set)
+{
+long avsamples=0;
+float meas=0;
+char buf[3]=0;
+long i;
+
+avsamples=(long) (avsamples_set*3.125);
+
+if( ADC_Sample_Num<avsamples )avsamples=(long)ADC_Sample_Num;
+
+for(i=0;i<avsamples;i++)
+	{
+	xmem2root(buf,ADC_Var.Adr_End-i*12+ch*3,3);
+   meas=meas+( (buf[0]<<16)+(buf[1]<<8)+buf[2] );
+   }
+
+meas=meas/avsamples;
+return meas;
+}
+
+/*
+_EM_ADC_NODEBUG
+int EM_ADC_Trig_Tick(int *trigger)
+{
+if(*trigger==1)
+   {
+   *trigger=0;
+   Elem_SYS.Trig_Counter++;if(Elem_SYS.Trig_Counter<0)Elem_SYS.Trig_Counter=0;
+
+   Elem_ADC_SYS.Avr_Idx++;
+	if(Elem_ADC_SYS.Avr_Idx>=EM_ADC_ACQ_MAX)Elem_ADC_SYS.Avr_Idx=0;
+
+   if(Elem_ADC.Avr_Max!=-1)
+   	{
+   	if(Elem_ADC_SYS.Avr_Counter_Idx<Elem_ADC.Avr_Max)
+   		Elem_ADC_SYS.Avr_Counter_Idx++;
+   	}
+   else if(Elem_ADC_SYS.Avr_Counter_Idx<EM_ADC_ACQ_MAX)
+   	Elem_ADC_SYS.Avr_Counter_Idx++;
+//else if(Elem_ADC_SYS.Avr_Max_Act_Idx>=EM_ADC_ACQ_MAX) Elem_ADC_SYS.Avr_Max_Act_Idx;
+//   EM_ADC_Raw[EM_SENSOR_MAX][Elem_ADC_SYS.Avr_Idx]=0;  //status
+   }
+
+return (*trigger);
+}
+*/
+//------------------------------------------------------------------------------
+/*** BeginHeader */
+#endif
+/*** EndHeader */

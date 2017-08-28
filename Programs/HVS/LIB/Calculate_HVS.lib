@@ -1,0 +1,104 @@
+/*** BeginHeader */
+#ifndef __CALCULATE_HVS_LIB
+#define __CALCULATE_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Calculate_Current,Calculate_Voltage,Calculate_Calibrated_Voltage,
+Calculate_Calibrated_Current,Calculate_Log_Current_Table,Calculate_Init
+*/
+#define Row_Data_Voltage_Factor 0.005555
+
+//new splitter
+#define Current_Calibrator_A 0.00438
+#define Current_Calibrator_B (-8.85)
+
+//_GENERAL_HVS_NODEBUG float Calculate_Pressure(float current, float voltage, float unit, float calibration_factor, float pump_size);
+_GENERAL_HVS_NODEBUG float Calculate_Current(int raw_data);
+_GENERAL_HVS_NODEBUG float Calculate_Voltage(float rowData);
+_GENERAL_HVS_NODEBUG float Calculate_Calibrated_Voltage(char channel,int raw_data);
+_GENERAL_HVS_NODEBUG float Calculate_Calibrated_Current(char channel,int raw_data);
+_GENERAL_HVS_NODEBUG void Calculate_Log_Current_Table();
+_GENERAL_HVS_NODEBUG void Calculate_Init();
+
+
+struct{
+float Log_Current[Keithley_Current_Loop_Arg];
+}Calculate;
+
+/*** EndHeader */
+
+_GENERAL_HVS_NODEBUG
+void Calculate_Log_Current_Table()
+{
+Calculate.Log_Current[0]=log10(1E-8);
+Calculate.Log_Current[1]=log10(2E-8);
+Calculate.Log_Current[2]=log10(5E-8);
+Calculate.Log_Current[3]=log10(1E-7);
+Calculate.Log_Current[4]=log10(2E-7);
+Calculate.Log_Current[5]=log10(5E-7);
+Calculate.Log_Current[6]=log10(1E-6);
+Calculate.Log_Current[7]=log10(2E-6);
+Calculate.Log_Current[8]=log10(5E-6);
+Calculate.Log_Current[9]=log10(1E-5);
+Calculate.Log_Current[10]=log10(2E-5);
+Calculate.Log_Current[11]=log10(5E-5);
+Calculate.Log_Current[12]=log10(1E-4);
+Calculate.Log_Current[13]=log10(2E-4);
+Calculate.Log_Current[14]=log10(5E-4);
+Calculate.Log_Current[15]=log10(1E-3);
+Calculate.Log_Current[16]=log10(2E-3);
+Calculate.Log_Current[17]=log10(5E-3);
+Calculate.Log_Current[18]=log10(1E-2);
+Calculate.Log_Current[19]=log10(2E-2);
+}
+
+_GENERAL_HVS_NODEBUG
+void Calculate_Init()
+{
+	Calculate_Log_Current_Table();
+}
+
+_GENERAL_HVS_NODEBUG
+float Calculate_Voltage(float rowData)
+{
+	return (rowData*Row_Data_Voltage_Factor);
+}
+
+/*
+_GENERAL_HVS_NODEBUG
+float Calculate_Pressure(float current, float voltage, float unit, float calibration_factor, float pump_size)
+{
+return ((unit*calibration_factor*(5600/voltage)*0.066*current)/pump_size);
+}
+*/
+
+_GENERAL_HVS_NODEBUG
+float Calculate_Current(int raw_data)
+{
+float helper;
+float raw_data_float;
+
+raw_data_float=(float)raw_data;
+
+helper=Current_Calibrator_A*raw_data_float+Current_Calibrator_B;
+return pow(10,helper);
+}
+
+_GENERAL_HVS_NODEBUG
+float Calculate_Calibrated_Current(char channel,int raw_data)
+{
+char i;
+
+for(i=0;i<Keithley_Current_Loop_Arg-1;i++)
+	if (System.Int_Tab_Cal_Ird[i][channel]>raw_data) break;
+
+if (i==0) i=1;
+return pow10(((float)(raw_data-System.Int_Tab_Cal_Ird[i-1][channel]))*(Calculate.Log_Current[i]-Calculate.Log_Current[i-1])/((float)(System.Int_Tab_Cal_Ird[i][channel]-System.Int_Tab_Cal_Ird[i-1][channel]))+Calculate.Log_Current[i-1]);
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */
+

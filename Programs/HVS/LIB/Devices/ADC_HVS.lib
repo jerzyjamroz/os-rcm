@@ -1,0 +1,326 @@
+/*** BeginHeader */
+#ifndef __ADC_HVS_LIB
+#define __ADC_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ADC_Init,ADC_Processing_Handler
+*/
+#use "General.lib"
+#use "ADC_ADS7870.LIB"
+
+#define ADC_SCLKBAUD 115200ul
+#define NUMSAMPLES 10		//change number of samples here
+#define STARTCHAN 0
+#define ENDCHAN 7
+#define GAINSET 0
+
+#define N_Max 256
+#define N_Div_Max 8
+
+#define ADC_m 0.793
+#define ADC_l -4.76
+
+const char ADC_Ch2Order[8] =
+{
+0,
+2,
+4,
+6,
+7,
+5,
+3,
+1,
+};
+
+
+_DEVICE_HVS_NODEBUG void ADC_Init();
+_DEVICE_HVS_NODEBUG cofunc void ADC_Processing_Handler(void);
+
+/* START DESCRIPTION ********************************************
+Main structure ADC responsible for the ADC data handling
+END DESCRIPTION **********************************************************/
+struct{
+int RawData[9][256];
+int ActualRawDataMean[8];
+int MeanArray[9][256];
+int FinalMean[8];
+unsigned char SampleDivider;  //divider - 0,1,2,3,4,5,6,7,8
+unsigned char MeanDivider;   //divider - 0,1,2,3,4,5,6,7,8
+//it points the updated element inside the FinalMean array
+unsigned char FIFOIndex[8]; //it must be the unsigned char!!!
+int LastArg[8];
+unsigned long int SumMean[8];
+unsigned long int Acquisition_Time;
+}ADC;
+
+
+struct{
+
+int Raw64[9][64];
+
+}ADC_Slope;
+/**************************************************************************/
+/*** EndHeader */
+
+
+
+
+
+_DEVICE_HVS_NODEBUG
+cofunc void ADC_Read_RawData_Handler(void);
+//void ADC_Read_RawData();
+int ADC_Compute_RawDataMean(int channel);
+
+void ADC_Update_MeanArray(unsigned char channel);
+
+int ADC_Compute_MeanArrayMean(unsigned char channel);
+
+int ADC_CorrectDivider(int channel);
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void ADC_Read_RawData()
+DESCRIPTION: updates the table which contains the one package of read values
+(updated for speed)
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+void ADC_Read_RawData()
+{
+int j;
+int i;
+int end_condition;
+end_condition=N_Max>>ADC.SampleDivider;
+
+   for (i=0; i<end_condition; i++)
+	{
+	for (j=0; j<8; j++)
+		{
+		ADC.RawData[j][i] = anaIn(ADC_Ch2Order[j],SINGLE,GAINSET);
+      }
+	}
+
+}
+
+/**************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void ADC_Init()
+DESCRIPTION: initializes the ADC structure by reaging the start values from
+ADC converters
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+void ADC_Init()
+{
+int i,j;
+int helper[8];
+ADC.SampleDivider=0;
+
+for(i=0;i<256;i++)
+	for(j=0;j<8;j++)
+     ADC.RawData[j][i]=0;
+
+for(j=0;j<8;j++) ADC.ActualRawDataMean[j]=0;
+
+for (i=0; i<256; i++)
+	{
+	for(j=0; j<8; j++)
+		{
+      ADC.MeanArray[j][i]=0; //set arrays
+		}
+	}
+
+for(j=0;j<8;j++) ADC.FinalMean[j]=0;
+
+for (i=0;i<8;i++) ADC.SumMean[i]=0;
+
+for (j=0;j<8;j++) ADC.FIFOIndex[j]=0;
+for(j=0;j<8;j++) ADC.LastArg[j]=0; //set the last argument
+
+//for(j=0;j<8;j++) ADC_CorrectDivider(j);  //very important, without this the initiazlization of the final mean is wrong
+for(j=0;j<8;j++)
+	for(i=0;i<64;i++)
+       ADC_Slope.Raw64[j][i]=0;
+}
+/**************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void ADC_Read_RawData()
+DESCRIPTION: updates the table which contains the one package of read values
+(updated for speed)
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+cofunc void ADC_Read_RawData_Handler(void)
+{
+int j;
+int i;
+int end_condition;
+end_condition=N_Max>>ADC.SampleDivider;
+
+   for (i=0; i<end_condition; i++)
+	{
+	for(j=0; j<8; j++)
+		{
+		ADC.RawData[j][i] = anaIn(ADC_Ch2Order[j],SINGLE,GAINSET);
+      }
+   if(i%32==0)
+      {
+      yield;
+      end_condition=N_Max>>ADC.SampleDivider;
+      }
+	}
+}
+/**************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: int ADC_Compute_RawDataMean(int channel)
+DESCRIPTION: sums all row data and calculate the mean, it is for one data package
+PARAMETER: int channel
+RETURN VALUE: int - the mean value of the one row data package
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+int ADC_Compute_RawDataMean(int channel)
+{
+int i;
+unsigned long int sum;
+int end_condition;
+
+end_condition=N_Max>>ADC.SampleDivider;
+
+sum=0;
+
+	for (i=0;i<end_condition;i++)
+		{
+		sum += ADC.RawData[channel][i];
+		}
+
+return ((int)(sum>>(N_Div_Max-ADC.SampleDivider)));
+}
+/**************************************************************************/
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void ADC_Update_MeanArray(int channel)
+DESCRIPTION: updates the ADC structure - processing of the ADC calculations
+PARAMETER: int channel
+RETURN VALUE: void - updates the ADC structure
+END DESCRIPTION **********************************************************/
+
+//ADC_Compute_MeanArrayMean
+_DEVICE_HVS_NODEBUG
+void ADC_Update_MeanArray(unsigned char channel)
+{
+ADC.FIFOIndex[channel]++; //automatic correction when overflows the char variable
+//adopts the FIFO index to actual Mean Divider
+if (ADC.FIFOIndex[channel]>=(N_Max>>ADC.MeanDivider)) ADC.FIFOIndex[channel]=0;
+ADC.LastArg[channel]=ADC.MeanArray[channel][ADC.FIFOIndex[channel]];
+ADC.ActualRawDataMean[channel]=ADC_Compute_RawDataMean(channel);
+ADC.MeanArray[channel][ADC.FIFOIndex[channel]]=ADC.ActualRawDataMean[channel];
+
+Gn_nFIFO_Push(&ADC_Slope.Raw64[channel][0],ADC.ActualRawDataMean[channel],64);
+}
+/**************************************************************************/
+
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: unsigned long int ADC_SumMean_Correct2Divider(int channel)
+DESCRIPTION: corrects the MeanSum to adequate divider
+PARAMETER: int channel
+RETURN VALUE: unsigned long int sum- the corrected sum for the required divider
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+int ADC_CorrectDivider(int channel)
+{
+int i;
+int new_max;
+
+	new_max=(N_Max>>ADC.MeanDivider);
+
+	for(i=0;i<new_max;i++)
+   	{
+   	ADC.MeanArray[channel][i]=ADC.ActualRawDataMean[channel];
+   	}
+
+return 1;
+}
+/**************************************************************************/
+
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: int ADC_Compute_MeanArrayMean(int channel)
+DESCRIPTION: It works as a queue which updates one cell of the mean array
+PARAMETER: int channel
+RETURN VALUE: int- returns the mean value of the mean array of one channel
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+int ADC_Compute_MeanArrayMean(unsigned char channel)
+{
+int i;
+int new_max;
+
+static char Mean_Divider_Helper[8];
+
+#GLOBAL_INIT{
+Mean_Divider_Helper[0]=255;Mean_Divider_Helper[1]=255;Mean_Divider_Helper[2]=255;Mean_Divider_Helper[3]=255;
+Mean_Divider_Helper[4]=255;Mean_Divider_Helper[5]=255;Mean_Divider_Helper[6]=255;Mean_Divider_Helper[7]=255;
+}
+
+ADC.SumMean[channel]=0;
+new_max=(N_Max>>ADC.MeanDivider);
+
+	if( ADC.MeanDivider!=Mean_Divider_Helper[channel] )
+		{
+   	if (Mean_Divider_Helper[channel]!=255) ADC_CorrectDivider(channel);
+      Mean_Divider_Helper[channel]=ADC.MeanDivider;
+   	}
+
+	for(i=0;i<new_max;i++)
+   	{
+   	ADC.SumMean[channel]+=ADC.MeanArray[channel][i];
+   	}
+
+return ((int)(ADC.SumMean[channel]>>(N_Div_Max-ADC.MeanDivider)));
+}
+/**************************************************************************/
+
+
+
+/* START FUNCTION DESCRIPTION ********************************************
+SYNTAX: void ADC_Processing_Handler()
+DESCRIPTION: USER VISIBLE preproceses the ADC task of HVS
+PARAMETER: void
+RETURN VALUE: void
+END DESCRIPTION **********************************************************/
+_DEVICE_HVS_NODEBUG
+cofunc void ADC_Processing_Handler(void)
+{
+int j;
+static unsigned long int Start_Counting;
+
+#GLOBAL_INIT{
+Start_Counting=0;
+}
+
+wfd ADC_Read_RawData_Handler();
+for (j=0;j<8;j++) ADC_Update_MeanArray(j);
+for (j=0;j<8;j++) ADC.FinalMean[j]=ADC_Compute_MeanArrayMean(j);
+
+if((ADC.Acquisition_Time=MS_TIMER-Start_Counting)<0) ADC.Acquisition_Time*=-1;
+Start_Counting=MS_TIMER;
+}
+/**************************************************************************/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

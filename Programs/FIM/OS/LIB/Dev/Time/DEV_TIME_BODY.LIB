@@ -1,0 +1,50 @@
+/*** BeginHeader */
+#ifndef __DEV_TIME_BODY_LIB
+#define __DEV_TIME_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_TIME_HEADER.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+Time_Update_hdl,
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int Time_Update_hdl(char * sntp_server);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+_TIME_NODEBUG
+int Time_Update_hdl(char * sntp_server)
+{
+static unsigned long int sntp_server_ip;
+unsigned long int time;
+
+#GLOBAL_INIT{
+sntp_server_ip=0;
+}
+
+if(sntp_server_ip==0)
+	sntp_server_ip=resolve(sntp_server);
+
+
+if( (time=SYS_SNTP_FastGet(sntp_server_ip) ) > 0)
+	{
+   write_rtc(time);
+   updateTimers();
+   return 1;
+   }
+
+return 0;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

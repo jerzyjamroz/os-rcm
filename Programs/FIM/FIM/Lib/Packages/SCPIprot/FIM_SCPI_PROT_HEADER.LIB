@@ -1,0 +1,139 @@
+/*** BeginHeader */
+#ifndef __FIM_SCPI_PROT_HEADER_LIB
+#define __FIM_SCPI_PROT_HEADER_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#ifdef SCPIprot_DEBUG
+#define _SCPIprot_NODEBUG
+#else
+#define _SCPIprot_NODEBUG nodebug
+#endif
+//************************GLOBAL VARIABLES**************************************
+enum{
+Tln2DevDir=0,
+Dev2TlnDir
+}SCPI_Dir;
+
+
+enum{
+SCPI_FirstID = 0,
+//------------------------------------------------------------------------------
+SCPI_Tln2Dev_BeginIndex,
+//Start System
+SYSTem_HEADers_Q,
+SYSTem_RESet_REMote,
+SYSTem_SNUMber_Q,
+SYSTem_VERSion_Q,
+SYSTem_CONFiguration_SAVE,
+SYSTem_CONFiguration_LOAD,
+SYSTem_CONFiguration_DEFault,
+//Telnet subsystem
+SYSTem_COMM_TELNet_ACTive_Q,
+SYSTem_COMM_TELNet_VERSion_Q,
+SYSTem_COMM_TELNet_PASSword,
+SYSTem_COMM_TELNet_CLOSe,
+SYSTem_COMM_TELNet_WDOG_Q,
+SYSTem_COMM_TELNet_WDOG,
+SYSTem_COMM_TELNet_MAC_Q,
+//Start STATus
+STATus_QUES_Q,
+STATus_QUES_DCHannels_Q,
+STATus_ALARm_VECTor_Q,
+STATus_ALARm_FIFO_Q,
+STATus_ALARm_NUMBer_Q,
+STATus_UPDate_FIFO,
+STATus_ERRors_Q,
+STATus_ERRor_ERASe,
+STATus_OUTPut_Q,
+//Start CONTrol
+CONTrol_ALARm_PRODuce,
+CONTrol_ALARm_VECTor,
+CONTrol_DCHannels,
+//Start HIDDen
+HIDDen_CREDits_Q,
+HIDDen_SYSTem_RCMid_Q,
+SCPI_Tln2Dev_EndIndex,
+//------------------------------------------------------------------------------
+SCPI_Dev2Tln_BeginIndex,
+STATus_ALARm_FIFO,
+WARN_SYSTem_RESet,
+SYSTem_RESet_EXT,
+WARN_STAT_OUTP_ACT,
+WARN_STAT_FIFO_FULL,
+WARN_STAT_FIFO_EMPTy,
+ERRor_SYSTem,
+ERRor_SYNTax,
+SCPI_Dev2Tln_EndIndex,
+//------------------------------------------------------------------------------
+//***************LAST
+SCPI_LastID
+//------------------------------------------------------------------------------
+}SCPIOrdIDs;
+
+struct SCPI_CMD_REF{
+int ID;
+char Tree[5][15];
+int Param[4];
+};
+
+const struct SCPI_CMD_REF SCPI_REF[SCPI_LastID+1]={
+//------------------------------------------------------------------------------
+SCPI_FirstID,								 		"","","","","", 				  		  	 						-1,-1,-1,0,
+SCPI_Tln2Dev_BeginIndex,  						"","","","","", 													-1,-1,-1,0,
+//Start System
+SYSTem_HEADers_Q,									"SYSTem","HEADers?","","","",						 			0,0,0,0,
+SYSTem_RESet_REMote,								"SYSTem","RESet","REMote","","",       		  			0,0,0,0,
+SYSTem_SNUMber_Q,                         "SYSTem","SNUMber?","","","",          		  			0,0,0,0,
+SYSTem_VERSion_Q,                         "SYSTem","VERSion?","","","",          		  			0,0,0,0,
+SYSTem_CONFiguration_SAVE,                "SYSTem","CONFiguration","SAVE","","", 		  			0,0,0,0,
+SYSTem_CONFiguration_LOAD,                "SYSTem","CONFiguration","LOAD","","", 		  			0,0,0,0,
+SYSTem_CONFiguration_DEFault,             "SYSTem","CONFiguration","DEFault","","", 	  			0,0,0,0,
+//Telnet subsystem
+SYSTem_COMM_TELNet_ACTive_Q,					"SYSTem","COMMunicate","TELNet","ACTive?","", 			0,0,0,0,
+SYSTem_COMM_TELNet_VERSion_Q,					"SYSTem","COMMunicate","TELNet","VERSion?","", 	  		0,0,0,0,
+SYSTem_COMM_TELNet_PASSword,					"SYSTem","COMMunicate","TELNet","PASSword","", 	  		4,4,0,0,
+SYSTem_COMM_TELNet_CLOSe,						"SYSTem","COMMunicate","TELNet","CLOSe","", 		  		0,0,0,0,
+SYSTem_COMM_TELNet_WDOG_Q,	 				   "SYSTem","COMMunicate","TELNet","WDOG?","",   			0,0,0,0,
+SYSTem_COMM_TELNet_WDOG,   			   	"SYSTem","COMMunicate","TELNet","WDOG","", 		  		3,0,0,0,
+SYSTem_COMM_TELNet_MAC_Q,						"SYSTem","COMMunicate","TELNet","MAC?","", 		 		0,0,0,0,
+//Start STATus
+STATus_QUES_Q,           			         "STATus","QUEStionable?","","","", 					  		0,0,0,0,
+STATus_QUES_DCHannels_Q, 			         "STATus","QUEStionable","DCHannels?","","", 		 		0,0,0,0,
+STATus_ALARm_VECTor_Q,                    "STATus","ALARm","VECTor?","","", 					  		2,0,0,0,
+STATus_ALARm_FIFO_Q,                      "STATus","ALARm","FIFO?","","", 				 		  		0,0,0,0,
+STATus_ALARm_NUMBer_Q,                    "STATus","ALARm","NUMBer?","","", 				 	 		0,0,0,0,
+STATus_UPDate_FIFO,                       "STATus","UPDate","FIFO","","", 				 		  		0,0,0,0,
+STATus_ERRors_Q,                          "STATus","ERRors?","","","", 				 	 		  		0,0,0,0,
+STATus_ERRor_ERASe,                   		"STATus","ERRor","ERASe","","", 				 		 		0,0,0,0,
+STATus_OUTPut_Q,                          "STATus","OUTPut?","","","",                          2,0,0,0,
+//Start CONTrol
+CONTrol_ALARm_PRODuce,                    "CONTrol","ALARm","PRODuce","","", 				 	  		0,0,0,0,
+CONTrol_ALARm_VECTor,                     "CONTrol","ALARm","VECTor","","", 				 	 		2,4,0,0,
+CONTrol_DCHannels,                        "CONTrol","DCHannels","","","", 				  		  		4,0,0,0,
+//Start HIDDen
+HIDDen_CREDits_Q,                         "HIDDen","CREDits?","","","",                         0,0,0,0,
+HIDDen_SYSTem_RCMid_Q,             		   "HIDDen","SYSTem","RCMid?","","",  		               0,0,0,0,
+SCPI_Tln2Dev_EndIndex,                    "","","","","", 				  		  	 						-1,-1,-1,0,
+//FIM as a host-----------------------------------------------------------------
+SCPI_Dev2Tln_BeginIndex,                  "","","","","", 				  		  	 						-1,-1,-1,0,
+STATus_ALARm_FIFO,                        "WARNing","STATus","ALARm","FIFO","",	 	  		  		3,4,12,0,
+WARN_SYSTem_RESet,	                     "WARNing","SYSTem","RESet","","", 			 				0,0,0,0,
+SYSTem_RESet_EXT,							  		"WARNing","SYSTem","RESet","EXTernal","",             0,0,0,0,
+WARN_STAT_OUTP_ACT,				            "WARNing","STATus","OUTPut","ACTivity","",            2,1,0,0,
+WARN_STAT_FIFO_FULL, 			            "WARNing","STATus","FIFO","FULL","",        			   0,0,0,0,
+WARN_STAT_FIFO_EMPTy,			            "WARNing","STATus","FIFO","EMPTy","",     		      0,0,0,0,
+ERRor_SYSTem,                             "ERRor","SYSTem","","","",  			                  2,0,0,0,
+ERRor_SYNTax,                             "ERRor","SYNTax","","","",  			                  0,0,0,0,
+SCPI_Dev2Tln_EndIndex,                    "","","","","", 				  		  	 						-1,-1,-1,0,
+//------------------------------------------------------------------------------
+SCPI_LastID,								 		"","","","","", 				  		  	 						-1,-1,-1,0
+};
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

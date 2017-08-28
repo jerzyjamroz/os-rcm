@@ -1,0 +1,79 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//<Mount_Dev_Tln_Driver>
+#ifdef Mount_Dev_Tln_Driver
+
+	#warnt "Dev_Tln: ACTIVE"
+
+	#use "DEV_TLN_MOUNT.LIB"
+
+	#define SYS_Tln_Ver									Dev_Tln_Ver
+	#define _SYS_MOUNT_DEV_Tln_DRIVER_INIT_		DEV_Tln_DRIVER_INIT__
+	#define _SYS_MOUNT_DEV_Tln_DAEMON_     		DEV_Tln_DAEMON__
+
+	#define SYS_Tln_Read(buf,max)						Dev_Tln_Read(buf,max)
+	#define SYS_Tln_Write(x)							Dev_Tln_Write(x)
+	#define SYS_Tln_Close()								Dev_Tln_Close()
+	#define SYS_Tln_isActive()							Dev_Tln_isActive()
+	#define SYS_Tln_getWatchdog()						Dev_Tln_getWatchdog()
+	#define SYS_Tln_setWatchdog(x)					Dev_Tln_setWatchdog(x)
+	#define SYS_Tln_getPassword()						Dev_Tln_getPassword()
+	#define SYS_Tln_setPassword(newPass)			Dev_Tln_setPassword(newPass)
+
+#else
+
+	#warnt "Simulator Dev_Tln: ACTIVE"
+
+	const char SYS_Tln_Ver[]="UNMONTED";
+	#define _SYS_MOUNT_DEV_Tln_DRIVER_INIT_ 		//SYS_Void();
+	#define _SYS_MOUNT_DEV_Tln_DAEMON_ 				//SYS_Void();
+
+	int SYS_Tln_Read(char *buf,int max){printf("\nSYS_Tln_Rd:");gets(buf);return strlen(buf);}
+	int SYS_Tln_Write(char *buf){printf("SYS_Tln_Wr:%s",buf);return strlen(buf);}
+	void SYS_Tln_Close(void){}
+	unsigned long int SYS_Tln_getWatchdog(){}
+	int SYS_Tln_setWatchdog(unsigned long int x){}
+	int SYS_Tln_isActive(){}
+	int SYS_Tln_getPassword(){}
+	int SYS_Tln_setPassword(int newPass){}
+
+
+#endif
+//</Mount_Dev_Tln_Driver>
+//******************************************************************************
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

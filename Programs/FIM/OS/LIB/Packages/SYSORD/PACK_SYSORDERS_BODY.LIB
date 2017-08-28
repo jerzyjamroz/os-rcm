@@ -1,0 +1,58 @@
+/*** BeginHeader */
+#ifndef __PACK_SYSORDERS_BODY_LIB
+#define __PACK_SYSORDERS_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+SYSOrd_Get,
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int SYSOrd_Get(char ** buf2dim, struct SYSVarOrd * sys_ord, char * buf,struct SYSVarOrd_REF * sys_var_ord_ref);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+
+int SYSOrd_Get(char ** buf2dim, struct SYSVarOrd * sys_ord, char * buf,struct SYSVarOrd_REF * sys_var_ord_ref)
+{
+char *pBuf;
+int len;
+int i;
+
+len=strlen(buf);
+if(len<=0) return 0;
+
+for(i=0,pBuf=buf;pBuf!=NULL;pBuf++,pBuf=SCPI_CmdinStr(pBuf,sys_var_ord_ref))
+	{
+	sys_ord[i]=SCPI_Parse(buf2dim,pBuf,sys_var_ord_ref);
+	if(sys_ord[i].ID!=SYSVarOrd_NULL.ID) i++;
+	}
+	sys_ord[i]=SYSVarOrd_NULL;
+
+return i;
+}
+
+
+/*
+
+char msg[32];
+// 	if(Bridge.DinTlnOrd[i].ID<0)
+//	printf("\ni=%d",i);
+	if(i<=0)
+ 		{
+ 		SCPI_DeParse(msg,ERRor_SYNTax,"");
+ 		SYS_Tln_Write(msg);
+ 		SYS_Tln_Write(SYSCRNL);
+ 		}
+
+*/
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

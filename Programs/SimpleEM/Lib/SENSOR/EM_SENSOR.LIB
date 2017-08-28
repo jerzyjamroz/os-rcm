@@ -1,0 +1,447 @@
+/*** BeginHeader */
+#ifndef __EM_SENSOR_LIB
+#define __EM_SENSOR_LIB
+/*** EndHeader */
+
+/*
+-----------------------------------------------------------------------------------------
+Post filter   |Transimpedance|Polarity      		|Voltage gain|Pre filter  |Offset +/-1mV|
+-----------------------------------------------------------------------------------------
+PE1_0=1Hz     |PE1_3=10k     |PE1_7=inv polarity|PE2_0=100   |PE2_4=3.5kHz|DAC1=(0,4095)|
+PE1_1=10Hz    |PE1_4=1M      |        				|PE2_1=50    |PE2_5=100Hz |             |
+PE1_2=100Hz   |PE1_5=100M    |        				|PE2_2=10    |PE2_6=10Hz  |             |
+All off=3.2kHz|PE1_6=1G      |        				|PE2_3=1     |PE2_7=1Hz   |             |
+              |ALLOFF=10G    |            		|				 |AllOff=0.5Hz|             |
+-----------------------------------------------------------------------------------------
+*/
+
+/*** BeginHeader
+EM_SEN_Init,
+EM_SEN_Trans_Imp,
+EM_SEN_Gain,
+EM_SEN_Filter_Post,
+EM_SEN_Filter_Pre,
+EM_SEN_Polarity,
+EM_SEN_DAC_WR,
+
+EM_SEN_EEPROM_RD,
+EM_SEN_EEPROM_WR,
+EM_SEN_EEPROM_RDSR,
+EM_SEN_REG_RD,
+
+EM_SEN_Check,
+*/
+#include "../Programs/SimpleEM/Lib/SENSOR/EM_SENSOR.H"
+
+#use "EM_SENSOR_EXT.LIB"
+
+int 	EM_SEN_Init				(int sen_id);
+int 	EM_SEN_Trans_Imp		(int sen_id,	int gain);
+int 	EM_SEN_Gain				(int sen_id,	int gain);
+int 	EM_SEN_Filter_Post	(int sen_id,	int filter);
+int 	EM_SEN_Filter_Pre		(int sen_id,	int filter);
+int 	EM_SEN_Polarity		(int sen_id,	int pol);
+int 	EM_SEN_DAC_WR			(int sen_id,	int dac_mv);
+
+char 	EM_SEN_EEPROM_RD		(int sen_id,	char addr_byte);
+int 	EM_SEN_EEPROM_WR		(int sen_id,	char addr_byte,char byte);
+char 	EM_SEN_EEPROM_RDSR	(int sen_id);
+
+int 	EM_SEN_Check			(int sen_id);
+//_____________________________<FUNCTIONS>______________________________________
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+#define _EM_SEN_ID_PROT if((sen_id>=EM_SENSOR_MAX)||(sen_id<0)){return -1;}
+#define EM_SEN_ENTITY_ID(em_entity_id,sen_id) (em_entity_id+EM_SENSOR_MAX*EM_SENSOR_ADDR(sen_id))
+
+#define EM_SEN_PE1_ID 2
+#define EM_SEN_PE2_ID 1
+#define EM_SEN_DAC_ID 3
+#define EM_SEN_EEP_ID 0
+
+char 	EM_SEN_ShadowPE1[EM_SENSOR_MAX]={0,0,0,0};
+char 	EM_SEN_ShadowPE2[EM_SENSOR_MAX]={0,0,0,0};
+int 	EM_SEN_ShadowEEPROM[EM_SENSOR_MAX]={0,0,0,0};
+
+//</LOC_DEFINES>
+_EM_SENSOR_NODEBUG
+char EM_SEN_REG_RD(char em_entity_id, int sen_id, char reg)
+{
+char byte;
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(em_entity_id,sen_id));
+byte=Dev_MCP23S08_Byte_Read(reg);
+Dev_DEC4X16_Res();
+return byte;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_Check(int sen_id)
+{
+char pe1;
+char pe2;
+char byte;
+int err;
+err=0;
+
+pe1=EM_SEN_REG_RD(EM_SEN_PE1_ID,sen_id,GPIO);
+pe2=EM_SEN_REG_RD(EM_SEN_PE2_ID,sen_id,GPIO);
+
+//<PE1_Test>
+//-------------------------------------------------------------------------------------------
+if(0x00!=EM_SEN_REG_RD(EM_SEN_PE1_ID,sen_id,IODIR)) 										SET(&err,0);
+if(EM_SEN_ShadowPE1[sen_id]!=pe1) 																SET(&err,1);
+if(EM_SEN_ShadowPE1[sen_id]!=EM_SEN_REG_RD(EM_SEN_PE1_ID,sen_id,OLAT)) 				SET(&err,2);
+//-------------------------------------------------------------------------------------------
+byte=pe1&0x07;
+if( (byte!=0) && (byte!=1) && (byte!=2) && (byte!=4)  ) 									SET(&err,4);  //PF test
+byte=pe1&0x78;
+byte=byte>>3;
+if( (byte!=0) && (byte!=1) && (byte!=2) && (byte!=4) && (byte!=8)  ) 				SET(&err,5);  //TS test
+//-------------------------------------------------------------------------------------------
+//</PE1_Test>
+
+//<PE2_Test>
+//-------------------------------------------------------------------------------------------
+if(0x00!=EM_SEN_REG_RD(EM_SEN_PE2_ID,sen_id,IODIR)) 										SET(&err,8);
+if(EM_SEN_ShadowPE2[sen_id]!=pe2) 																SET(&err,9);
+if(EM_SEN_ShadowPE2[sen_id]!=EM_SEN_REG_RD(EM_SEN_PE2_ID,sen_id,OLAT)) 				SET(&err,10);
+//-------------------------------------------------------------------------------------------
+byte=pe2&0x0F;
+if( (byte!=1) && (byte!=2) && (byte!=4) && (byte!=8)  ) 									SET(&err,12);  //GS test
+byte=pe2&0xF0;
+byte=byte>>4;
+if( (byte!=0) && (byte!=1) && (byte!=2) && (byte!=4) && (byte!=8)  ) 				SET(&err,13);  //FS test
+//-------------------------------------------------------------------------------------------
+//</PE2_Test>
+
+return err;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_PEX_WR(char em_entity_id, int sen_id,char byte)
+{
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(em_entity_id,sen_id));
+Dev_MCP23S08_Port_Write(byte);
+Dev_DEC4X16_Res();
+return 1;
+}
+
+//---------------------------
+_EM_SENSOR_NODEBUG
+int EM_SEN_PEX_Switch_WR(char em_entity_id, int sen_id,char byte)
+{
+static char old_byte[4][EM_SENSOR_MAX]={0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+EM_SEN_PEX_WR(em_entity_id,sen_id,old_byte[em_entity_id][sen_id]|byte);
+SYS_DelayMs(1);
+EM_SEN_PEX_WR(em_entity_id,sen_id,byte);
+old_byte[em_entity_id][sen_id]=byte;
+SYS_DelayMs(1); //just to let discharge all the previous voltages
+return 1;
+}
+//---------------------------
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_PEX_DIR(char em_entity_id, int sen_id,char byte)
+{
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(em_entity_id,sen_id));
+Dev_MCP23S08_Port_Dir(byte);
+Dev_DEC4X16_Res();
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_DAC_WR(int sen_id,int dac_mv)
+{
+_EM_SEN_ID_PROT
+if( (dac_mv>0xFFF) || (dac_mv<0) ) return -1;
+
+Elem_Sen.ShadowDAC[sen_id]=dac_mv; //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_DAC_ID,sen_id));
+Dev_DAC7611_Wr(dac_mv);
+Dev_DEC4X16_Res();
+
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_PEX_INIT(char em_entity_id, int sen_id)
+{
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(em_entity_id,sen_id));
+Dev_MCP23S08_Init();
+Dev_DEC4X16_Res();
+return 1;
+}
+
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_Init(int sen_id)
+{
+_EM_SEN_ID_PROT
+
+EM_SEN_PEX_INIT(EM_SEN_PE1_ID,sen_id);
+EM_SEN_PEX_INIT(EM_SEN_PE2_ID,sen_id);
+
+EM_SEN_PEX_DIR(EM_SEN_PE1_ID,sen_id,0x00);
+EM_SEN_PEX_DIR(EM_SEN_PE2_ID,sen_id,0x00);
+
+//Initial status
+EM_SEN_Polarity	(sen_id,Elem_Sen.ShadowINV[sen_id]);
+Elem_Sen.ShadowRange[sen_id]=EM_1m;   //initialization of sensors always to the highest range
+EM_SEN_EXT_Range	(sen_id,Elem_Sen.ShadowRange[sen_id]);
+EM_SEN_EXT_Filter	(sen_id,EM_SEN_retBandwidth(sen_id));
+EM_SEN_DAC_WR		(sen_id,Elem_Sen.ShadowDAC[sen_id]);   //central offset
+
+return 1;
+}
+
+//Port Expander 1
+//7|6|5|4|3|2|1|0|
+//1|1|1|1|1|x|x|x|
+//MASK=0xF8
+_EM_SENSOR_NODEBUG
+int EM_SEN_Filter_Post(int sen_id, int filter)
+{
+_EM_SEN_ID_PROT
+if ( (filter>3) || (filter<0) ) return -1;
+
+EM_SEN_ShadowPE1[sen_id]=EM_SEN_ShadowPE1[sen_id]&0xF8;
+
+switch (filter)
+{
+  case 1:       //PE1_0=1Hz
+  SET(&EM_SEN_ShadowPE1[sen_id],0);
+  Elem_Sen.ShadowBandwidth[sen_id][1]=1;
+  break;
+  case 2:       //PE1_1=10Hz
+  SET(&EM_SEN_ShadowPE1[sen_id],1);
+  Elem_Sen.ShadowBandwidth[sen_id][1]=10;
+  break;
+  case 3:       //PE1_2=100Hz
+  SET(&EM_SEN_ShadowPE1[sen_id],2);
+  Elem_Sen.ShadowBandwidth[sen_id][1]=100;
+  break;
+  case 0:       //All off=3.2kHz
+  Elem_Sen.ShadowBandwidth[sen_id][1]=3200;
+  break;
+
+  default:
+  return -1;
+}
+
+return EM_SEN_PEX_WR(EM_SEN_PE1_ID,sen_id,EM_SEN_ShadowPE1[sen_id]);
+}
+
+//Port Expander 1
+//7|6|5|4|3|2|1|0|
+//1|x|x|x|x|1|1|1|
+//MASK=0x87
+_EM_SENSOR_NODEBUG
+int EM_SEN_Trans_Imp(int sen_id,int gain)
+{
+_EM_SEN_ID_PROT
+if ((gain>4) || (gain<0)) return -1;
+
+EM_SEN_ShadowPE1[sen_id]=EM_SEN_ShadowPE1[sen_id]&0x87;
+
+switch (gain)
+{
+  case 1:       //PE1_3=10k
+  SET(&EM_SEN_ShadowPE1[sen_id],0+3);
+  Elem_Sen.ShadowGain[sen_id][0]=1E4;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 2:       //PE1_4=1M
+  SET(&EM_SEN_ShadowPE1[sen_id],1+3);
+  Elem_Sen.ShadowGain[sen_id][0]=1E6;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 3:       //PE1_5=100M
+  SET(&EM_SEN_ShadowPE1[sen_id],2+3);
+  Elem_Sen.ShadowGain[sen_id][0]=1E8;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 4:       //PE1_6=1G
+  SET(&EM_SEN_ShadowPE1[sen_id],3+3);
+  Elem_Sen.ShadowGain[sen_id][0]=1E9;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 0:       //ALLOFF=10G
+  Elem_Sen.ShadowGain[sen_id][0]=1E10;          //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+
+  default:
+  return -1;
+}
+
+return EM_SEN_PEX_Switch_WR(EM_SEN_PE1_ID,sen_id,EM_SEN_ShadowPE1[sen_id]);
+}
+
+//Port Expander 2
+//7|6|5|4|3|2|1|0|
+//1|1|1|1|x|x|x|x|
+//MASK=0xF0
+_EM_SENSOR_NODEBUG
+int EM_SEN_Gain(int sen_id,int gain)
+{
+_EM_SEN_ID_PROT
+if ((gain>4) || (gain<0)) return -1;
+
+Elem_Sen.ShadowGain[sen_id][1]=gain;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+EM_SEN_ShadowPE2[sen_id]=EM_SEN_ShadowPE2[sen_id]&0xF0;
+
+switch (gain)
+{
+  case 1:       //PE2_0=100
+  SET(&EM_SEN_ShadowPE2[sen_id],0);
+  Elem_Sen.ShadowGain[sen_id][1]=100;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 2:       //PE2_1=50
+  SET(&EM_SEN_ShadowPE2[sen_id],1);
+  Elem_Sen.ShadowGain[sen_id][1]=50;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 3:       //PE2_2=10
+  SET(&EM_SEN_ShadowPE2[sen_id],2);
+  Elem_Sen.ShadowGain[sen_id][1]=10;           //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 4:       //PE2_3=1
+  SET(&EM_SEN_ShadowPE2[sen_id],3);
+  Elem_Sen.ShadowGain[sen_id][1]=1;            //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+  case 0:       //PE2_0=00
+  Elem_Sen.ShadowGain[sen_id][1]=0;				//GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+  break;
+
+  default:
+  return -1;
+}
+
+return EM_SEN_PEX_Switch_WR(EM_SEN_PE2_ID,sen_id,EM_SEN_ShadowPE2[sen_id]);
+}
+
+
+//Port Expander 2
+//7|6|5|4|3|2|1|0|
+//x|x|x|x|1|1|1|1|
+//MASK=0x0F
+/*
+PE2_4=3.5kHz
+PE2_5=100Hz
+PE2_6=10Hz
+PE2_7=1Hz
+AllOff=0.5Hz
+*/
+_EM_SENSOR_NODEBUG
+int EM_SEN_Filter_Pre(int sen_id,int filter)
+{
+_EM_SEN_ID_PROT
+if ( (filter>4) || (filter<0) ) return -1;
+
+EM_SEN_ShadowPE2[sen_id]=EM_SEN_ShadowPE2[sen_id]&0x0F;
+
+switch (filter)
+{
+  case 1:       //PE2_4=3.5kHz
+  SET(&EM_SEN_ShadowPE2[sen_id],0+4);
+  Elem_Sen.ShadowBandwidth[sen_id][0]=3500;
+  break;
+  case 2:       //PE2_5=100Hz
+  SET(&EM_SEN_ShadowPE2[sen_id],1+4);
+  Elem_Sen.ShadowBandwidth[sen_id][0]=100;
+  break;
+  case 3:       //PE2_6=10Hz
+  SET(&EM_SEN_ShadowPE2[sen_id],2+4);
+  Elem_Sen.ShadowBandwidth[sen_id][0]=10;
+  break;
+  case 4:       //PE2_7=1Hz
+  SET(&EM_SEN_ShadowPE2[sen_id],3+4);
+  Elem_Sen.ShadowBandwidth[sen_id][0]=1;
+  break;
+  case 0:       //AllOff=0.5Hz
+  Elem_Sen.ShadowBandwidth[sen_id][0]=0.5;
+  break;
+
+  default:
+  return -1;
+}
+
+return EM_SEN_PEX_WR(EM_SEN_PE2_ID,sen_id,EM_SEN_ShadowPE2[sen_id]);
+}
+
+//PE1_7=inv polarity
+_EM_SENSOR_NODEBUG
+int EM_SEN_Polarity(int sen_id,int pol)
+{
+_EM_SEN_ID_PROT
+if ((pol!=0) && (pol!=1)) return -1;
+
+Elem_Sen.ShadowINV[sen_id]=pol;          //GGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+EM_SEN_ShadowPE1[sen_id]=EM_SEN_ShadowPE1[sen_id]&0x7F;
+
+switch (pol)
+{
+  case 0:       //do not invert polarity
+  SET(&EM_SEN_ShadowPE1[sen_id],7);
+  break;
+  case 1:       //invert polarity
+  break;
+
+  default:
+  return -1;
+}
+
+return EM_SEN_PEX_WR(EM_SEN_PE1_ID,sen_id,EM_SEN_ShadowPE1[sen_id]);
+}
+
+_EM_SENSOR_NODEBUG
+char EM_SEN_EEPROM_RDSR(int sen_id)
+{
+char readout;
+_EM_SEN_ID_PROT
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_EEP_ID,sen_id));
+readout=Dev_IC25LC020_RDSR();
+Dev_DEC4X16_Res();
+
+return readout;
+}
+
+_EM_SENSOR_NODEBUG
+int EM_SEN_EEPROM_WR(int sen_id,char addr_byte,char byte)
+{
+_EM_SEN_ID_PROT
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_EEP_ID,sen_id));
+Dev_IC25LC020_Wr_En();
+Dev_DEC4X16_Res();
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_EEP_ID,sen_id));
+Dev_IC25LC020_Byte_Wr(addr_byte,byte);
+Dev_DEC4X16_Res();
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_EEP_ID,sen_id));
+Dev_IC25LC020_Wr_Dis();
+Dev_DEC4X16_Res();
+//if you want to read directly after write, you must wait at least 10ms otherwise you read the
+//blocking data 0xFF
+return 1;
+}
+
+_EM_SENSOR_NODEBUG
+char EM_SEN_EEPROM_RD(int sen_id,char addr_byte)
+{
+char readout;
+
+_EM_SEN_ID_PROT
+
+Dev_DEC4X16_Set(EM_SEN_ENTITY_ID(EM_SEN_EEP_ID,sen_id));
+readout=Dev_IC25LC020_Byte_Rd(addr_byte);
+Dev_DEC4X16_Res();
+
+return readout;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

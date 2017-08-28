@@ -1,0 +1,286 @@
+/*** BeginHeader */
+#ifndef __FIM_BRIDGE_TLN_COM_EXE_LIB
+#define __FIM_BRIDGE_TLN_COM_EXE_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Bridge_Engine
+*/
+#ifdef BRIDGE_EXE_DEBUG
+#define _BRIDGE_EXE_NODEBUG
+#else
+#define _BRIDGE_EXE_NODEBUG nodebug
+#endif
+
+_BRIDGE_EXE_NODEBUG void Bridge_Engine(void);
+
+#define LOC_BrOrd_Limit 10
+#define LOC_BrFIFO_Len (LOC_BrOrd_Limit*2+1)
+static struct{
+		struct SYSOrd DinTlnOrd[LOC_BrOrd_Limit+1];
+	      struct SYSOrd DoutTlnOrd[LOC_BrOrd_Limit+1];
+      struct SYSOrd DinSerOrd[LOC_BrOrd_Limit+1];
+	      struct SYSOrd DoutSerOrd[LOC_BrOrd_Limit+1];
+
+      struct SYSOrd ComOrd_FIFO[LOC_BrFIFO_Len];
+      int FIFO_Last_Idx;
+      int FIFO_First_Idx;
+
+      unsigned long int WatchdogLimit; //optional
+      int Ack;
+}Bridge;
+/*** EndHeader */
+_BRIDGE_EXE_NODEBUG
+int LOC_FIFO_Wrapper(void)
+{
+if(Bridge.FIFO_Last_Idx>=LOC_BrFIFO_Len)  Bridge.FIFO_Last_Idx=0;
+if(Bridge.FIFO_First_Idx>=LOC_BrFIFO_Len) Bridge.FIFO_First_Idx=0;
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Tln_Handler(void)
+{
+char *pBuf;
+int i;
+char buf[256];
+char msg[32];
+
+if (SYS_Tln_Read(buf,sizeof(buf))>0)
+ {
+   for(i=0,pBuf=buf;(pBuf!=NULL) && (i<LOC_BrOrd_Limit) ;pBuf++,pBuf=SCPI_CmdinStr(pBuf))
+   {
+	Bridge.DinTlnOrd[i]=LOC_Bridge_SCPI_Parse(pBuf);
+   if(Bridge.DinTlnOrd[i].ID>0) i++;
+   }
+	Bridge.DinTlnOrd[i]=SYSOrd_NULL;
+
+// 	if(Bridge.DinTlnOrd[i].ID<0)
+//	printf("\ni=%d",i);
+	if(i<=0)
+ 		{
+ 		SCPI_DeParse(msg,ERRor_SYNTax,"");
+ 		SYS_Tln_Write(msg);
+ 		SYS_Tln_Write(SYSCRNL);
+ 		}
+ }
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Ser_Handler(void)
+{
+char *pBuf;
+int i;
+char buf[256];
+
+if (SYS_SerX1_Read(buf)>0)
+	{
+		for(i=0,pBuf=buf;(strchr(pBuf,'/')!=NULL) && (i<LOC_BrOrd_Limit);pBuf=strchr(pBuf,'/'),pBuf++)
+   	{
+   		if(strncmp(pBuf,Cmd_Ack,strlen(Cmd_Ack))==0) Bridge.Ack--;
+         else
+         {
+   		Bridge.DinSerOrd[i]=LOC_Bridge_ComOrd_Parse(pBuf,F2Rdir);
+   		if (Bridge.DinSerOrd[i].ID>0) if (strncmp(pBuf,"ERROR",5)!=0) SYS_SerX1_Write(Cmd_Ack);
+         if (Bridge.DinSerOrd[i].ID>0) i++;
+			}
+      }
+   Bridge.DinSerOrd[i]=SYSOrd_NULL;
+   }
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Tln_Exe(void)
+{
+int i,j;
+int ord_idx;
+struct SYSOrd ord_tab[5];
+
+ord_idx=0;
+
+for(i=0;(Bridge.DinTlnOrd[i].ID>0) && (i<LOC_BrOrd_Limit);i++)
+	{
+   SCPI_Ord_Exe(ord_tab,Bridge.DinTlnOrd[i]);
+	for(j=0;ord_tab[j].ID>0;j++,ord_idx++) Bridge.DoutTlnOrd[ord_idx]=ord_tab[j];
+   }
+Bridge.DoutTlnOrd[ord_idx]=SYSOrd_NULL;
+Bridge.DinTlnOrd[0]=SYSOrd_NULL;  //clear the taken buffer
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Ser_Exe(void)
+{
+static int status_tln;
+int i,j;
+int ord_idx;
+struct SYSOrd ord_tab[5];
+#GLOBAL_INIT{
+status_tln=-1;
+}
+
+ord_idx=0;
+
+if (SYS_Tln_isActive()!=status_tln)
+	{
+   if ( (status_tln==1) && (SYS_Tln_isActive()==0) ) FIM_Err_Call(Err_EthernetLinkLost);
+   status_tln=SYS_Tln_isActive();
+   Bridge.DoutSerOrd[ord_idx]=SYSOrd_NULL;
+   Bridge.DoutSerOrd[ord_idx].ID=R2F_NETST;
+   Bridge.DoutSerOrd[ord_idx].Param[0][0]='0';
+   Bridge.DoutSerOrd[ord_idx].Param[0][1]=status_tln+'0';
+   ord_idx++;
+
+	}
+
+for(i=0;(Bridge.DinSerOrd[i].ID>0) && (i<LOC_BrOrd_Limit);i++)
+	{
+   ComOrd_Exe(ord_tab,Bridge.DinSerOrd[i]);
+	for(j=0;ord_tab[j].ID>0;j++,ord_idx++) Bridge.DoutSerOrd[ord_idx]=ord_tab[j];
+   }
+Bridge.DoutSerOrd[ord_idx]=SYSOrd_NULL;
+Bridge.DinSerOrd[0]=SYSOrd_NULL;   //clear the taken buffer
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Ack_Handler(void)
+{
+if (Bridge.Ack<0)
+	{
+   FIM_Err_Call(Err_RCM_InternalSyntax);
+	Bridge.Ack=0; //There must be an error implementation
+   }
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_FIFO_ComOrd_Handler(void)
+{
+int i;
+
+#GLOBAL_INIT{
+//Bridge.ComOrd_FIFO[0]=SYSOrd_NULL;
+Bridge.ComOrd_FIFO[0]=SYSOrd_NULL;
+Bridge.ComOrd_FIFO[0].ID=R2F_FIFGT;
+Bridge.ComOrd_FIFO[1]=SYSOrd_NULL;
+
+Bridge.FIFO_First_Idx=0;
+Bridge.FIFO_Last_Idx=1;
+
+FIMstatus_FIFO_Reset();
+
+}
+
+for(i=0;Bridge.DoutSerOrd[i].ID>0;i++,Bridge.FIFO_Last_Idx++,LOC_FIFO_Wrapper())
+	{
+	Bridge.ComOrd_FIFO[Bridge.FIFO_Last_Idx]=Bridge.DoutSerOrd[i];
+   Bridge.DoutSerOrd[i]=SYSOrd_NULL;
+   }
+
+for(i=0;Bridge.DoutTlnOrd[i].ID>0;i++,Bridge.FIFO_Last_Idx++,LOC_FIFO_Wrapper())
+	{
+   Bridge.ComOrd_FIFO[Bridge.FIFO_Last_Idx]=Bridge.DoutTlnOrd[i];
+   Bridge.DoutTlnOrd[i]=SYSOrd_NULL;
+   }
+
+Bridge.ComOrd_FIFO[Bridge.FIFO_Last_Idx]=SYSOrd_NULL;
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+_BRIDGE_EXE_NODEBUG
+int Bridge_Com_Task_Handler(void)
+{
+static int no_ack;
+static int watchdog_flag;
+char buf[64];
+
+costate
+{
+watchdog_flag=0;
+no_ack=0;
+
+if(Bridge.ComOrd_FIFO[Bridge.FIFO_First_Idx].ID>0)
+for(Bridge.FIFO_First_Idx;Bridge.FIFO_First_Idx!=Bridge.FIFO_Last_Idx;Bridge.FIFO_First_Idx++,LOC_FIFO_Wrapper() )
+   {
+   ComOrd2Buf_Conv(buf,Bridge.ComOrd_FIFO[Bridge.FIFO_First_Idx]);
+	SYS_SerX1_Write(buf);
+	Bridge.Ack++;
+   waitfor( (Bridge.Ack<=0) || (watchdog_flag=DelayMs(Bridge.WatchdogLimit)) );
+   if(watchdog_flag==1)
+   	{
+      Bridge.Ack=0;
+      no_ack++;
+      Bridge.FIFO_First_Idx--;
+      if(no_ack>3)
+      	{
+         FIM_Err_Call(Err_RCM_NoAckDet);
+         Bridge.FIFO_First_Idx++;
+         no_ack=0;
+      	}
+      }
+   else Bridge.ComOrd_FIFO[Bridge.FIFO_First_Idx]=SYSOrd_NULL;
+   }
+
+}
+
+return SYSNULL;
+}
+//------------------------------------------------------------------------------
+
+//********************************ENGINE****************************************
+_BRIDGE_EXE_NODEBUG
+void Bridge_Engine(void)
+{
+#GLOBAL_INIT{
+Bridge.Ack=0;
+Bridge.WatchdogLimit=5000;
+}
+
+costate
+{
+Bridge_Tln_Handler();
+}
+
+costate
+{
+Bridge_Ser_Handler();
+}
+
+costate
+{
+Bridge_Tln_Exe();
+}
+
+costate
+{
+Bridge_Ser_Exe();
+}
+
+costate
+{
+Bridge_Ack_Handler();
+}
+
+costate
+{
+Bridge_FIFO_ComOrd_Handler();
+}
+
+costate{
+Bridge_Com_Task_Handler();
+}
+
+}
+//********************************ENGINE****************************************
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

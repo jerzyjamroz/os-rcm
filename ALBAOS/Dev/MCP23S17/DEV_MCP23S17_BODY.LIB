@@ -1,0 +1,232 @@
+/*************************************************************************
+	PB7 acts as the CS line on the ADC
+	PB0 is the serial B clock line(SCLK)
+
+	PC4 is the data output(MOSI)
+	PC5 is the data input(MISO)
+
+
+Memory mapping   NOTE: (BANK = 0) must be alwasy ZERO otherwise the registers have diffrent address
+IODIRA 	00h
+IODIRB 	01h
+IPOLA  	02h
+IPOLB  	03h
+GPINTENA 04h
+GPINTENB 05h
+DEFVALA  06h
+DEFVALB  07h
+INTCONA  08h
+INTCONB  09h
+IOCON    0Ah    //if possible to not modify BIT7
+IOCON    0Bh    //if possible to not modify BIT7
+GPPUA    0Ch
+GPPUB    0Dh
+INTFA    0Eh
+INTFB    0Fh
+INTCAPA  10h
+INTCAPB  11h
+GPIOA    12h
+GPIOB    13h
+OLATA    14h
+OLATB    15h
+
+************************************************************************/
+
+/*** BeginHeader */
+#ifndef __DEV_MCP23S17_BODY_LIB
+#define __DEV_MCP23S17_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#ifndef ___AUTO
+	#define ___AUTO
+	#class auto
+#endif
+
+#ifndef Dev_SPIB_Driver
+	#use "DEV_SPIB_MOUNT.LIB"
+#endif
+
+#use "DEV_MCP23S17_HEADER.LIB"
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+MCP23S17_Init,MCP23S17_Write_Port,MCP23S17_Bus_Addressing_En,MCP23S17_Write_PortAB
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int MCP23S17_Init(void);
+int MCP23S17_Write_Port(char address,int port, char value);
+int MCP23S17_Bus_Addressing_En(void);
+int MCP23S17_Write_PortAB(char address, char * value);
+//_____________________________</FUNCTIONS>______________________________________
+enum{
+MCP23S17_PORTA,
+MCP23S17_PORTB,
+MCP23S17_END,
+}MCP23S17_REF;
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//#define LOC_Eth_Ping_Timeout 0xffffffffL
+//#define LOC_Eth_Det_Delay_Time 2000
+enum{
+IODIRA 	=0x00,
+IODIRB 	=0x01,
+IPOLA  	=0x02,
+IPOLB  	=0x03,
+GPINTENA =0x04,
+GPINTENB =0x05,
+DEFVALA  =0x06,
+DEFVALB  =0x07,
+INTCONA  =0x08,
+INTCONB  =0x09,
+IOCONA   =0x0A,    //if possible to not modify BIT7
+IOCONB   =0x0B,    //if possible to not modify BIT7
+GPPUA    =0x0C,
+GPPUB    =0x0D,
+INTFA    =0x0E,
+INTFB    =0x0F,
+INTCAPA  =0x10,
+INTCAPB  =0x11,
+GPIOA    =0x12,
+GPIOB    =0x13,
+OLATA    =0x14,
+OLATB    =0x15
+}MCP23S17_CONTROL_REGISTERS;
+
+
+typedef struct{
+	char Shadow_PORTA;
+	char Shadow_PORTB;
+	char Shadow_DIR_PORTA;
+	char Shadow_DIR_PORTB;
+}Expander;
+
+Expander MCP23S17[256];
+//</LOC_DEFINES>
+
+//Must be mofified, IOCONA must affect only one bit not the whole register
+_MCP23S17_NODEBUG
+int MCP23S17_Bus_Addressing_En(void)
+{
+int CS_Flag;
+char buf[4];
+buf[0]=0x40;
+buf[1]=IOCONA;
+buf[2]=0x08;
+buf[3]=0;
+CS_Flag=Dev_SPIB_Write(buf,3);
+return CS_Flag;
+}
+
+_MCP23S17_NODEBUG
+int MCP23S17_Write_Byte(char address, char reg, char byte)
+{
+int CS_Flag;
+char buf[4];
+address=address<<1;
+buf[0]=0x40|address;
+buf[1]=reg;
+buf[2]=byte;
+buf[3]=0;
+CS_Flag=Dev_SPIB_Write(buf,3);
+return CS_Flag;
+}
+
+_MCP23S17_NODEBUG
+int MCP23S17_Write_2Bytes(char address, char reg, char *byte_array)
+{
+int CS_Flag;
+char buf[5];
+address=address<<1;
+buf[0]=0x40|address;
+buf[1]=reg;
+buf[2]=byte_array[0];
+buf[3]=byte_array[1];
+buf[4]=0;
+CS_Flag=Dev_SPIB_Write(buf,4);
+return CS_Flag;
+}
+
+_MCP23S17_NODEBUG
+int MCP23S17_Init(void)
+{
+#ifndef __Dev_SPIB_Init__
+	#define __Dev_SPIB_Init__
+	Dev_SPIB_Init__(1);
+#endif
+return 1;
+}
+
+_MCP23S17_NODEBUG
+int MCP23S17_Dir_Port(char address, int port, int dir_byte)
+{
+switch (port)
+	{
+	case MCP23S17_PORTA:
+   	MCP23S17[address].Shadow_DIR_PORTA=dir_byte;
+		return MCP23S17_Write_Byte(address,IODIRA,dir_byte);
+	break;
+
+	case MCP23S17_PORTB:
+   	MCP23S17[address].Shadow_DIR_PORTB=dir_byte;
+		return MCP23S17_Write_Byte(address,IODIRB,dir_byte);
+	break;
+
+	default: return -1;
+	}
+
+return 0;
+}
+
+_MCP23S17_NODEBUG
+int MCP23S17_Dir_PortAB(char address, char *dir_byte_array)
+{
+MCP23S17[address].Shadow_DIR_PORTA=dir_byte_array[0];
+MCP23S17[address].Shadow_DIR_PORTB=dir_byte_array[1];
+return MCP23S17_Write_2Bytes(address, IODIRA, dir_byte_array);
+}
+
+
+_MCP23S17_NODEBUG
+int MCP23S17_Write_Port(char address, int port, char value)
+{
+switch (port)
+	{
+	case MCP23S17_PORTA:
+   	if(MCP23S17[address].Shadow_DIR_PORTA!=0x00) MCP23S17_Dir_Port(address,MCP23S17_PORTA,0x00);
+   	MCP23S17[address].Shadow_PORTA=value;
+		return MCP23S17_Write_Byte(address,GPIOA,value);
+	break;
+
+	case MCP23S17_PORTB:
+   	if(MCP23S17[address].Shadow_DIR_PORTB!=0x00) MCP23S17_Dir_Port(address,MCP23S17_PORTB,0x00);
+   	MCP23S17[address].Shadow_PORTB=value;
+		return MCP23S17_Write_Byte(address,GPIOB,value);
+	break;
+
+	default: return -1;
+	}
+
+return 0;
+}
+
+
+_MCP23S17_NODEBUG
+int MCP23S17_Write_PortAB(char address, char * value_array)
+{
+if(MCP23S17[address].Shadow_DIR_PORTA!=0x00) MCP23S17_Dir_Port(address,MCP23S17_PORTA,0x00);
+MCP23S17[address].Shadow_PORTA=value_array[0];
+if(MCP23S17[address].Shadow_DIR_PORTB!=0x00) MCP23S17_Dir_Port(address,MCP23S17_PORTB,0x00);
+MCP23S17[address].Shadow_PORTB=value_array[1];
+return MCP23S17_Write_2Bytes(address,GPIOA,value_array);
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

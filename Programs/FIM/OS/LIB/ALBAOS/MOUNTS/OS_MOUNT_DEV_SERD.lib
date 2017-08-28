@@ -1,0 +1,63 @@
+/*** BeginHeader */
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+//******************************************************************************
+//<Mount_Dev_SerD_Driver>
+#ifdef Mount_Dev_SerD_Driver
+
+	#warnt "Dev_SerD: ACTIVE"
+
+	#use "DEV_SER_D_MOUNT.LIB"
+
+	#define _SYS_MOUNT_DEV_SerD_DRIVER_INIT_ 	DEV_SERD_DRIVER_INIT__
+
+	#define SYS_SerX1_Read(x) 						Dev_SerD_Read(x)
+	#define SYS_SerX1_Write(x) 					Dev_SerD_Write(x)
+
+#else
+
+	#warnt "Simulator Dev_SerD: ACTIVE"
+
+	#define _SYS_MOUNT_DEV_SerD_DRIVER_INIT_	//SYS_Void();
+
+	int SYS_Ser_Read(char *buf){printf("\nSYS_Ser_Read:");gets(buf);return strlen(buf);}
+	int SYS_Ser_Write(char *buf){printf("\nSYS_Tln_Write:%s",buf);return strlen(buf);}
+
+#endif
+//</Mount_Dev_SerD_Driver>
+//******************************************************************************
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+//#endif
+/*** EndHeader */
+
+
+
+/* mount shelude
+//******************************************************************************
+//<DEVICE_DRIVER>
+#ifdef Mount_Dev_Device_Driver
+
+#use "DEV_DEVICE_MOUNT.LIB"
+
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#else
+//<INIT>
+//</INIT>
+//<BODY>
+//</BODY>
+
+#endif
+//</DEVICE_DRIVER>
+//******************************************************************************
+*/

@@ -1,0 +1,328 @@
+/*** BeginHeader */
+#ifndef __KEITHLEY_HVS_LIB
+#define __KEITHLEY_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Keithley_Current_Set,
+Keithley_Current_RawData_Update,
+*/
+#use "General.lib"
+
+#define Keithley_Enter serDputc(10)
+#define Keithley_Request_Current serDputs("print(smua.measure.i())");Keithley_Enter
+//***************initialization*************************
+#define Keithley_On serDputs("smua.source.output=smua.OUTPUT_ON");Keithley_Enter
+//#define Keithley_Off serDputs("smua.source.output=smua.OUTPUT_OFF");Keithley_Enter
+#define Keithley_Current_Generator serDputs("smua.source.func=smua.OUTPUT_DCAMPS");Keithley_Enter
+#define Keithley_Voltage_Generator serDputs("smua.source.func=smua.OUTPUT_DCVOLTS");Keithley_Enter
+#define Keithley_IMeasure_Autorange serDputs("smua.measure.autorangei=smua.AUTORANGE_ON");Keithley_Enter
+#define Keithley_ISource_Autorange serDputs("smua.source.autorangei=smua.AUTORANGE_ON");Keithley_Enter
+//***************END initialization*********************
+
+#define Keithley_Unplug_Error 1
+#define Keithley_Overheat_Error 2
+#define Keithley_Current_Loop_Arg 20
+
+void Keithley_Current_Set(float current);
+int Keithley_Current_RawData_Update(char channel);
+cofunc void Keithley_Error_Handler(char channel, char error_code);
+
+struct{
+int Current_RawData[22][8];
+}Keithley;
+
+/*** EndHeader */
+
+void Keithley_Current_Set(float current)
+{
+serDputs("smua.source.leveli=");
+serDputs(General_Convert_Float2StrSc_Dot0(current));
+Keithley_Enter;
+}
+
+//********************************************************************
+//**********************CURRENT CALIBRATION***************************
+//********************************************************************
+
+void Keithley_Calibration_Background(char channel)
+{
+//************
+//****menu****
+//************
+LCD_Display_Clear();
+LCD_Write_Text("CH:");
+LCD_Write_Char(channel+49);
+LCD_Write_Text(" Calibration");
+LCD_Locate(2,1);
+LCD_Write_Text("IN PROGRESS.");
+LCD_Locate(3,1);
+LCD_Write_Text("Please wait.");
+LCD_Locate(4,1);
+LCD_Write_Text(" I [A] = XXXXX");
+//****menu****
+}
+
+void Keithley_Calibration_DynamicBackground(float actual_current_set)
+{
+	LCD_Locate(4,10);
+   LCD_Write_Text(General_Convert_Float2StrSc_Dot0(actual_current_set));
+}
+
+cofunc void Keithley_Error_Handler(char channel, char error_code)
+{
+switch (error_code)
+	{
+   case 1:
+   LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL01>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("Please");
+	LCD_Locate(3,1);
+	LCD_Write_Text("check Fischer");
+	LCD_Locate(4,1);
+	LCD_Write_Text("cables.");
+   break;
+
+   case 2:
+	LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL02>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("Keithley does");
+	LCD_Locate(3,1);
+	LCD_Write_Text("not set the");
+	LCD_Locate(4,1);
+	LCD_Write_Text("proper current.");
+   break;
+
+   case 3:
+	LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL03>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("Keithley serial");
+	LCD_Locate(3,1);
+	LCD_Write_Text("cable is not");
+	LCD_Locate(4,1);
+	LCD_Write_Text("connected.");
+   break;
+
+   case 4:
+	LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL04>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("The calibration");
+	LCD_Locate(3,1);
+	LCD_Write_Text("was interrupted");
+	LCD_Locate(4,1);
+	LCD_Write_Text("by a user.");
+   break;
+
+/*   no overheat protection
+   case 5:
+	LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL05>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("The QLambda is");
+	LCD_Locate(3,1);
+	LCD_Write_Text("broken or over-");
+	LCD_Locate(4,1);
+	LCD_Write_Text("heated.");
+   break;
+*/
+   case 6:
+	LCD_Display_Clear();
+	LCD_Write_Text("CH");
+	LCD_Write_Char(channel+49);
+	LCD_Write_Text(" ERROR<CAL06>");
+	LCD_Locate(2,1);
+	LCD_Write_Text("The readings");
+	LCD_Locate(3,1);
+	LCD_Write_Text("do not satisfy");
+	LCD_Locate(4,1);
+	LCD_Write_Text("intervals.");
+   break;
+	}
+
+	wfd Menu_Button_Wait4Press();
+}
+
+void Keithley_Update_Close(void)
+{
+		LED_Calibration(0);
+//		Keithley_Off;
+		Keithley_Current_Set(0);
+}
+
+
+int Keithley_Current_RawData_Update(char channel)
+{
+char buf[100];
+char i,j; char k;
+//char overheat_counter;
+char keypad_status;
+
+float current_set[3];
+float actual_current_set;
+float keithley_current;
+
+int raw_data_buffer;
+int actual_raw_data;
+int raw_data_offset;
+unsigned long int interrupt_detector;
+
+interrupt_detector=Sys_Arg.InterruptInc;
+
+raw_data_offset=0;
+actual_raw_data=0;
+raw_data_buffer=0;
+actual_current_set=0;
+//overheat_counter=0;
+keypad_status=0;
+//int matrix_volt_raw_data[11][8];
+current_set[0]=1E-8;
+current_set[1]=2E-8;
+current_set[2]=5E-8;
+
+Keithley_IMeasure_Autorange;
+Keithley_ISource_Autorange;
+Keithley_Calibration_Background(channel);
+Keithley_Current_Generator;
+Keithley_On;
+
+Keithley_Current_Set(1E-3);
+General_Delay_Ms(2000);
+LED_Orange_All();
+
+for(i=0;i<Keithley_Current_Loop_Arg;i++)
+	{
+   if (((i+3)%3)==0)
+      {
+      Keithley_Current_Set(current_set[0]);
+      actual_current_set=current_set[0];
+      current_set[0]*=10;
+      }
+   else if (((i+2)%3)==0)
+   	{
+      Keithley_Current_Set(current_set[1]);
+      actual_current_set=current_set[1];
+      current_set[1]*=10;
+      }
+   else if (((i+1)%3)==0)
+   	{
+      Keithley_Current_Set(current_set[2]);
+      actual_current_set=current_set[2];
+      current_set[2]*=10;
+      }
+
+   //menu
+   Keithley_Calibration_DynamicBackground(actual_current_set);
+   //*menu
+	General_Delay_Ms(2000);
+
+   Keithley_Request_Current;
+   General_Delay_Ms(300);
+   serDread(buf, 15, 100);
+   keithley_current=atof(buf);
+
+   if (General_Float_Compare(actual_current_set,keithley_current)!=0)
+   	{
+      Keithley_Update_Close();
+      return -2;
+      }
+
+	Calibrate_RawData_Set();
+
+   j=0;
+	raw_data_buffer=Calibrate_RawDataMean_Set(channel);
+
+		while(j<10)   //50
+	   {
+      LED_Calibration(0);
+      Keithley_Request_Current;  //it forces the response
+	   General_Delay_Ms(10);
+      LED_Calibration(1);
+	   Calibrate_RawData_Set();
+      actual_raw_data=Calibrate_RawDataMean_Set(channel);
+
+	   if (abs(actual_raw_data-raw_data_buffer)<=1) j++;
+	   else
+         {
+         j=0;
+         raw_data_buffer=actual_raw_data;
+         }
+
+      if (actual_raw_data<50)
+         {
+         Keithley_Update_Close();
+         return -1;
+         }
+/*		else if (actual_raw_data<180)        //no overheat protection
+      	{
+		//Keithley_Off;
+ 			Keithley_Current_Set(0);
+         overheat_counter++;
+			General_Delay_Ms(20000);
+         Keithley_Current_Set(actual_current_set);
+         General_Delay_Ms(5000);
+         Keithley_On;
+         }
+*/
+		serDread(buf, 15, 100);
+      serDrdFlush();
+   	if (buf[0]==0)
+   		{
+         Keithley_Update_Close();
+      	return -3;
+         }
+ 		buf[0]=0;
+
+      I2CRead(PORT_EXP3_ADDRESS,0x01,&keypad_status,1);
+      if((keypad_status&0x0F)==0x07)
+         {
+         Keithley_Update_Close();
+         return -4;
+         }
+/*   no overheat protection
+      if(overheat_counter>2)
+      	{
+         Keithley_Update_Close();
+         return -5;
+         }
+*/
+//      printf("actual_raw_data=%d\n",actual_raw_data);
+//      printf("Calibration_Pattern[i]=%d\n",Calibration_Pattern[i]);
+//      printf("abs=%d\n",abs(actual_raw_data-Calibration_Pattern[i]));
+
+      if ((abs(actual_raw_data-Calibration_Pattern[i])>100) && (j>6))
+      	{
+         Keithley_Update_Close();
+         return -6;
+         }
+
+	   }
+
+   if (actual_current_set>0.018) raw_data_offset=10;
+   else if (actual_current_set>0.0095) raw_data_offset=1;
+   else raw_data_offset=0;
+
+   Keithley.Current_RawData[i][channel]=actual_raw_data+raw_data_offset;
+//	printf("%3d   %5d \n",i,Keithley.Current_RawData[i][0]);
+   }
+
+Keithley_Update_Close();
+return 1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,24 @@
+/*** BeginHeader */
+#ifndef __DEV_SFlash_MOUNT_LIB
+#define __DEV_SFlash_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_SFlash_BODY.LIB"
+
+#define Dev_SFlash_Driver
+
+#define DEV_SFLASH_DRIVER_INIT__								SFlash_Init();
+#define Dev_SFlash_IntRead(id) 								SFlash_IntRead(id)
+#define Dev_SFlash_IntWrite(id,var) 						SFlash_IntWrite(id,var)
+#define Dev_SFlash_Ver											SFlash_Ver
+#define Dev_SFlash_Page_Size									SFlash_Page_Size
+#define Dev_SFlash_Str2FlPage(str,str_page_id)			SFlash_Str2FlPage(str,str_page_id)
+#define Dev_SFlash_FlPage2Str(buf,str_page_id)			SFlash_FlPage2Str(buf,str_page_id)
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

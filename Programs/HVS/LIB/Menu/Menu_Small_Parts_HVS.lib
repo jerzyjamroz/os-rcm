@@ -1,0 +1,590 @@
+/*** BeginHeader */
+#ifndef __MENU_SMALL_PARTS_HVS_LIB
+#define __MENU_SMALL_PARTS_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Submenu_Voltage_Display_Handler,Submenu_Manual_Interlock_Produce_Handler,
+Submenu_No_Of_Outputs_Handler,Submenu_Samples_Handler,Submenu_EPSconfiguration_Handler
+*/
+
+_MENU_HVS_NODEBUG cofunc void Submenu_Voltage_Display_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Submenu_Manual_Interlock_Produce_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Submenu_No_Of_Outputs_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Submenu_Samples_Handler(void);
+_MENU_HVS_NODEBUG cofunc void Submenu_EPSconfiguration_Handler(void);
+
+char * const Menu2_SubMenu_Strings_8[] = {
+"Channel ",
+"V[V] = "
+};
+
+/*** EndHeader */
+
+
+//******************************************************************************
+//******************Submenu_Voltage_Display_Handler*****************************
+//******************************************************************************
+_MENU_HVS_NODEBUG
+void Menu2_8_X(int chan,char row)
+{
+   LCD_Locate(row,10);
+	LCD_Write_Char(chan+48);
+	LCD_Locate(row+1,10);
+	LCD_Write_Text(General_Convert_Float2StringDot2(Calculate_Voltage(ADC.ActualRawDataMean[chan-1])));
+}
+
+_MENU_HVS_NODEBUG
+void Menu2_8_Background()
+{
+	LCD_Locate(1,FirstColumn);
+   LCD_Write_Text(Menu2_SubMenu_Strings_8[0]);
+	LCD_Locate(2,SecondColumn);
+   LCD_Write_Text(Menu2_SubMenu_Strings_8[1]);
+	LCD_Locate(3,FirstColumn);
+   LCD_Write_Text(Menu2_SubMenu_Strings_8[0]);
+	LCD_Locate(4,SecondColumn);
+   LCD_Write_Text(Menu2_SubMenu_Strings_8[1]);
+}
+
+
+//cofunc void Menu2_Cofunc_SubList8(void)
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Voltage_Display_Handler(void)
+{
+char order;
+order=0;
+System_Flag.Refresher=1;
+
+LCD_Display_Clear();
+Menu2_8_Background();
+
+while(order!=Designator_Exit)
+ {
+	if((Menu2.Element_ID<1) || (Menu2.Element_ID>50))
+	{
+		Menu2.Element_ID=1;
+   }
+   else if (Menu2.Element_ID>(HVS.No_Of_Outputs-1)) Menu2.Element_ID=HVS.No_Of_Outputs-1;
+	else if (Menu2.Element_ID>7)
+	{
+		Menu2.Element_ID=7;
+   }
+
+	switch (Menu2.Element_ID)
+	{
+	case 1:
+		Menu2_8_X(1,1);
+   	Menu2_8_X(2,3);
+	break;
+
+	case 2:
+		Menu2_8_X(2,1);
+   	Menu2_8_X(3,3);
+	break;
+
+	case 3:
+		Menu2_8_X(3,1);
+   	Menu2_8_X(4,3);
+	break;
+
+	case 4:
+		Menu2_8_X(4,1);
+   	Menu2_8_X(5,3);
+	break;
+
+	case 5:
+		Menu2_8_X(5,1);
+   	Menu2_8_X(6,3);
+	break;
+
+	case 6:
+		Menu2_8_X(6,1);
+   	Menu2_8_X(7,3);
+	break;
+
+	case 7:
+		Menu2_8_X(7,1);
+   	Menu2_8_X(8,3);
+	break;
+	}
+
+   //*******************
+   //costate
+    if (Message_Box.On==0)
+      {
+       waitfor( ( (order=Keypad_Detect_KeyPress())>0) || (DelayMs(1000)) );
+      }
+
+    if (Message_Box.On>=1)
+      {
+ //     wfd order=Menu_Button_Wait4Get_WithChrAbort(&Message_Box.On);
+ 		waitfor(Ret_Alert_Ocurence==0);
+      LCD_Display_Clear();
+      Menu2_8_Background();
+      Message_Box.On=0;
+      }
+
+   //costate
+   //*******************
+ }
+System_Flag.Refresher=0;
+}
+//******************Submenu_Voltage_Display_Handler*****************************
+
+
+
+//******************************************************************************
+//****************Submenu_Manual_Interlock_Produce_Handler**********************
+//******************************************************************************
+
+//cofunc void Menu2_SubList3(void)
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Manual_Interlock_Produce_Handler(void)
+{
+char order;
+order=0;
+
+while(order!=Designator_Exit)
+ {
+ 	LCD_Display_Clear();
+   if((order==Designator_Ok) && (Interlock.Status_Manual_Interlock==0)) Interlock_Set_Int_En(1);
+   else if (order==Designator_Ok) Interlock_Set_Int_En(0);
+
+	LCD_Locate(1,1);
+   LCD_Write_Char(SubMenuPointer);
+
+   if(Interlock.Status_Manual_Interlock==0) LCD_Write_Text("Enable Manual ");
+   else LCD_Write_Text("Disable Manual");
+
+   LCD_Locate(2,SecondColumn);
+	LCD_Write_Text("Interlock?");
+	LCD_Locate(3,OK_Canc_Shift);
+	LCD_Write_Text(Menu2_Ok_Canc);
+
+   wfd order = Menu_Button_Wait4Get();
+ }
+}
+
+//****************Submenu_Manual_Interlock_Produce_Handler**********************
+
+
+//******************************************************************************
+//********************Submenu_No_Of_Outputs_Handler*****************************
+//******************************************************************************
+_MENU_HVS_NODEBUG
+cofunc void Submenu_No_Of_Outputs_Handler(void)
+{
+char order;
+char helper;
+
+helper=HVS.No_Of_Outputs;
+order=0;
+
+while( (order!=Designator_Exit) && (order!=Designator_Ok) )
+ {
+   LCD_Display_Clear();
+
+   if(order==Designator_Up)
+      {
+      HVS.No_Of_Outputs++;
+      if (HVS.No_Of_Outputs>HVS_Max_No_Of_Outputs) HVS.No_Of_Outputs=HVS_Max_No_Of_Outputs;
+      }
+   else if (order==Designator_Down)
+      {
+      HVS.No_Of_Outputs--;
+      if (HVS.No_Of_Outputs<2) HVS.No_Of_Outputs=2;
+      }
+
+ 	LCD_Locate(1,CursorStartPoint);
+   LCD_Write_Char(SubMenuPointer);
+	LCD_Write_Text("Num.of");
+	LCD_Locate(2,SecondColumn);
+	LCD_Write_Text("Outputs: ");
+   LCD_Write_Text(General_Convert_UInt2String(HVS.No_Of_Outputs));
+//		LCD_Write_Text("\"");
+	LCD_Locate(3,1);
+	LCD_Write_Text(Menu_Text_UpDownChange);
+
+	LCD_Locate(4,OK_Confirm_Shift);
+	LCD_Write_Text(Menu2_Ok_Confirm);
+
+	wfd order = Menu_Button_Wait4Get();
+ }
+
+ if(order==Designator_Exit)
+  {
+  HVS.No_Of_Outputs=helper;
+  }
+
+Flags_NoOfOutputs_Adopter();
+
+//Interlock.Activity++;
+}
+//********************Submenu_No_Of_Outputs_Handler*****************************
+
+
+//******************************************************************************
+//**************************Submenu_Samples_Handler*****************************
+//******************************************************************************
+
+//cofunc void Menu2_SubList9(void)
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Samples_Handler(void)
+{
+char order;
+char mean_divider;
+
+mean_divider=ADC.MeanDivider;
+order=0;
+while( (order!=Designator_Exit) && (order!=Designator_Ok) )
+ {
+ 	LCD_Display_Clear();
+
+   if(order==Designator_Up)
+      {
+      if (mean_divider<1) mean_divider=1;
+      mean_divider--;
+      }
+   else if (order==Designator_Down)
+      {
+      mean_divider++;
+      if (mean_divider>8) mean_divider=8;
+      }
+
+	LCD_Locate(1,CursorStartPoint);
+   LCD_Write_Char(SubMenuPointer);
+	LCD_Write_Text("Num.of Samples:");
+	LCD_Locate(2,SecondColumn+2);
+   LCD_Write_Text(General_Convert_UInt2String_Shift3(N_Max>>mean_divider));
+	LCD_Locate(3,OK_Confirm_Shift);
+	LCD_Write_Text(Menu2_Ok_Confirm);
+
+	wfd order = Menu_Button_Wait4Get();
+}
+
+ if(order==Designator_Ok)
+  {
+  ADC.MeanDivider=mean_divider;
+  }
+
+}
+//**************************Submenu_Samples_Handler*****************************
+
+//******************************************************************************
+//*******************************EPS configuration******************************
+//******************************************************************************
+_MENU_HVS_NODEBUG
+void Submenu_EPSconfiguration_Background(char page)
+{
+char i;
+	LCD_Display_Clear();
+   LCD_Locate(1,1);
+   LCD_Write_Text("No| ");
+	for(i=1;i<HVS.No_Of_Outputs+1;i++) LCD_Write_Char(i+48);
+   LCD_Write_Char(Menu_LeftArrow_Char);
+	LCD_Write_Text("Ch.");
+
+switch(page)
+	{
+   case 1:
+	LCD_Locate(2,2);
+	LCD_Write_Text("1| ");
+	LCD_Locate(3,2);
+	LCD_Write_Text("2| ");
+	LCD_Locate(4,2);
+	LCD_Write_Text("3| ");
+   break;
+
+   case 2:
+	LCD_Locate(2,2);
+	LCD_Write_Text("4| ");
+	LCD_Locate(3,2);
+	LCD_Write_Text("5| ");
+	LCD_Locate(4,2);
+	LCD_Write_Text("6| ");
+   break;
+
+   case 3:
+	LCD_Locate(2,2);
+	LCD_Write_Text("7| ");
+	LCD_Locate(3,2);
+	LCD_Write_Text("8| ");
+   LCD_Locate(4,1);
+   LCD_Write_Text(Menu_EmptyLine);
+   break;
+   }
+}
+_MENU_HVS_NODEBUG
+void Submenu_EPSconfiguration_Display(char channel)
+{
+char i;
+
+if ((channel>0) && (channel<4))
+	{
+   LCD_Locate(channel+1,5);
+   }
+else if ((channel>3) && (channel<7))
+	{
+   LCD_Locate(channel-2,5);
+   }
+else if ((channel>6) && (channel<9))
+	{
+   LCD_Locate(channel-5,5);
+   }
+else LCD_Display_Clear();
+
+for(i=0;i<HVS.No_Of_Outputs;i++)
+	{
+	if(((Setting.EPS_Output_Mask[channel-1]>>i)&0x01)==0x01)
+	LCD_Write_Char('X');
+	else LCD_Write_Char('O');
+	}
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_EPSconfig_Mask_Set(char channel)
+{
+char order;
+char i;
+i=1;
+order=0;
+
+LCD_Cursor_ON;LCD.Cursor=1;
+
+while(order!=Designator_Exit)
+	{
+   if(order==Designator_Up) i++;
+   else if (order==Designator_Down) i--;
+   else if (order==Designator_Ok)
+   	{
+      Setting.EPS_Output_Mask[channel-1]=
+      			General_Toggle_BitOfChar(Setting.EPS_Output_Mask[channel-1],i-1);
+
+      Submenu_EPSconfiguration_Display(channel);
+      }
+
+   if (i<1) i=1;
+   else if (i>HVS.No_Of_Outputs) i=HVS.No_Of_Outputs;
+
+if ((channel>0) && (channel<4))
+	{
+   LCD_Locate(channel+1,4+i);
+   LCD.Cursor_Position[0]=channel+1;LCD.Cursor_Position[1]=4+i;
+   }
+else if ((channel>3) && (channel<7))
+	{
+   LCD_Locate(channel-2,4+i);
+   LCD.Cursor_Position[0]=channel-2;LCD.Cursor_Position[1]=4+i;
+   }
+else if ((channel>6) && (channel<9))
+	{
+   LCD_Locate(channel-5,4+i);
+   LCD.Cursor_Position[0]=channel-5;LCD.Cursor_Position[1]=4+i;
+   }
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+LCD.Cursor_Position[0]=4;LCD.Cursor_Position[1]=17;
+LCD_Cursor_OFF;LCD.Cursor=-1;
+}
+
+//DONE
+_MENU_HVS_NODEBUG
+void Submenu_EPSconfiguration_Cursor_Set(char row)
+{
+switch(row)
+	{
+   case 1:
+   LCD_Locate(2,1);
+   LCD_Write_Char(SubMenuPointer);
+
+   LCD_Locate(3,1);
+   LCD_Write_Char(' ');
+   LCD_Locate(4,1);
+   LCD_Write_Char(' ');
+   break;
+
+   case 2:
+   LCD_Locate(3,1);
+   LCD_Write_Char(SubMenuPointer);
+
+   LCD_Locate(4,1);
+   LCD_Write_Char(' ');
+   LCD_Locate(2,1);
+	LCD_Write_Char(' ');
+   break;
+
+   case 3:
+   LCD_Locate(4,1);
+   LCD_Write_Char(SubMenuPointer);
+
+   LCD_Locate(2,1);
+   LCD_Write_Char(' ');
+   LCD_Locate(3,1);
+	LCD_Write_Char(' ');
+   break;
+   }
+
+}
+_MENU_HVS_NODEBUG
+cofunc void Submenu_EPSconfiguration_Handler(void)
+{
+char i;
+char page,page_stack;
+char order;
+char column_shift;
+order=0;
+page=page_stack=1;
+
+LCD_Display_Clear();
+Submenu_EPSconfiguration_Background(1);
+Submenu_EPSconfiguration_Display(1);
+Submenu_EPSconfiguration_Display(2);
+Submenu_EPSconfiguration_Display(3);
+
+while(order!=Designator_Exit)
+	{
+
+	if(Menu2.Element_ID<1)
+		{
+		Menu2.Element_ID=1;
+   	}
+	else if (Menu2.Element_ID>HVS.No_Of_Outputs) Menu2.Element_ID=HVS.No_Of_Outputs;
+	else if (Menu2.Element_ID>8)
+		{
+		Menu2.Element_ID=8;
+   	}
+
+   if ((Menu2.Element_ID>0) && (Menu2.Element_ID<4)) page=1;
+   else if ((Menu2.Element_ID>3) && (Menu2.Element_ID<7)) page=2;
+   else if ((Menu2.Element_ID>6) && (Menu2.Element_ID<9)) page=3;
+
+   if(page!=page_stack)
+   	{
+      Submenu_EPSconfiguration_Background(page);
+      page_stack=page;
+
+      if(page==1)
+   		{
+   		Submenu_EPSconfiguration_Display(1);
+   		Submenu_EPSconfiguration_Display(2);
+         if(HVS.No_Of_Outputs==2) LCD_Write_EmptyLine(4);
+         else Submenu_EPSconfiguration_Display(3);
+      	}
+   	else if (page==2)
+   		{
+   		Submenu_EPSconfiguration_Display(4);
+         if(HVS.No_Of_Outputs==4) LCD_Write_EmptyLine(3);
+         else Submenu_EPSconfiguration_Display(5);
+   		if((HVS.No_Of_Outputs==5)||(HVS.No_Of_Outputs==4)) LCD_Write_EmptyLine(4);
+         else Submenu_EPSconfiguration_Display(6);
+      	}
+   	else if (page==3)
+   		{
+   		Submenu_EPSconfiguration_Display(7);
+   		if(HVS.No_Of_Outputs==7) LCD_Write_EmptyLine(3);
+         else Submenu_EPSconfiguration_Display(8);
+      	}
+      }
+
+	switch (Menu2.Element_ID)
+		{
+		case 1:
+         if(order==Designator_Ok)
+            {
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(1);
+            Menu2.Element_ID=1;
+            }
+      Submenu_EPSconfiguration_Cursor_Set(1);
+		break;
+
+   	case 2:
+         if(order==Designator_Ok)
+         	{
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(2);
+            Menu2.Element_ID=2;
+            }
+
+      Submenu_EPSconfiguration_Cursor_Set(2);
+		break;
+
+   	case 3:
+         if(order==Designator_Ok)
+         	{
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(3);
+            Menu2.Element_ID=3;
+            }
+
+      Submenu_EPSconfiguration_Cursor_Set(3);
+		break;
+
+		case 4:
+         if(order==Designator_Ok)
+            {
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(4);
+            Menu2.Element_ID=4;
+            }
+
+		Submenu_EPSconfiguration_Cursor_Set(1);
+		break;
+
+   	case 5:
+         if(order==Designator_Ok)
+         	{
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(5);
+            Menu2.Element_ID=5;
+            }
+
+		Submenu_EPSconfiguration_Cursor_Set(2);
+		break;
+
+   	case 6:
+         if(order==Designator_Ok)
+         	{
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(6);
+            Menu2.Element_ID=6;
+            }
+
+		Submenu_EPSconfiguration_Cursor_Set(3);
+		break;
+
+		case 7:
+         if(order==Designator_Ok)
+            {
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(7);
+            Menu2.Element_ID=7;
+            }
+
+		Submenu_EPSconfiguration_Cursor_Set(1);
+		break;
+
+   	case 8:
+         if(order==Designator_Ok)
+         	{
+            Menu2.Element_ID=1;
+            wfd Submenu_EPSconfig_Mask_Set(8);
+            Menu2.Element_ID=8;
+            }
+
+		Submenu_EPSconfiguration_Cursor_Set(2);
+		break;
+		}
+
+	wfd order = Menu_Button_Wait4Get();
+	}
+
+}
+//*******************************EPS configuration******************************
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

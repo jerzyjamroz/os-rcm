@@ -1,0 +1,25 @@
+/*** BeginHeader */
+#ifndef __DEV_TIME_HEADER_LIB
+#define __DEV_TIME_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+#ifdef TIME_DEBUG
+#define _TIME_NODEBUG
+#else
+#define _TIME_NODEBUG nodebug
+#endif
+
+//_________________________________<CONFIG>_____________________________________
+//****************************<SETTINGS>****************************************
+
+//****************************</SETTINGS>***************************************
+//_________________________________</CONFIG>____________________________________
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

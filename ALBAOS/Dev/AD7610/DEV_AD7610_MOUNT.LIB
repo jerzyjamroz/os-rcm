@@ -1,0 +1,37 @@
+/*** BeginHeader */
+#ifndef __DEV_SPIB_MOUNT_LIB
+#define __DEV_SPIB_MOUNT_LIB
+/*** EndHeader */
+
+
+/*** BeginHeader*/
+#use "DEV_SPIB_BODY.LIB"
+
+//<ETH_DRIVER>
+//***SNTP DRIVER
+//------------------------------------------------------------------------------
+//<HEADER>
+#define Dev_SPIB_Driver                   //START
+//</HEADER>
+//<INIT>
+#define Dev_SPIB_Init__(x)							SPIB_Init(x);
+//</INIT>
+//<DAEMON>
+//#define DEV_Eth_DHCP_DAEMON__				Eth_DHCP_Daemon();
+//</DAEMON>
+//------------------------------------------------------------------------------
+//<BODY>
+#define Dev_SPIB_Write(buf,len)	  				SPIB_Write(buf,len)
+#define Dev_SPIB_Read(buf,len)	  				SPIB_Read(buf,len)
+//</BODY>
+//------------------------------------------------------------------------------
+//</ETH_DRIVER>
+
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,67 @@
+/*** BeginHeader */
+#ifndef __DEV_I2C_BODY_LIB
+#define __DEV_I2C_BODY_LIB
+/*** EndHeader */
+
+//_____________________________<LIBRARIES>______________________________________
+/*** BeginHeader */
+#class auto
+#use "DEV_I2C_HEADER.LIB"
+//#define Mount_Dev_SNTP_Driver
+/*** EndHeader */
+//_____________________________</LIBRARIES>_____________________________________
+
+
+/*** BeginHeader
+Eth_Init, Eth_isLink, Eth_Resolve, Eth_IP2Num,Eth_DHCP_Daemon
+*/
+
+//_____________________________<FUNCTIONS>______________________________________
+int Eth_Init(void);
+int Eth_isLink(void);
+unsigned long Eth_Resolve(char * dns);
+longword Eth_IP2Num(char* dotted_ip_string);
+int Eth_DHCP_Daemon(void);
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+//<LOC_DEFINES>
+//#define LOC_Eth_Ping_Timeout 0xffffffffL
+//#define LOC_Eth_Det_Delay_Time 2000
+//</LOC_DEFINES>
+
+_ETH_NODEBUG
+int Eth_DHCP_Daemon(void)
+{
+static unsigned long int timer;
+static int flag;
+#GLOBAL_INIT{
+flag=-1;
+timer=0;
+}
+
+if( (Eth_isLink()==1) && (flag!=0) && (chk_timeout(timer)>0) )
+   {
+   timer = _SET_TIMEOUT(5000);
+ 	dhcp_release();
+ 	flag=dhcp_acquire();
+   tcp_tick(NULL);
+//   printf("\nSEC=%u",SEC_TIMER);
+   }
+else if(Eth_isLink()==0) flag=-1;
+
+return flag;
+}
+
+
+_ETH_NODEBUG
+int Eth_Init(void)
+{
+if(SYS_ENV.isSockInit!=0) SYS_ENV.isSockInit=sock_init();
+
+return SYS_ENV.isSockInit;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

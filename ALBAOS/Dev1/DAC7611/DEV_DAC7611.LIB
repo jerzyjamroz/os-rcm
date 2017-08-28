@@ -1,0 +1,32 @@
+/*** BeginHeader */
+#ifndef __DEV_DAC7611_LIB
+#define __DEV_DAC7611_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+DAC7611_Wr,
+*/
+#include "/Dev1/DAC7611/DEV_DAC7611.H"
+
+//_____________________________<FUNCTIONS>______________________________________
+int DAC7611_Wr(int mv);
+
+//_____________________________</FUNCTIONS>______________________________________
+/*** EndHeader */
+
+_DAC7611_NODEBUG
+int DAC7611_Wr(int mv)
+{
+char * p2byte;
+char buf[3];
+
+p2byte=(char *)(&mv);
+
+buf[0]=(char)*(p2byte+1);
+buf[1]=(char)*p2byte;
+
+return Dev_SPI_Write(buf,2);
+}
+/*** BeginHeader */
+#endif
+/*** EndHeader */

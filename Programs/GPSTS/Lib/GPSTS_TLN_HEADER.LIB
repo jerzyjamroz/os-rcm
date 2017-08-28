@@ -1,0 +1,191 @@
+/*** BeginHeader */
+#ifndef __GPSTS_TLN_HEADER_LIB
+#define __GPSTS_TLN_HEADER_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+*/
+
+
+//<SYSTEM>
+const char SCPI_SYST[]={"SYSTem"};
+//***********************************
+//0
+char * const SCPI_SYST_HEAD_Q[]={
+SCPI_SYST,
+"HEADers?",
+""
+};
+//***********************************
+//1
+char * const SCPI_SYST_TIM_Q[]={
+SCPI_SYST,
+"TIMe?",
+""
+};
+//***********************************
+//***********************************
+//2
+char * const SCPI_SYST_UTCS_Q[]={
+SCPI_SYST,
+"UTCSec?",
+""
+};
+//***********************************
+//3
+char * const SCPI_SYST_SNUM_Q[]={
+SCPI_SYST,
+"SNUMber?",
+""
+};
+//***********************************
+//4
+char * const SCPI_SYST_VERS_Q[]={
+SCPI_SYST,
+"VERSion?",
+""
+};
+//***********************************
+//<SNTP>
+const char SCPI_SNTP[]={"SNTP"};
+//5
+char * const SCPI_SYST_SNTP_HOST_CHAN[]={
+SCPI_SYST,
+SCPI_SNTP,
+"HOST",
+"CHANge",
+""
+};
+const int _SCPI_SYST_SNTP_HOST_CHAN[]={
+1,SYS_ETH_IP4_MAX_LEN,
+0
+};
+char * const __SCPI_SYST_SNTP_HOST_CHAN[]={
+"[bool]flash?",
+"[string]IP",
+""
+};
+//***********************************
+//6
+char * const SCPI_SYST_SNTP_HOST_Q[]={
+SCPI_SYST,
+SCPI_SNTP,
+"HOST?",
+""
+};
+//***********************************
+//</SNTP>
+//<TELNET>
+const char SCPI_TELN[]={"TELNet"};
+//7
+char * const SCPI_SYST_TELN_ACT_Q[]={
+SCPI_SYST,
+SCPI_TELN,
+"ACTive?",
+""
+};
+//***********************************
+//8
+char * const SCPI_SYST_TELN_CLOS[]={
+SCPI_SYST,
+SCPI_TELN,
+"CLOSe",
+""
+};
+//***********************************
+//9
+char * const SCPI_SYST_TELN_WDOG_Q[]={
+SCPI_SYST,
+SCPI_TELN,
+"WDOG?",
+""
+};
+//***********************************
+//10
+char * const SCPI_SYST_TELN_WDOG[]={
+SCPI_SYST,
+SCPI_TELN,
+"WDOG",
+""
+};
+const int _SCPI_SYST_TELN_WDOG[]={
+1,4,
+0
+};
+char * const __SCPI_SYST_TELN_WDOG[]={
+"[bool]flash?",
+"[hex]",
+""
+};
+//***********************************
+//11
+char * const SCPI_SYST_TELN_MAC_Q[]={
+SCPI_SYST,
+SCPI_TELN,
+"MAC?",
+""
+};
+//***********************************
+//</TELNET>
+//</SYSTEM>
+//<STATUS>
+//12
+char * const SCPI_STAT_QUES_Q[]={
+"STATus",
+"QUEStionable?",
+""
+};
+//***********************************
+//</STATUS>
+//13
+char * const SCPI_STAT_CRED_Q[]={
+"CREDits?",
+""
+};
+//***********************************
+
+
+enum{
+SYST_HEAD_Q=1,
+SYST_TIM_Q,
+SYST_UTCS_Q,
+SYST_SNUM_Q,
+SYST_VERS_Q,
+SYST_TELN_ACT_Q,
+SYST_SNTP_HOST_CHAN,
+SYST_SNTP_HOST_Q,
+SYST_TELN_CLOS,
+SYST_TELN_WDOG_Q,
+SYST_TELN_WDOG,
+SYST_TELN_MAC_Q,
+STAT_CRED_Q,
+STAT_QUES_Q,
+}GPTS_IDs;
+
+#define GPSTS_ID2No(ID)	SYSVarOrd_REF_No_Get(GPSTS_SCPI_REF,ID)
+const struct SYSVarOrd_REF GPSTS_SCPI_REF[]={
+0,		SYST_HEAD_Q,					SYSNULL_INT,SYSNULL_INT,   					SCPI_SYST_HEAD_Q, 		  				SYSNULL_PINT,								SYSNULL_PCHAR2D,							SYS_At_Request,
+1,		SYST_TIM_Q,						SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TIM_Q, 							SYSNULL_PINT,                			SYSNULL_PCHAR2D,							SYS_At_Request,
+2,		SYST_UTCS_Q,               SYSNULL_INT,SYSNULL_INT,                  SCPI_SYST_UTCS_Q,                   SYSNULL_PINT,                       SYSNULL_PCHAR2D,                    SYS_At_Request,
+3,		SYST_SNUM_Q,					SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_SNUM_Q,							SYSNULL_PINT,               			SYSNULL_PCHAR2D,							SYS_At_Request,
+4,		SYST_VERS_Q, 					SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_VERS_Q, 						SYSNULL_PINT,               			SYSNULL_PCHAR2D,							SYS_At_Request,
+5,		SYST_SNTP_HOST_CHAN,			SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_SNTP_HOST_CHAN,				_SCPI_SYST_SNTP_HOST_CHAN,       	__SCPI_SYST_SNTP_HOST_CHAN,			SYS_At_Request,
+6,		SYST_SNTP_HOST_Q,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_SNTP_HOST_Q, 					SYSNULL_PINT,          					SYSNULL_PCHAR2D,							SYS_At_Request,
+7,		SYST_TELN_ACT_Q,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TELN_ACT_Q,					SYSNULL_PINT,           				SYSNULL_PCHAR2D,							SYS_At_Request,
+8,		SYST_TELN_CLOS,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TELN_CLOS,						SYSNULL_PINT,            				SYSNULL_PCHAR2D,							SYS_At_Request,
+9,		SYST_TELN_WDOG_Q,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TELN_WDOG_Q,					SYSNULL_PINT,         					SYSNULL_PCHAR2D,							SYS_At_Request,
+10,	SYST_TELN_WDOG,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TELN_WDOG,						_SCPI_SYST_TELN_WDOG,            	__SCPI_SYST_TELN_WDOG,					SYS_At_Request,
+11,	SYST_TELN_MAC_Q,				SYSNULL_INT,SYSNULL_INT,						SCPI_SYST_TELN_MAC_Q,					SYSNULL_PINT,           				SYSNULL_PCHAR2D,							SYS_At_Request,
+12,	STAT_QUES_Q,					SYSNULL_INT,SYSNULL_INT,						SCPI_STAT_QUES_Q,							SYSNULL_PINT,               			SYSNULL_PCHAR2D,							SYS_At_Request,
+13,   STAT_CRED_Q,					SYSNULL_INT,SYSNULL_INT,                  SCPI_STAT_CRED_Q,                   SYSNULL_PINT,                  		SYSNULL_PCHAR2D,                    SYS_At_Hidden,
+14,	SYSNULL_INT,  					SYSNULL_INT,SYSNULL_INT,						SYSNULL_PCHAR2D,                   	SYSNULL_PINT,               			SYSNULL_PCHAR2D,							SYS_At_NULL,
+};
+
+
+/*** EndHeader */
+
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

@@ -1,0 +1,29 @@
+/*** BeginHeader */
+#ifndef __FIM_TLN_COM_BRIDGE_INSTALL_LIB
+#define __FIM_TLN_COM_BRIDGE_INSTALL_LIB
+/*** EndHeader */
+
+/*** BeginHeader */
+
+#use "FIM_Config.lib"
+#use "FIM_SCPI_PROT_EXE.LIB"
+#use "FIM_COM_ORDER_EXE.LIB"
+#use "FIM_STATUS.LIB"
+
+/*** BeginMount */
+#define TLN_COM_BRIDGE_TASK Bridge_Engine();
+#define LOC_Bridge_SCPI_Parse(str) SCPI_Parse(str)
+#define LOC_Bridge_ComOrd_Parse(str,dir) Buf2ComOrd_Conv(str,dir)
+/*** EndMount */
+
+/*** BeginExecution */
+#use "FIM_BRIDGE_TLN_COM_EXE.LIB"
+/*** EndExecution */
+
+
+/*** EndHeader */
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

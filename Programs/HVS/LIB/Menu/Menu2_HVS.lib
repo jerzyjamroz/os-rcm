@@ -1,0 +1,532 @@
+/*** BeginHeader */
+#ifndef __MENU2_HVS_LIB
+#define __MENU2_HVS_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+Menu2_Keypad_Exit,Menu2_Keypad_Ok,Menu2_Keypad_Down,Menu2_Keypad_Up,Menu2_List,
+Menu2_Data_Handler
+*/
+#use "ADC_HVS.lib"
+#use "Menu_HVS.lib"
+#use "Menu_Calibration_HVS.LIB"
+#use "Menu_EnDis_Interlock_HVS.lib"
+#use "Menu_Small_Parts_HVS.lib"
+#use "Menu_Data_Save_HVS.lib"
+#use "Menu_IONPump_Model_HVS.lib"
+#use "Menu_Test_HVS.lib"
+#use "Menu_ConfigureAlarm_HVS.lib"
+
+//macro below consider jumpers and relay status
+//#define Interlock_Settings (Interlock.Status_Relays|Interlock.JumpersStatus)
+//***'Ç' means arrow on the LCD = "->"***//
+
+_MENU_HVS_NODEBUG void Menu2_Keypad_Exit();
+_MENU_HVS_NODEBUG void Menu2_Keypad_Ok();
+_MENU_HVS_NODEBUG void Menu2_Keypad_Down();
+_MENU_HVS_NODEBUG void Menu2_Keypad_Up();
+_MENU_HVS_NODEBUG void Menu2_List(char parent_id);
+
+_MENU_HVS_NODEBUG cofunc void Menu2_Data_Handler(void);
+
+/*
+struct{
+int IonPumpModel[8]; // model for each channel
+}Splitter;
+*/
+struct{
+char Element_ID;
+char Ok;
+char Toggle;
+//char Costate_SubList8;
+}Menu2;
+
+
+char * const Menu2_MenuService_Strings[] ={
+	//1
+	"1.Conf.Number",
+	"of Outputs",
+   //2
+   "2.Functional",
+   "Test",
+   //3
+   "3.Execute",
+   "Calibration",
+};
+
+
+char * const Menu2_Menu_Strings[] = {
+	//1
+   "1.En/Disable",
+   "Ch.Interlocks",
+   //2
+   "2.Produce",
+   "Manual Int.",
+   //3
+   "3.Conf.average",
+	"interval time",
+   //4
+	"4.Conf.IonPump",
+	"Model",
+   //5
+//"5.Conf.threshold",
+//"warring alarms",
+   "5.Conf.warning",
+   "alarm thresh.",
+   //6
+	"6.Conf.EPS",
+	"alarm thresh.",
+   //7
+   "7.Set EPS alarm",
+   "configuration",
+   //8
+   "8.Voltage",
+	"Readings",
+   //9
+	"9.Save/Load",
+	"configuration",
+   //10
+   "10.Service menu",
+   "(qualif.users)",
+   //11
+   "  HV.Splitter",
+   "SWv: ",
+	"SNo: HVS",
+   "MAC:",
+};
+
+
+char * const Menu2_Ok_Canc =
+{
+	"(OK/Canc)"
+};
+
+char * const Menu2_Ok_Confirm=
+{
+	"(OK~Confirm)"
+};
+
+char * const Menu2_Ok_Change=
+{
+	"(OK~Change)"
+};
+
+char * const Menu2_Press_Any_Key=
+{
+	"Press any key."
+};
+
+/*** EndHeader */
+
+_MENU_HVS_NODEBUG
+void Menu2_X(int x,char parent_id)
+{
+int row;
+row=(int)(2*x-2);
+
+	LCD_Locate(parent_id,FirstColumn);
+	LCD_Write_Text(Menu2_Menu_Strings[row]);
+	LCD_Locate(parent_id+1,SecondColumn);
+	LCD_Write_Text(Menu2_Menu_Strings[row+1]);
+}
+
+_MENU_HVS_NODEBUG
+void Menu2_List(char parent_id)
+{
+if((parent_id<1) || (parent_id>50))
+	{
+	Menu2.Element_ID=1;
+   parent_id=1;
+   }
+else if (parent_id>11)
+	{
+	Menu2.Element_ID=11;
+   parent_id=11;
+   }
+
+LCD_Display_Clear();
+
+switch (parent_id)
+	{
+   /*
+	case 0:
+	Menu2_1(1);
+   Menu2_2(3);
+	break;
+   */
+	case 1:
+	LCD_Locate(1,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(1,1);
+   Menu2_X(2,3);
+	break;
+
+	case 2:
+	LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(1,1);
+	Menu2_X(2,3);
+	break;
+
+	case 3:
+	LCD_Locate(1,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(3,1);
+	Menu2_X(4,3);
+	break;
+
+	case 4:
+	LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(3,1);
+	Menu2_X(4,3);
+	break;
+
+   case 5:
+	LCD_Locate(1,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(5,1);
+   Menu2_X(6,3);
+	break;
+
+	case 6:
+	LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(5,1);
+	Menu2_X(6,3);
+	break;
+
+	case 7:
+	LCD_Locate(1,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(7,1);
+	Menu2_X(8,3);
+	break;
+
+	case 8:
+	LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(7,1);
+	Menu2_X(8,3);
+	break;
+
+   case 9:
+	LCD_Locate(1,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(9,1);
+   Menu2_X(10,3);
+	break;
+
+	case 10:
+	LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Menu2_X(9,1);
+	Menu2_X(10,3);
+	break;
+
+	case 11:
+   LCD_Locate(1,1);
+//	Menu2_11(1);
+//	Menu2_12(3);
+//	Menu2_List_Status_Handler();
+	Msg_HVS_Bios_Status();
+	break;
+
+//	case 12:
+//	Menu2_11(1);
+//	Menu2_12(3);
+//	break;
+
+	}
+}
+
+//******************************************************************************
+//*******************************Service submenu********************************
+//******************************************************************************
+_MENU_HVS_NODEBUG
+void Submenu_Service_X(int x,char parent_id)
+{
+int row;
+row=(int)(2*x-2);
+
+	LCD_Locate(parent_id,FirstColumn);
+	LCD_Write_Text(Menu2_MenuService_Strings[row]);
+	LCD_Locate(parent_id+1,SecondColumn);
+	LCD_Write_Text(Menu2_MenuService_Strings[row]);
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Submenu_Service_Handler(void)
+{
+char order;
+order=0;
+
+while(order!=Designator_Exit)
+ {
+
+ if((Menu2.Element_ID<1) || (Menu2.Element_ID>10))
+	{
+	Menu2.Element_ID=1;
+   }
+ else if (Menu2.Element_ID>3)
+	{
+	Menu2.Element_ID=3;
+   }
+
+ switch (Menu2.Element_ID)
+	{
+	case 1:
+   if(order==Designator_Ok)
+      {
+      Menu2.Element_ID=1;
+      wfd Submenu_No_Of_Outputs_Handler();
+      Menu2.Element_ID=1;
+      }
+   LCD_Display_Clear();
+	LCD_Write_Char(MenuPointer);
+	Submenu_Service_X(1,1);
+   Submenu_Service_X(2,3);
+	break;
+
+	case 2:
+   if(order==Designator_Ok)
+      {
+      Menu2.Element_ID=1;
+      wfd Submenu_Test();
+      Menu2.Element_ID=2;
+   	}
+   LCD_Display_Clear();
+   LCD_Locate(3,1);
+	LCD_Write_Char(MenuPointer);
+	Submenu_Service_X(1,1);
+   Submenu_Service_X(2,3);
+	break;
+
+	case 3:
+   if(order==Designator_Ok)
+      {
+      Menu2.Element_ID=1;
+      wfd Submenu_Calibration();
+      Menu2.Element_ID=3;
+   	}
+   LCD_Display_Clear();
+	LCD_Write_Char(MenuPointer);
+	Submenu_Service_X(3,1);
+//	Submenu_Service_X(4,3);
+	break;
+   }
+
+ wfd
+ 	{
+		order = Menu_Button_Wait4Get();
+   }
+ }
+}
+
+//wfd Submenu_No_Of_Outputs_Handler();
+//wfd Submenu_Test();
+//wfd Submenu_Calibration();
+//*******************************Service submenu********************************
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList1(void)
+{
+//*
+wfd Submenu_EnDis_Interlock_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList2(void)
+{
+//*
+wfd Submenu_Manual_Interlock_Produce_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList3(void)
+{
+//*
+wfd Submenu_Samples_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList4(void)
+{
+//*
+wfd Submenu_IonPump_Change_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList5(void)
+{
+//*
+wfd Submenu_ConfigureAlarm1_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList6(void)
+{
+//*
+wfd Submenu_ConfigureAlarm2_Handler();
+}
+
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList7(void)
+{
+//*
+System_Flag.MsgBox_BlockFlag=-1;
+//Setting.MessageBox_Disable=1;
+wfd Submenu_EPSconfiguration_Handler();
+//Setting.MessageBox_Disable=0;
+System_Flag.MsgBox_BlockFlag=1;
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList8(void)
+{
+//*
+wfd Submenu_Voltage_Display_Handler();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList9(void)
+{
+//*
+wfd Submenu_Data_Save();
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList10(void)
+{
+//*
+System_Flag.MsgBox_BlockFlag=-1;
+wfd Submenu_Service_Handler();
+System_Flag.MsgBox_BlockFlag=1;
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_SubList11(void)
+{
+//do nothing
+}
+
+_MENU_HVS_NODEBUG
+cofunc void Menu2_Data_Handler(void)
+{
+char order;
+order=0;
+
+if(Menu.Mode==0) abort;
+
+while(order!=Designator_Exit)
+ {
+
+ Menu2_List(Menu2.Element_ID);
+
+ if(order==Designator_Ok)
+   {
+   	switch (Menu2.Element_ID)
+		{
+		case 1:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList1();
+      Menu2.Element_ID=1;
+      abort;
+		break;
+
+      case 2:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList2();
+      Menu2.Element_ID=2;
+      abort;
+		break;
+
+      case 3:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList3();
+      Menu2.Element_ID=3;
+      abort;
+		break;
+
+      case 4:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList4();
+      Menu2.Element_ID=4;
+      abort;
+		break;
+
+      case 5:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList5();
+      Menu2.Element_ID=5;
+      abort;
+		break;
+
+      case 6:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList6();
+      Menu2.Element_ID=6;
+      abort;
+		break;
+
+      case 7:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList7();
+      Menu2.Element_ID=7;
+      abort;
+		break;
+
+      case 8:
+      Menu2.Element_ID=1;
+		wfd Menu2_SubList8();
+      Menu2.Element_ID=8;
+      abort;
+		break;
+
+      case 9:
+      Menu2.Element_ID=1;
+		wfd Menu2_SubList9();
+      Menu2.Element_ID=9;
+      abort;
+		break;
+
+      case 10:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList10();
+      Menu2.Element_ID=10;
+      abort;
+		break;
+
+      case 11:
+      Menu2.Element_ID=1;
+      wfd Menu2_SubList11();
+      Menu2.Element_ID=11;
+      abort;
+		break;
+		}
+
+  }
+
+ wfd order = Menu_Button_Wait4Get_WithChrAbort(&System_Flag.HVS_Mode);
+ }
+Menu2.Element_ID=0;
+Menu_Mod_Toggle();
+}
+
+_MENU_HVS_NODEBUG
+void Menu2_Keypad_Up()
+{
+Menu2.Element_ID--;
+}
+
+_MENU_HVS_NODEBUG
+void Menu2_Keypad_Down()
+{
+Menu2.Element_ID++;
+}
+
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

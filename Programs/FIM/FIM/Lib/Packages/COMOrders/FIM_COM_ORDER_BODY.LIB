@@ -1,0 +1,134 @@
+/*** BeginHeader */
+#ifndef __FIM_COM_ORDER_BODY_LIB
+#define __FIM_COM_ORDER_BODY_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+ComOrd2Buf_Conv,Buf2ComOrd_Conv
+*/
+#use "FIM_COM_ORDER_HEADER.LIB"
+
+_COMORD_NODEBUG int ComOrd2Buf_Conv(char *wr_buf, struct SYSOrd ord);
+_COMORD_NODEBUG struct SYSOrd Buf2ComOrd_Conv(char *ord_str,int direction);
+
+/*** EndHeader */
+
+_COMORD_NODEBUG int ComOrd2Buf_Conv(char *wr_buf, struct SYSOrd ord)
+{
+//char wr_buf[64];
+int buf_index;
+int i;
+int exists,param1_len,param2_len;
+
+if( ord.ID<0 )
+   {
+   wr_buf[0]=0;
+   return -1;
+   }
+
+param1_len=SYS_HexLenDetect(&ord.Param[0][0]);
+param2_len=SYS_HexLenDetect(&ord.Param[1][0]);
+
+strncpy(wr_buf,ComOrd_Ref[ord.ID].Command,sizeof(ComOrd_Ref[ord.ID].Command)-1);
+buf_index=sizeof(ComOrd_Ref[ord.ID].Command)-1;
+
+if(param1_len>0)
+	{
+   wr_buf[sizeof(ComOrd_Ref[ord.ID].Command)-1]=' ';
+   buf_index++;
+   strncpy(&wr_buf[buf_index],&ord.Param[0][0],param1_len);
+   buf_index+=param1_len;
+   if(param2_len>0)
+   	{
+   	wr_buf[(sizeof(ComOrd_Ref[ord.ID].Command)-1)+param1_len+1]=',';
+      buf_index++;
+   	strncpy(&wr_buf[buf_index],&ord.Param[1][0],param2_len);
+      buf_index+=param2_len;
+      }
+   }
+wr_buf[buf_index]=ComOrd_TheEndChar;
+buf_index++;
+wr_buf[buf_index]=0;
+
+//DevVar_Ser_Write(wr_buf);
+return buf_index;
+}
+
+
+_COMORD_NODEBUG struct SYSOrd Buf2ComOrd_Conv(char *ord_str,int direction)
+{
+static struct SYSOrd ord;
+int end_index;
+int ord_str_index;
+int param1_len,param2_len;
+int i;
+int begin,end;
+#GLOBAL_INIT{
+SYS_Array_HardClear(&ord.Param[0][0],sizeof(ord.Param[0]));
+SYS_Array_HardClear(&ord.Param[1][0],sizeof(ord.Param[1]));
+ord.ID=-1;
+}
+
+if( (end_index=SYS_Detect_CharPos(ord_str,'/'))==0) return SYSOrd_NULL;
+if(end_index<0) return SYSOrd_NULL;
+
+if(direction==F2Rdir)
+   {
+   begin=F2R_BeginIndex+1;
+   end=F2R_EndIndex;
+   }
+else
+	{
+   begin=R2F_BeginIndex+1;
+   end=R2F_EndIndex;
+   }
+//------------------------------------------------------------------------------
+ord=SYSOrd_NULL;
+
+for(i=begin; i<end ; i++)
+{
+if (strncmp(ord_str,ComOrd_Ref[i].Command, sizeof(ComOrd_Ref[i].Command)-1 )==0 )
+   {
+//   strncpy(ord.Command,ord_str,sizeof(ComOrd_Ref[i].Command)-1);
+	ord.ID=ComOrd_Ref[i].ID;
+   ord_str_index=sizeof(ComOrd_Ref[i].Command)-1;
+//   ord.Command[ord_str_index]=0;
+
+   if( (end_index>ord_str_index) && (ComOrd_Ref[i].Param1>0) )
+   	{
+      ord_str_index++;
+
+      param1_len=SYS_HexLenDetect(&ord_str[ord_str_index]);
+		if(param1_len>ComOrd_Ref[i].Param1) return SYSOrd_NULL;
+
+      SYS_Array_SoftClear(&ord.Param[0][0],sizeof(ord.Param[0]));
+      strncpy(&ord.Param[0][0],&ord_str[ord_str_index],param1_len);
+      ord_str_index+=param1_len;
+      ord.Param[0][param1_len]=0;
+      if( (end_index>ord_str_index) && (ComOrd_Ref[i].Param2>0) )
+      	{
+         ord_str_index++;
+
+         param2_len=SYS_HexLenDetect(&ord_str[ord_str_index]);
+			if(param2_len>ComOrd_Ref[i].Param2) return SYSOrd_NULL;
+
+         SYS_Array_SoftClear(&ord.Param[1][0],sizeof(ord.Param[1]));
+         strncpy(&ord.Param[1][0],&ord_str[ord_str_index],param2_len);
+         ord_str_index+=param2_len;
+         ord.Param[1][param2_len]=0;
+         }
+      else if (ComOrd_Ref[i].Param2>0) return SYSOrd_NULL;
+      }
+   else if (ComOrd_Ref[i].Param1>0) return SYSOrd_NULL;
+
+   ord.ID=ComOrd_Ref[i].ID;
+   return ord;
+   }
+}
+
+return SYSOrd_NULL;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

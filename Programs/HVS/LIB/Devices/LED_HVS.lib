@@ -1,0 +1,605 @@
+/* START LIBRARY DESCRIPTION *********************************************
+DESCRIPTION: LED driver
+END DESCRIPTION **********************************************************/
+
+/*** BeginHeader */
+#ifndef __LED_HVS_LIB
+#define __LED_HVS_LIB
+/*** EndHeader */
+
+/*
+04    P00   Led_2_R                       Output   Low
+05    P01   Led_2_G                       Output   Low
+06    P02   Led_1_R                       Output   Low
+07    P03   Led_1_G                       Output   Low
+08    P04   Led_Alarm                     Output   Low
+09    P05   Led_Status                    Output   Low
+10    P06   Led_Cal                       Output   Low
+11    P07   Led_Cont		            		Output   Low
+13    P10   Led_6_R                       Output   Low
+14    P11   Led_6_G                       Output   Low
+15    P12   Led_5_R                       Output   Low
+16    P13   Led_5_G						      Output   Low
+17    P14   Led_4_R								Output   Low
+18    P15   Led_4_G								Output   Low
+19    P16   Led_3_R								Output   Low
+20    P17   Led_3_G								Output   Low
+
+	Port Expander 2 Configuration (IC601 - Address 0xEA)
+
+Pin   Port  ADC Function                  I/O      I/O State
+====  ====  ===========================   ======   ============================
+04    P00   Reset_Q_Lambda                Output   Low
+05    P01   Led_7_G							   Output   Low
+06    P02   Led_7_R								Output   Low
+07    P03   Led_8_G								Output   Low
+08    P04   Led_8_R	                     Output   Low
+*/
+
+/*** BeginHeader
+LED_Green, LED_Red, LED_Orange, LED_Black, LED_HVController, LED_Alarm, LED_Status, LED_Calibration,
+LED_Test, LED_Set_Green, LED_Set_Red,LED_Black_All,LED_Green_All, LED_Red_All, LED_Orange_All,
+LED_Special_All,
+LED_All_Sys_Apply,LED_Green_Sys,LED_Red_Sys,LED_Orange_Sys
+*/
+#use "General.lib"
+_DEVICE_HVS_NODEBUG void LED_Green(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Red(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Orange(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Black(unsigned char channel);
+
+_DEVICE_HVS_NODEBUG void LED_HVController(unsigned char bool);
+_DEVICE_HVS_NODEBUG void LED_Alarm (unsigned char bool);
+_DEVICE_HVS_NODEBUG void LED_Status (unsigned char bool);
+_DEVICE_HVS_NODEBUG void LED_Calibration (unsigned char bool);
+_DEVICE_HVS_NODEBUG cofunc void LED_Test(int delay);
+
+_DEVICE_HVS_NODEBUG void LED_Set_Green(char leds);
+_DEVICE_HVS_NODEBUG void LED_Set_Red(char leds);
+_DEVICE_HVS_NODEBUG void LED_Black_All();
+_DEVICE_HVS_NODEBUG void LED_Green_All();
+_DEVICE_HVS_NODEBUG void LED_Red_All();
+_DEVICE_HVS_NODEBUG void LED_Orange_All();
+_DEVICE_HVS_NODEBUG void LED_Orange_Outputs(char led_number);
+_DEVICE_HVS_NODEBUG void LED_Special_All(char bool);
+
+//virtual handlers
+_DEVICE_HVS_NODEBUG int LED_All_Sys_Apply(void);
+_DEVICE_HVS_NODEBUG void LED_Green_Sys(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Red_Sys(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Orange_Sys(unsigned char channel);
+_DEVICE_HVS_NODEBUG void LED_Black_Sys(unsigned char channel);
+
+/*** EndHeader */
+_DEVICE_HVS_NODEBUG
+void LED_Special_All(char bool)
+	{
+	LED_HVController(bool);
+	LED_Alarm(bool);
+	LED_Status(bool);
+	LED_Calibration(bool);
+	}
+_DEVICE_HVS_NODEBUG
+void LED_Set_Green(char leds)
+{
+short int i;
+for(i=0;i<8;i++)
+	{
+   	if (((leds>>i)&0x01)==1) LED_Green(i);
+	}
+}
+_DEVICE_HVS_NODEBUG
+void LED_Set_Red(char leds)
+{
+short int i;
+for(i=0;i<8;i++)
+	{
+	   if (((leds>>i)&0x01)==1) LED_Red(i);
+	}
+}
+_DEVICE_HVS_NODEBUG
+void LED_Green(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,3);
+         res(&PortExp1_Val0,2);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 1:
+         set(&PortExp1_Val0,1);
+         res(&PortExp1_Val0,0);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 2:
+         set(&PortExp1_Val1,7);
+         res(&PortExp1_Val1,6);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 3:
+         set(&PortExp1_Val1,5);
+         res(&PortExp1_Val1,4);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 4:
+         set(&PortExp1_Val1,3);
+         res(&PortExp1_Val1,2);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 5:
+         set(&PortExp1_Val1,1);
+         res(&PortExp1_Val1,0);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 6:
+         set(&PortExp2_Val0,1);
+         res(&PortExp2_Val0,2);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+      case 7:
+         set(&PortExp2_Val0,3);
+         res(&PortExp2_Val0,4);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Red(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,2);
+         res(&PortExp1_Val0,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 1:
+         set(&PortExp1_Val0,0);
+         res(&PortExp1_Val0,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 2:
+         set(&PortExp1_Val1,6);
+         res(&PortExp1_Val1,7);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 3:
+         set(&PortExp1_Val1,4);
+         res(&PortExp1_Val1,5);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 4:
+         set(&PortExp1_Val1,2);
+         res(&PortExp1_Val1,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 5:
+         set(&PortExp1_Val1,0);
+         res(&PortExp1_Val1,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 6:
+         set(&PortExp2_Val0,2);
+         res(&PortExp2_Val0,1);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+      case 7:
+         set(&PortExp2_Val0,4);
+         res(&PortExp2_Val0,3);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+
+_DEVICE_HVS_NODEBUG
+void LED_Orange(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,2);
+         set(&PortExp1_Val0,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 1:
+         set(&PortExp1_Val0,0);
+         set(&PortExp1_Val0,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 2:
+         set(&PortExp1_Val1,6);
+         set(&PortExp1_Val1,7);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 3:
+         set(&PortExp1_Val1,4);
+         set(&PortExp1_Val1,5);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 4:
+         set(&PortExp1_Val1,2);
+         set(&PortExp1_Val1,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 5:
+         set(&PortExp1_Val1,0);
+         set(&PortExp1_Val1,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 6:
+         set(&PortExp2_Val0,2);
+         set(&PortExp2_Val0,1);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+      case 7:
+         set(&PortExp2_Val0,4);
+         set(&PortExp2_Val0,3);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Black(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         res(&PortExp1_Val0,2);
+         res(&PortExp1_Val0,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 1:
+         res(&PortExp1_Val0,0);
+         res(&PortExp1_Val0,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+         break;
+      case 2:
+         res(&PortExp1_Val1,6);
+         res(&PortExp1_Val1,7);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 3:
+         res(&PortExp1_Val1,4);
+         res(&PortExp1_Val1,5);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 4:
+         res(&PortExp1_Val1,2);
+         res(&PortExp1_Val1,3);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 5:
+         res(&PortExp1_Val1,0);
+         res(&PortExp1_Val1,1);
+			I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+         break;
+      case 6:
+         res(&PortExp2_Val0,2);
+         res(&PortExp2_Val0,1);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+      case 7:
+         res(&PortExp2_Val0,4);
+         res(&PortExp2_Val0,3);
+			I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Orange_Outputs(char led_number)
+{
+short int i;
+for (i=0;i<led_number;i++)
+	{
+	   LED_Orange(i);
+	}
+}
+_DEVICE_HVS_NODEBUG
+void LED_Calibration (unsigned char bool)
+{
+	Sys_Fl_Calibration_Set(bool);
+
+   if(bool==1) set(&PortExp1_Val0,6);
+   else res(&PortExp1_Val0,6);
+
+	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+
+
+//   if(bool==1) set(&PortExp1_Val0,4);
+//   else res(&PortExp1_Val0,4);
+
+//   Sys_Fl_Calibration_Set(bool);
+
+//	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Status (unsigned char bool)
+{
+   if(bool==1) set(&PortExp1_Val0,5);
+   else res(&PortExp1_Val0,5);
+
+   System_Flag.EthernetLED=bool;
+
+	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Alarm(unsigned char bool)
+{
+////	System_Flag.LED_Alarm_Status=bool;
+
+////   if(bool==1) set(&PortExp1_Val0,6);
+////   else res(&PortExp1_Val0,6);
+
+////	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+
+	System_Flag.LED_Alarm_Status=bool;
+
+   if(bool==1) set(&PortExp1_Val0,4);
+   else res(&PortExp1_Val0,4);
+
+	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_HVController(unsigned char bool)
+{
+   System_Flag.MainRedInt=bool;
+
+   if(bool==1) set(&PortExp1_Val0,7);
+   else res(&PortExp1_Val0,7);
+
+	I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Black_All()
+{
+PortExp1_Val0 &=0xF0; //*********************
+PortExp1_Val1 =0x00; //*********************
+
+res(&PortExp2_Val0,1); //*********************
+res(&PortExp2_Val0,2);
+res(&PortExp2_Val0,3);
+res(&PortExp2_Val0,4);
+
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Green_All()
+{
+res(&PortExp1_Val0,0); //*************************
+set(&PortExp1_Val0,1);
+res(&PortExp1_Val0,2);
+set(&PortExp1_Val0,3);
+
+PortExp1_Val1 =0xAA; //***********************
+
+set(&PortExp2_Val0,1); //*********************
+res(&PortExp2_Val0,2);
+set(&PortExp2_Val0,3);
+res(&PortExp2_Val0,4);
+
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Red_All()
+{
+set(&PortExp1_Val0,0); //*************************
+res(&PortExp1_Val0,1);
+set(&PortExp1_Val0,2);
+res(&PortExp1_Val0,3);
+
+PortExp1_Val1 =0x55; //***********************
+
+res(&PortExp2_Val0,1); //*********************
+set(&PortExp2_Val0,2);
+res(&PortExp2_Val0,3);
+set(&PortExp2_Val0,4);
+
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Orange_All()
+{
+set(&PortExp1_Val0,0); //*************************
+set(&PortExp1_Val0,1);
+set(&PortExp1_Val0,2);
+set(&PortExp1_Val0,3);
+
+PortExp1_Val1 =0xFF; //***********************
+
+set(&PortExp2_Val0,1); //*********************
+set(&PortExp2_Val0,2);
+set(&PortExp2_Val0,3);
+set(&PortExp2_Val0,4);
+
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+}
+
+
+//HANDLERS OF LED PORT FLAGS
+_DEVICE_HVS_NODEBUG
+void LED_Green_Sys(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,3);
+         res(&PortExp1_Val0,2);
+         break;
+      case 1:
+         set(&PortExp1_Val0,1);
+         res(&PortExp1_Val0,0);
+         break;
+      case 2:
+         set(&PortExp1_Val1,7);
+         res(&PortExp1_Val1,6);
+         break;
+      case 3:
+         set(&PortExp1_Val1,5);
+         res(&PortExp1_Val1,4);
+         break;
+      case 4:
+         set(&PortExp1_Val1,3);
+         res(&PortExp1_Val1,2);
+         break;
+      case 5:
+         set(&PortExp1_Val1,1);
+         res(&PortExp1_Val1,0);
+         break;
+      case 6:
+         set(&PortExp2_Val0,1);
+         res(&PortExp2_Val0,2);
+         break;
+      case 7:
+         set(&PortExp2_Val0,3);
+         res(&PortExp2_Val0,4);
+      	break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Red_Sys(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,2);
+         res(&PortExp1_Val0,3);
+         break;
+      case 1:
+         set(&PortExp1_Val0,0);
+         res(&PortExp1_Val0,1);
+         break;
+      case 2:
+         set(&PortExp1_Val1,6);
+         res(&PortExp1_Val1,7);
+         break;
+      case 3:
+         set(&PortExp1_Val1,4);
+         res(&PortExp1_Val1,5);
+         break;
+      case 4:
+         set(&PortExp1_Val1,2);
+         res(&PortExp1_Val1,3);
+         break;
+      case 5:
+         set(&PortExp1_Val1,0);
+         res(&PortExp1_Val1,1);
+         break;
+      case 6:
+         set(&PortExp2_Val0,2);
+         res(&PortExp2_Val0,1);
+         break;
+      case 7:
+         set(&PortExp2_Val0,4);
+         res(&PortExp2_Val0,3);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+
+_DEVICE_HVS_NODEBUG
+void LED_Orange_Sys(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         set(&PortExp1_Val0,2);
+         set(&PortExp1_Val0,3);
+         break;
+      case 1:
+         set(&PortExp1_Val0,0);
+         set(&PortExp1_Val0,1);
+         break;
+      case 2:
+         set(&PortExp1_Val1,6);
+         set(&PortExp1_Val1,7);
+         break;
+      case 3:
+         set(&PortExp1_Val1,4);
+         set(&PortExp1_Val1,5);
+         break;
+      case 4:
+         set(&PortExp1_Val1,2);
+         set(&PortExp1_Val1,3);
+         break;
+      case 5:
+         set(&PortExp1_Val1,0);
+         set(&PortExp1_Val1,1);
+         break;
+      case 6:
+         set(&PortExp2_Val0,2);
+         set(&PortExp2_Val0,1);
+         break;
+      case 7:
+         set(&PortExp2_Val0,4);
+         set(&PortExp2_Val0,3);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG
+void LED_Black_Sys(unsigned char channel)
+{
+	switch (channel)
+   {
+   	case 0:
+         res(&PortExp1_Val0,2);
+         res(&PortExp1_Val0,3);
+         break;
+      case 1:
+         res(&PortExp1_Val0,0);
+         res(&PortExp1_Val0,1);
+         break;
+      case 2:
+         res(&PortExp1_Val1,6);
+         res(&PortExp1_Val1,7);
+         break;
+      case 3:
+         res(&PortExp1_Val1,4);
+         res(&PortExp1_Val1,5);
+         break;
+      case 4:
+         res(&PortExp1_Val1,2);
+         res(&PortExp1_Val1,3);
+         break;
+      case 5:
+         res(&PortExp1_Val1,0);
+         res(&PortExp1_Val1,1);
+         break;
+      case 6:
+         res(&PortExp2_Val0,2);
+         res(&PortExp2_Val0,1);
+         break;
+      case 7:
+         res(&PortExp2_Val0,4);
+         res(&PortExp2_Val0,3);
+         break;
+   }
+//	General_Delay_Ms(WRITE_TIME);
+}
+_DEVICE_HVS_NODEBUG 
+int LED_All_Sys_Apply(void)
+{
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x02, &PortExp1_Val0, 1);
+I2C.Error_Expander1=I2CWrite(PORT_EXP1_ADDRESS , 0x03, &PortExp1_Val1, 1);
+I2C.Error_Expander2=I2CWrite(PORT_EXP2_ADDRESS , 0x02, &PortExp2_Val0, 1);
+
+return 1;
+}
+
+/*** BeginHeader */
+#endif
+/*** EndHeader */

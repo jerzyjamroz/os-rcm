@@ -1,0 +1,781 @@
+/*** BeginHeader */
+#ifndef __EM_ORD_SETTING_API_LIB
+#define __EM_ORD_SETTING_API_LIB
+/*** EndHeader */
+
+/*** BeginHeader
+
+EM_OFFSETCORR_Func,
+EM_GAINCORR_Func,
+
+EM_FILTER_Func,
+EM_RANGE_Func,
+EM_OFFSET_Func,
+EM_INV_Func,
+
+EM_AVSAMPLES_Func,
+EM_SRATE_Func,
+EM_TRIGMODE_Func,
+EM_POINTS_Func,
+EM_STRIG_Func,
+EM_TRIGPERIODE_Func,
+
+EM_STARTADC_Func,
+EM_STOPADC_Func,
+EM_START_Func,
+EM_STOP_Func,
+
+EM_ENABLE_Func,
+EM_RESET_Func,
+EM_SENINIT_Func,
+EM_DEFAULT_Func,
+
+EM_AMPMODE_Func,
+EM_GAIN1_Func,
+EM_GAIN2_Func,
+
+EM_EVTMODE_Func,
+EM_EVTCLIENT_Func,
+
+EM_TESTNCS_Func,
+EM_TESTCLKPOL_Func,
+
+EM_TRIGPOL_Func,
+
+EM_AUTORANGEMIN_Func,
+EM_AUTORANGEMAX_Func,
+EM_AUTORANGE_Func,
+
+EM_TRIGDELAY_Func,
+
+*/
+
+#include "../Programs/SimpleEM/Lib/ORD/EM_ORD_SETTING.H"
+/*** EndHeader */
+
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_OFFSETCORR_Func_Do(struct _SYSOrd *ord,int ch,void * arg)
+{
+float value;
+value=*((float*)arg);
+
+if( (value>15) || (value<-15) ) return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Offset_Corr[ch][ord->Arg]=value;
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_OFFSETCORR_Func(struct _SYSOrd *ord)
+{
+int status;
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if ( (status=EM_ORD_API_Range_Det(ord))<0) return status;
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_OFFSETCORR_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_GAINCORR_Func_Do(struct _SYSOrd *ord,int ch,void * arg)
+{
+float value;
+value=*((float*)arg);
+
+if( (value>10) || (value<-10) ) return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Gain_Corr[ch][ord->Arg]=value;
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_GAINCORR_Func(struct _SYSOrd *ord)
+{
+int status;
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if ( (status=EM_ORD_API_Range_Det(ord))<0) return status;
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_GAINCORR_Func_Do);
+}
+
+//------------------------------------------------------------------------------
+
+_EM_ORD_NODEBUG
+int EM_FILTER_Func_Do(struct _SYSOrd *ord,int ch,void * var)
+{
+//float *pVar;
+//pVar=(float*)var;
+char *txt;
+float value;
+txt=(char*)var;
+
+if(txt[0]=='N')return EM_SEN_EXT_Filter(ch,0);
+else value=atof(txt);
+
+return EM_SEN_EXT_Filter(ch,value);
+}
+_EM_ORD_NODEBUG
+int EM_FILTER_Func     	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_FILTER_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_RANGE_Func_Do(struct _SYSOrd *ord,int ch,char * txt)
+{
+int range;
+if(Elem.Range_Mode[ch]==EM_RANGE_TEST) return (-SYSOrd_ERR_OPERATION);
+range=EM_Range_Conv(txt);
+if(range<0) return (-SYSOrd_ERR_SYNTAX);
+
+return EM_SEN_EXT_Range(ch,range);
+}
+_EM_ORD_NODEBUG
+int EM_RANGE_Func      	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_RANGE_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_OFFSET_Func_Do(struct _SYSOrd *ord,int ch,void * var)
+{
+int *pVar;
+pVar=(int*)var;
+
+if(*pVar>0xFFF) return -1;
+
+return EM_SEN_DAC_WR(ch,*pVar);
+}
+_EM_ORD_NODEBUG
+int EM_OFFSET_Func     	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_OFFSET_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_INV_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(yes_no_txt[0]=='Y') EM_SEN_Polarity(ch,1);
+else if(yes_no_txt[0]=='N') EM_SEN_Polarity(ch,0);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_INV_Func     	(struct _SYSOrd *ord)                  //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_INV_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_AVSAMPLES_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int samples=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&samples);
+else params=0;
+
+if((params<=0)||(params>1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+if((samples>=EM_ADC_ACQ_MAX)||(samples<1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+EM_ADC_Avs_Max_Set(samples);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_SRATE_Func      	(struct _SYSOrd *ord)          //DONE
+{
+int params=0;
+int samples=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&samples);
+else params=0;
+
+if((params<=0)||(params>1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+if((samples>=EM_ADC_ACQ_MAX)||(samples<1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Srate=samples;    //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+return 1;
+}
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//##############################################################################
+_EM_ORD_NODEBUG
+int EM_TRIGMODE_Func   	(  struct _SYSOrd *ord )
+{
+int params;
+int i;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ord->Output[100]);
+else params=0;
+
+if(params!=1) return (-SYSOrd_ERR_SYNTAX);
+
+for(i=0;Elem_SYS.Trig_Mode_Txt[i][0]!='\0';i++)
+	{
+   if(strcmp(&Elem_SYS.Trig_Mode_Txt[i][0],&ord->Output[100])==0)
+   	{
+      Elem.Trig_Mode=i;
+      if(Elem.Trig_Mode==EM_TR_MD_INT) Dev_Int_Dis();
+      else if(Elem.Trig_Mode==EM_TR_MD_EXT) Dev_Int_En(Elem.Int_Edge);
+
+      return 1;
+      }
+   }
+
+return (-SYSOrd_ERR_SYNTAX);
+}
+//##############################################################################
+_EM_ORD_NODEBUG
+int EM_POINTS_Func     	(struct _SYSOrd *ord)               //DONE
+{
+int params=0;
+int samples=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&samples);
+else params=0;
+
+if((params<=0)||(params>1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+if(samples==-1)
+	{
+   EM_ADC_Avr_Buf_Max_Set(samples);
+   return 1;
+   }
+
+if((samples>=EM_ADC_ACQ_MAX)||(samples<1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+EM_ADC_Avr_Buf_Max_Set(samples);
+
+return 1;
+}
+//##############################################################################
+_EM_ORD_NODEBUG
+int EM_STRIG_Func			 	(struct _SYSOrd *ord)
+{
+Elem_SYS.Trig=1;
+return 1;
+}
+//##############################################################################
+_EM_ORD_NODEBUG
+int EM_TRIGPERIODE_Func	(  struct _SYSOrd *ord )
+{
+int params=0;
+int periode=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&periode);
+else params=0;
+
+if((params<=0)||(params>1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+if((periode>=32000)||(periode<1))     //?????????????????????????????????????????????????????????????????????????????????????????
+	return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Trig_Periode=periode;  //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_STARTADC_Func      	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(Elem.State==EM_ST_IDLE) Elem.State=EM_ST_ON;
+else return (-SYSOrd_ERR_OPERATION);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_STOPADC_Func       	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+Elem.State=EM_ST_IDLE;
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG                                       //DONE
+int EM_START_Func      	(  struct _SYSOrd *ord )
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+Elem.State=EM_ST_RUNNING;
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG                                       //DONE
+int EM_STOP_Func       	(  struct _SYSOrd *ord )
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+//Elem.State=EM_ST_IDLE;
+if(Elem.State==EM_ST_RUNNING) Elem.State=EM_ST_ON;
+else return (-SYSOrd_ERR_OPERATION);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_ENABLE_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(yes_no_txt[0]=='Y') SET(&Elem.Ch_Active,ch);
+else if(yes_no_txt[0]=='N') RES(&Elem.Ch_Active,ch);
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_ENABLE_Func     	(struct _SYSOrd *ord)         //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_ENABLE_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG                                       //DONE
+int EM_RESET_Func       	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+SYS_Reset;
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_SENINIT_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(yes_no_txt[0]=='Y') EM_SEN_Init(ch);
+else if(yes_no_txt[0]=='N') return (-SYSOrd_ERR_NULL);
+else return (-SYSOrd_ERR_NULL);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_SENINIT_Func		(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_SENINIT_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_DEFAULT_Func     (struct _SYSOrd *ord)
+{
+int ch;
+int j;
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+EM_Elem_Default();
+
+for(ch=0;ch<EM_SENSOR_MAX;ch++)	EM_SEN_Init(ch);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_AMPMODE_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+int range;
+
+if(yes_no_txt[0]==Elem_SYS.Range_Mode_Txt[EM_RANGE_LN][0])
+   Elem.Range_Mode[ch]=EM_RANGE_LN;
+else if(yes_no_txt[0]==Elem_SYS.Range_Mode_Txt[EM_RANGE_HB][0])
+   Elem.Range_Mode[ch]=EM_RANGE_HB;
+else if(yes_no_txt[0]==Elem_SYS.Range_Mode_Txt[EM_RANGE_SHB][0])
+   Elem.Range_Mode[ch]=EM_RANGE_SHB;
+else if(yes_no_txt[0]==Elem_SYS.Range_Mode_Txt[EM_RANGE_TEST][0])
+	{
+   Elem.Range_Mode[ch]=EM_RANGE_TEST;
+   return 1;
+   }
+
+range=EM_SEN_EXT_getRange(ch);
+if(range<0) range=EM_1m;
+EM_SEN_EXT_Range(ch,range);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_AMPMODE_Func     	(struct _SYSOrd *ord)                  //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_AMPMODE_Func_Do);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_GAIN1_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(Elem.Range_Mode[ch]!=EM_RANGE_TEST) return (-SYSOrd_ERR_OPERATION);
+if(EM_SEN_EXT_TransGain(ch,yes_no_txt)<0) return (-SYSOrd_ERR_OPERATION);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_GAIN1_Func     	(struct _SYSOrd *ord)                  //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_GAIN1_Func_Do);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_GAIN2_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(Elem.Range_Mode[ch]!=EM_RANGE_TEST) return (-SYSOrd_ERR_OPERATION);
+if(EM_SEN_EXT_VoltGain(ch,yes_no_txt)<0) return (-SYSOrd_ERR_OPERATION);
+
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_GAIN2_Func     	(struct _SYSOrd *ord)                  //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_GAIN2_Func_Do);
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_EVTMODE_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int var;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&var);
+else params=0;
+
+if( (params<=0)||(params>1) )
+	return (-SYSOrd_ERR_SYNTAX);
+
+if( (var<0) || (var >1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Event_Mode=var;
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_EVTCLIENT_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int port;
+unsigned long int ip;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ord->Output[100],&port);
+else params=0;
+
+if( params!=2 )
+	return (-SYSOrd_ERR_SYNTAX);
+
+ip=inet_addr(&ord->Output[100]);
+if(ip<=0)(-SYSOrd_ERR_SYNTAX);
+if(port<=0)(-SYSOrd_ERR_SYNTAX);
+
+Elem.Event_Client[0]=ip;
+Elem.Event_Client[1]=(int)port;
+
+return 1;
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_TESTNCSSET_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int ch;
+int cs_id;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ch,&cs_id);
+else params=0;
+
+if( params!=2 )
+	return (-SYSOrd_ERR_SYNTAX);
+
+if (ch>4) return (-SYSOrd_ERR_SYNTAX);
+ch--;
+
+if(EM_SEN_EXT_NCS_Set(ch,cs_id)<0) return (-SYSOrd_ERR_SYNTAX);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_TESTNCSRES_Func	(struct _SYSOrd *ord)
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+EM_SEN_EXT_NCS_Res();
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_TESTSPIWRITE_Func	(struct _SYSOrd *ord)
+{
+int params=0;
+char byte;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&byte);
+else params=0;
+
+if (params!=1)(-SYSOrd_ERR_SYNTAX);
+
+Dev_SPI_Write(&byte,1);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_TESTCLKPOL_Func  (struct _SYSOrd *ord)
+{
+int params=0;
+int qinv;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&qinv);
+else params=0;
+
+if (params!=1)(-SYSOrd_ERR_SYNTAX);
+
+if (qinv==1) BitWrPortI(SDER, &SDERShadow, 1, 4);
+else if (qinv==0) BitWrPortI(SDER, &SDERShadow, 0, 4);
+
+return 1;
+}
+//------------------------------------------------------------------------------
+
+_EM_ORD_NODEBUG
+int EM_TRIGPOL_Func   	(  struct _SYSOrd *ord )
+{
+int params;
+int i;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ord->Output[100]);
+else params=0;
+
+if(params!=1) return (-SYSOrd_ERR_SYNTAX);
+
+for(i=0;Elem_SYS.Int_Edge_Txt[i][0]!='\0';i++)
+	{
+   if(strcmp(&Elem_SYS.Int_Edge_Txt[i][0],&ord->Output[100])==0)
+   	{
+      Elem.Int_Edge=i;
+      Dev_Int_En(Elem.Int_Edge);
+      return 1;
+      }
+   }
+
+return (-SYSOrd_ERR_SYNTAX);
+}
+
+//------------------------------------------------------------------------------
+/*
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMIN_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int min_percentage=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&min_percentage);
+else params=0;
+
+if(params!=1)
+	return (-SYSOrd_ERR_SYNTAX);
+
+if( (min_percentage<0) || (min_percentage>90) )
+	return (-SYSOrd_ERR_SYNTAX);
+
+//----------Elem.Range_Auto_St_Min_Max[1]=min_percentage;
+
+return 1;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMIN_Func_Do(struct _SYSOrd *ord,int ch,void * arg)
+{
+int value;
+value=*((int*)arg);
+
+if( (value<0) || (value>90) )return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Range_Auto_St_Min_Max[ch][1]=value;
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMIN_Func(struct _SYSOrd *ord)
+{
+int status;
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_AUTORANGEMIN_Func_Do);
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+/*
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMAX_Func  	(struct _SYSOrd *ord)        //DONE
+{
+int params=0;
+int max_percentage=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&max_percentage);
+else params=0;
+
+if(params!=1)
+	return (-SYSOrd_ERR_SYNTAX);
+
+if( (max_percentage<0) || (max_percentage>100) )
+	return (-SYSOrd_ERR_SYNTAX);
+
+//-------Elem.Range_Auto_St_Min_Max[2]=max_percentage;
+
+return 1;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMAX_Func_Do(struct _SYSOrd *ord,int ch,void * arg)
+{
+int value;
+value=*((int*)arg);
+
+if( (value<0) || (value>100) )return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Range_Auto_St_Min_Max[ch][2]=value;
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_AUTORANGEMAX_Func(struct _SYSOrd *ord)
+{
+int status;
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_AUTORANGEMAX_Func_Do);
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+ /*
+_EM_ORD_NODEBUG
+int EM_AUTORANGE_Func   	(  struct _SYSOrd *ord )
+{
+int params;
+int i;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&ord->Output[100]);
+else params=0;
+
+if(params!=1) return (-SYSOrd_ERR_SYNTAX);
+
+if(strcmp(&ord->Output[100],&EM_RANGE_AUTO_TXT[EM_RANGE_AUTO_ON][0])==0) Elem.Range_Auto_St_Min_Max[0]=EM_RANGE_AUTO_ON;
+else if(strcmp(&ord->Output[100],&EM_RANGE_AUTO_TXT[EM_RANGE_AUTO_OFF][0])==0) Elem.Range_Auto_St_Min_Max[0]=EM_RANGE_AUTO_OFF;
+else return (-SYSOrd_ERR_SYNTAX);
+
+return 1;
+}
+*/
+//------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_AUTORANGE_Func_Do(struct _SYSOrd *ord,int ch,char *yes_no_txt)
+{
+if(yes_no_txt[0]=='Y') Elem.Range_Auto_St_Min_Max[ch][0]=1;
+else if(yes_no_txt[0]=='N') Elem.Range_Auto_St_Min_Max[ch][0]=0;
+return 1;
+}
+_EM_ORD_NODEBUG
+int EM_AUTORANGE_Func     	(struct _SYSOrd *ord)                  //DONE
+{
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+return EM_ORD_API_MultiCh_Handler(ord,EM_AUTORANGE_Func_Do);
+}
+//------------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------------------------
+_EM_ORD_NODEBUG
+int EM_TRIGDELAY_Func      	(struct _SYSOrd *ord)          //DONE
+{
+int params=0;
+unsigned long int trig_delay=0;
+
+if(EM_Att_Handler(ord)<0) return (-SYSOrd_ERR_OPERATION);
+
+if(ord->Len>ord->Ref[ord->Id].Len)
+	params=sscanf(&ord->Input[ord->Ref[ord->Id].Len+1],ord->Ref[ord->Id].Arg,&trig_delay);
+else params=0;
+
+if((params<=0)||(params>1))
+	return (-SYSOrd_ERR_SYNTAX);
+
+if(trig_delay<0)
+	return (-SYSOrd_ERR_SYNTAX);
+
+Elem.Trig_Delay=trig_delay;    //GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+
+return 1;
+}
+//------------------------------------------------------------------------------
+/*** BeginHeader */
+#endif
+/*** EndHeader */
