@@ -1,5 +1,5 @@
 # Introduction
-Dynamic C Development for Rabbit Semiconductor RCM4200, RCM5000, RCM6000 and similar. The project has been discontinued at the end of 2012. It waits for an reactivation in case of cooperation with any Dynamic C programmers. The structure can be changed but the programming concept should be kept.
+Dynamic C Development for Rabbit Semiconductor RCM4200, RCM5000, RCM6000 and similar. The project has been discontinued at the end of 2012. It waits for an reactivation in case of cooperation with any Dynamic C programmers. The structure and the programming concept can be changed/adjusted for a better flexibility.
 # Content
 ## ALBAOS
 Contains a simple monolitic kernel (with all the modules compiled).
