@@ -1,4 +1,0 @@
-Watch0=sf_blocksize:main
-Watch1=sf_blocks:main
-cbWatch0=sf_blocks
-cbWatch1=sf_blocksize

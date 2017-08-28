@@ -1,7 +1,0 @@
-cbWatch0=Global_Data
-cbWatch1=helper
-cbWatch2=BitRdPortI(PEDR, 2)
-cbWatch3=sizeof(long)
-cbWatch4=sizeof(int)
-cbWatch5=count
-cbWatch6=0x03|edge

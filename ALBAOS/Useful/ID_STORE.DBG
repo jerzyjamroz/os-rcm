@@ -1,4 +1,0 @@
-Watch0=ub_array;:GLOBAL
-Watch1=strlen(ub_array);:GLOBAL
-cbWatch0=strlen(ub_array)
-cbWatch1=ub_array

@@ -13,6 +13,7 @@
 *.HEX
 *.UPL
 *.bmk
+*.DBG
 
 
 # Build and Release Folders
