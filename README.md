@@ -1,6 +1,12 @@
 # Introduction
 Dynamic C Development for Rabbit Semiconductor RCM4200, RCM5000, RCM6000 and similar. The project has been discontinued at the end of 2012. It waits for an reactivation in case of cooperation with any Dynamic C programmers. The structure and the programming concept can be changed/adjusted for a better flexibility.
-# Content
+## RCM module documentation references:
+* RCM42xx, RCM5xxx, RCM6xxx
+* https://www.digi.com/support/supporttype?type=documentation
+* https://www.digi.com/support/productdetail?pid=4349&type=documentation
+* https://www.digi.com/support/productdetail?pid=4364&type=documentation
+* https://www.digi.com/support/productdetail?pid=4885&type=documentation
+# Project Content
 ## ALBAOS
 Contains a simple monolitic kernel (with all the modules compiled).
 * ALBAOS_ENVIRONMENT.H - defines the OS environment
