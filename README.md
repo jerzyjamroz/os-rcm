@@ -1,5 +1,5 @@
 # Introduction
-Dynamic C Development for Rabbit Semiconductor RCM4200, RCM5000, RCM6000 and similar. The project has been discontinued at the end of 2012. It waits for an reactivation in case of cooperation with any Dynamic C programmers. The structure and the programming concept can be changed/adjusted for a better flexibility.
+Dynamic C Development for RabbitCore (RCMxxxx) RCM4200, RCM5000, RCM6000 (Z80/Z180 processors). The project has been discontinued at the end of 2012. It waits for an reactivation in case of cooperation with Embedded C programmers. The structure and the programming concept can be changed/adjusted for a better flexibility.
 ## RCM module documentation references:
 * RCM42xx, RCM5xxx, RCM6xxx
 * https://www.digi.com/support/supporttype?type=documentation
@@ -19,9 +19,9 @@ Contains a simple monolitic kernel (with all the modules compiled).
 ALBAOS functionality tests.
 ## Packages
 Extra C functions which deliver extra software capabilities.
-* SCPI - Standard Commands for Programmable Instruments support
+* SCPI - Standard Commands for Programmable Instruments extension
 * SYSORD - standarized system orders
-* XMLparser - Extensible Markup Language support
+* XMLparser - Extensible Markup Language extension
 ## Programs
 Projects developed upon ALBAOS and Packages. Each project contans a different hardware architecture (PCB and connections). Not all the projects follow exactly this structure as ALBAOS was developed a bit later and as those projects were working, the development time was not invested to rewrite them. Each new project (so main function) should be developed in there.
 * FIM - Fast Interlock Module: manages RF plant interlocks and safety
@@ -31,4 +31,4 @@ Projects developed upon ALBAOS and Packages. Each project contans a different ha
 ## Test
 Extra test examples.
 ## Backup
-Archives which contain one full code release.
+Archives which contain release versions.
